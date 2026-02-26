@@ -15,72 +15,118 @@ st.set_page_config(page_title="Freedom", layout="wide")
 st.markdown("""
 <style>
 
-/* Background */
+/* =============================
+   GLOBAL DARK BACKGROUND
+============================= */
 .stApp {
-    background-color: #F0F9FF;
+    background-color: #0F172A;
 }
 
-/* Freedom Header */
+/* =============================
+   HEADER
+============================= */
 .freedom-title {
-    background: linear-gradient(90deg, #38BDF8, #0EA5E9);
-    padding: 22px;
+    background: linear-gradient(90deg, #1E3A8A, #0EA5E9);
+    padding: 24px;
     border-radius: 14px;
     text-align: center;
     color: white;
     font-size: 44px;
     font-weight: 700;
     letter-spacing: 1px;
-    box-shadow: 0px 4px 15px rgba(0,0,0,0.08);
+    box-shadow: 0px 6px 25px rgba(0,0,0,0.4);
 }
 
-/* Subtitle */
 .subtitle {
     text-align:center;
     font-size:20px;
-    color:#0369A1;
+    color:#93C5FD;
     margin-top:8px;
-    margin-bottom:20px;
+    margin-bottom:25px;
 }
 
-/* Card */
+/* =============================
+   CARD STYLE
+============================= */
 .card {
-    background-color: white;
-    padding: 18px;
+    background-color: #1E293B;
+    padding: 20px;
     border-radius: 14px;
-    box-shadow: 0px 4px 15px rgba(0,0,0,0.05);
+    box-shadow: 0px 6px 20px rgba(0,0,0,0.4);
     margin-bottom: 20px;
+    color: white;
 }
 
-/* Buttons */
+/* =============================
+   BUTTON STYLE
+============================= */
 .stButton > button {
-    background-color: #0EA5E9;
+    background: linear-gradient(90deg, #2563EB, #0EA5E9);
     color: white;
     border-radius: 8px;
     height: 45px;
     font-weight: 600;
+    border: none;
 }
 
-/* DataFrame text */
+/* Hover */
+.stButton > button:hover {
+    background: linear-gradient(90deg, #1D4ED8, #0284C7);
+}
+
+/* =============================
+   DATAFRAME STYLING
+============================= */
+
+/* Table background */
 [data-testid="stDataFrame"] {
-    color: #1E293B !important;
+    background-color: #1E293B !important;
+    color: white !important;
 }
 
-/* Table header */
+/* Header */
 thead tr th {
-    background-color: #38BDF8 !important;
+    background-color: #2563EB !important;
     color: white !important;
     font-weight: 600 !important;
 }
 
-/* Table cells */
+/* Rows */
 tbody tr td {
-    color: #0F172A !important;
-    font-weight: 500;
+    color: #E2E8F0 !important;
 }
 
-/* Alternate rows */
+/* Alternate row */
 tbody tr:nth-child(even) {
-    background-color: #E0F2FE !important;
+    background-color: #0F172A !important;
+}
+
+/* =============================
+   SUCCESS BOX
+============================= */
+.stSuccess {
+    background-color: #064E3B !important;
+    color: #6EE7B7 !important;
+    font-weight: 600;
+}
+
+/* =============================
+   SIDEBAR DARK
+============================= */
+section[data-testid="stSidebar"] {
+    background-color: #111827;
+    color: white;
+}
+
+/* Inputs */
+input, .stNumberInput input {
+    background-color: #1E293B !important;
+    color: white !important;
+}
+
+/* Labels */
+label {
+    color: #CBD5E1 !important;
 }
 
 </style>
