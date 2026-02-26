@@ -9,7 +9,7 @@ import numpy as np
 st.set_page_config(page_title="Freedom", layout="wide")
 
 # ======================================================
-# THEME STYLING
+# SKY BLUE THEME
 # ======================================================
 
 st.markdown("""
@@ -17,12 +17,12 @@ st.markdown("""
 
 /* Background */
 .stApp {
-    background-color: #FFF4E6;
+    background-color: #F0F9FF;
 }
 
 /* Freedom Header */
 .freedom-title {
-    background: linear-gradient(90deg, #F97316, #FB923C);
+    background: linear-gradient(90deg, #38BDF8, #0EA5E9);
     padding: 22px;
     border-radius: 14px;
     text-align: center;
@@ -30,47 +30,64 @@ st.markdown("""
     font-size: 44px;
     font-weight: 700;
     letter-spacing: 1px;
-    box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.08);
 }
 
 /* Subtitle */
 .subtitle {
     text-align:center;
     font-size:20px;
-    color:#C2410C;
+    color:#0369A1;
     margin-top:8px;
     margin-bottom:20px;
 }
 
-/* Cards */
+/* Card */
 .card {
     background-color: white;
     padding: 18px;
     border-radius: 14px;
-    box-shadow: 0px 4px 15px rgba(0,0,0,0.08);
-    margin-bottom: 15px;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
 }
 
 /* Buttons */
 .stButton > button {
-    background-color: #F97316;
+    background-color: #0EA5E9;
     color: white;
     border-radius: 8px;
     height: 45px;
     font-weight: 600;
 }
 
-/* Tables */
+/* DataFrame text */
+[data-testid="stDataFrame"] {
+    color: #1E293B !important;
+}
+
+/* Table header */
 thead tr th {
-    background-color: #F97316 !important;
+    background-color: #38BDF8 !important;
     color: white !important;
+    font-weight: 600 !important;
+}
+
+/* Table cells */
+tbody tr td {
+    color: #0F172A !important;
+    font-weight: 500;
+}
+
+/* Alternate rows */
+tbody tr:nth-child(even) {
+    background-color: #E0F2FE !important;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 # ======================================================
-# SESSION NAVIGATION
+# SESSION STATE
 # ======================================================
 
 if "page" not in st.session_state:
@@ -93,7 +110,7 @@ st.markdown("---")
 
 st.sidebar.header("Client Profile")
 
-entry_age = st.sidebar.number_input("Entry Age", 18, 65, 30)
+entry_age = st.sidebar.number_input("Entry Age", 18, 65, 27)
 expected_return = st.sidebar.number_input("Expected Return (%)", 0.0, 20.0, 12.0)/100
 inflation = st.sidebar.number_input("Inflation (%)", 0.0, 15.0, 6.0)/100
 
@@ -103,9 +120,6 @@ inflation = st.sidebar.number_input("Inflation (%)", 0.0, 15.0, 6.0)/100
 
 def future_value(pv, rate, years):
     return pv * (1 + rate) ** years
-
-def sip_fv(sip, rate, years):
-    return sip * (((1 + rate) ** years - 1) / rate)
 
 # ======================================================
 # INDEX PAGE
@@ -142,154 +156,57 @@ if st.session_state.page == "sip":
     st.button("⬅ Back", on_click=lambda: go("index"))
 
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("SIP & Lumpsum Calculator")
+    st.subheader("SIP Calculator")
 
-    sip = st.number_input("Monthly SIP (₹)", value=5000)
-    years = st.number_input("Investment Years", value=20)
+    monthly_sip = st.number_input("Monthly SIP (₹)", value=5000)
+    years = st.number_input("Investment Years", value=8)
     stepup = st.number_input("Annual Step-up (%)", value=10.0)/100
 
     corpus = 0
     table = []
 
     for y in range(years):
-        yearly_sip = sip * 12 * ((1 + stepup)**y)
+        yearly_sip = monthly_sip * 12 * ((1 + stepup)**y)
         corpus = (corpus + yearly_sip) * (1 + expected_return)
-        table.append([entry_age + y, round(yearly_sip,0), round(corpus,0)])
 
-    df = pd.DataFrame(table, columns=["Age","Yearly SIP","Year End Corpus"])
+        table.append([
+            y + 1,
+            entry_age + y,
+            round(yearly_sip, 0),
+            round(corpus, 0)
+        ])
 
-    st.table(df)
+    df = pd.DataFrame(table, columns=["No.", "Age", "Yearly SIP", "Year End Corpus"])
+
+    st.dataframe(df, use_container_width=True)
+
     st.success(f"Final Corpus: ₹ {corpus:,.0f}")
+
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ======================================================
-# SWP CALCULATOR
-# ======================================================
-
-if st.session_state.page == "swp":
-
-    st.button("⬅ Back", on_click=lambda: go("index"))
-
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("SWP Calculator")
-
-    corpus = st.number_input("Initial Corpus (₹)", value=10000000)
-    withdrawal = st.number_input("Monthly Withdrawal (₹)", value=100000)
-    years = st.number_input("Withdrawal Years", value=20)
-
-    table = []
-    balance = corpus
-
-    for y in range(years):
-        balance = balance * (1 + expected_return) - (withdrawal * 12)
-        table.append([entry_age + y, withdrawal*12, round(balance,0)])
-
-    df = pd.DataFrame(table, columns=["Age","Yearly Withdrawal","Year End Corpus"])
-    st.table(df)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# ======================================================
-# RETIREMENT PLANNER
-# ======================================================
-
-if st.session_state.page == "retirement":
-
-    st.button("⬅ Back", on_click=lambda: go("index"))
-
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("Retirement Planner")
-
-    retirement_age = st.number_input("Retirement Age", 45, 75, 60)
-    annual_expense = st.number_input("Annual Expense Today (₹)", value=900000)
-
-    years_to_ret = retirement_age - entry_age
-    expense_at_ret = future_value(annual_expense, inflation, years_to_ret)
-    corpus_required = expense_at_ret * 25
-
-    summary = pd.DataFrame({
-        "Metric":["Expense at Retirement","Corpus Required"],
-        "Value":[f"₹ {expense_at_ret:,.0f}",f"₹ {corpus_required:,.0f}"]
-    })
-
-    st.table(summary)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# ======================================================
-# CHILD PLANNER
+# SIMPLE PLACEHOLDER FOR OTHER MODULES
 # ======================================================
 
 if st.session_state.page == "children":
-
     st.button("⬅ Back", on_click=lambda: go("index"))
+    st.info("Children Planning Module Coming Soon")
 
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("Future Planning for Children")
+if st.session_state.page == "swp":
+    st.button("⬅ Back", on_click=lambda: go("index"))
+    st.info("SWP Module Coming Soon")
 
-    child_age = st.number_input("Child Current Age", 0, 18, 2)
-
-    milestones = {
-        "10th Board": (14, 200000),
-        "12th Board": (16, 200000),
-        "Graduation": (18, 2000000),
-        "Marriage": (24, 2000000)
-    }
-
-    table = []
-
-    for name,(goal_age,cost_today) in milestones.items():
-        years = goal_age - child_age
-        future_cost = future_value(cost_today, inflation, years)
-        table.append([name,goal_age,round(future_cost,0)])
-
-    df = pd.DataFrame(table, columns=["Milestone","Age","Future Cost"])
-    st.table(df)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# ======================================================
-# SIP + SWP
-# ======================================================
+if st.session_state.page == "retirement":
+    st.button("⬅ Back", on_click=lambda: go("index"))
+    st.info("Retirement Planner Coming Soon")
 
 if st.session_state.page == "sip_swp":
-
     st.button("⬅ Back", on_click=lambda: go("index"))
-
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("SIP + SWP Planner")
-
-    sip = st.number_input("Monthly SIP (₹)", value=50000)
-    accumulation = st.number_input("Accumulation Years", value=10)
-    withdrawal_years = st.number_input("Withdrawal Years", value=15)
-    withdrawal = st.number_input("Monthly Withdrawal (₹)", value=150000)
-
-    corpus = sip_fv(sip, expected_return, accumulation)
-
-    balance = corpus
-    for _ in range(withdrawal_years):
-        balance = balance*(1+expected_return)-(withdrawal*12)
-
-    st.success(f"Corpus Built: ₹ {corpus:,.0f}")
-    st.info(f"Remaining Corpus: ₹ {balance:,.0f}")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# ======================================================
-# TERM INSURANCE
-# ======================================================
+    st.info("SIP + SWP Planner Coming Soon")
 
 if st.session_state.page == "term":
-
     st.button("⬅ Back", on_click=lambda: go("index"))
-
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("Term Insurance Calculator")
-
-    annual_income = st.number_input("Annual Income (₹)", value=2400000)
-    retirement_age = st.number_input("Retirement Age", 45, 75, 60)
-
-    years_left = retirement_age - entry_age
-    cover = annual_income * years_left
-
-    st.success(f"Recommended Term Cover: ₹ {cover:,.0f}")
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.info("Term Insurance Calculator Coming Soon")
 
 st.markdown("---")
 st.caption("Disclaimer: This planner is for illustration purposes only.")
