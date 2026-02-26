@@ -1,209 +1,123 @@
 import streamlit as st
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.pagesizes import letter
-from datetime import datetime
-import requests
+import numpy as np
 
-st.set_page_config(page_title="WealthTech Advisory Suite", layout="wide")
+st.set_page_config(page_title="Cashflow Retirement & Goal Planning", layout="wide")
 
-# =========================================================
-# CORE FINANCIAL FUNCTIONS
-# =========================================================
+# ==========================================================
+# FUNCTIONS
+# ==========================================================
 
-def future_value(present, inflation, years):
-    return present * (1 + inflation) ** years
+def future_value(amount, inflation, years):
+    return amount * (1 + inflation) ** years
 
-def monte_carlo_goal(target, years, mean=0.12, std=0.15, simulations=1000):
-    results = []
-    for _ in range(simulations):
-        value = target
-        for _ in range(years):
-            annual_return = np.random.normal(mean, std)
-            value = value * (1 + annual_return)
-        results.append(value)
-    return np.array(results)
-
-# =========================================================
-# MEAN-VARIANCE OPTIMIZER
-# =========================================================
-
-def mean_variance_optimizer(returns, risk_free=0.06):
-    cov_matrix = returns.cov()
-    mean_returns = returns.mean()
-
-    weights = np.ones(len(mean_returns)) / len(mean_returns)
-
-    portfolio_return = np.dot(weights, mean_returns)
-    portfolio_vol = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
-
-    sharpe = (portfolio_return - risk_free) / portfolio_vol
-
-    return weights, portfolio_return, portfolio_vol, sharpe
-
-# =========================================================
-# GLIDE PATH MODEL
-# =========================================================
-
-def glide_path_equity(age):
-    equity = max(100 - age, 30)
-    debt = 100 - equity
-    return {"Equity": equity, "Debt": debt}
-
-# =========================================================
-# NAV INTEGRATION (AMFI API)
-# =========================================================
-
-def get_nav(scheme_code):
-    try:
-        url = f"https://api.mfapi.in/mf/{scheme_code}"
-        response = requests.get(url)
-        data = response.json()
-        nav = data["data"][0]["nav"]
-        return nav
-    except:
-        return "NAV Fetch Error"
-
-# =========================================================
-# AI COMMENTARY (Rule-Based Smart Engine)
-# =========================================================
-
-def advisory_commentary(risk_score, glide_alloc, sharpe):
-    if risk_score > 8:
-        profile = "Aggressive"
-    elif risk_score > 5:
-        profile = "Balanced"
+def retirement_corpus(expense_at_ret, inflation, return_rate, retirement_years=30):
+    r = return_rate
+    g = inflation
+    
+    if r == g:
+        return expense_at_ret * retirement_years
     else:
-        profile = "Conservative"
+        return expense_at_ret * (1 - ((1 + g)/(1 + r))**retirement_years)/(r - g)
 
-    comment = f"""
-    Client Risk Profile: {profile}
+# ==========================================================
+# SIDEBAR INPUTS
+# ==========================================================
 
-    Recommended Equity Allocation: {glide_alloc['Equity']}%
+st.sidebar.header("Client Inputs")
 
-    Portfolio Sharpe Ratio: {round(sharpe,2)}
+current_age = st.sidebar.number_input("Current Age", 25, 70, 40)
+retirement_age = st.sidebar.number_input("Retirement Age", 45, 75, 60)
 
-    Advisory Insight:
-    Maintain disciplined allocation and rebalance annually.
-    Consider staggered investments to reduce volatility risk.
-    """
+annual_income = st.sidebar.number_input("Annual Income (₹)", value=3000000)
+income_growth = st.sidebar.number_input("Income Growth (%)", value=8.0)/100
 
-    return comment
+annual_expense = st.sidebar.number_input("Annual Expense (₹)", value=1200000)
+expense_growth = st.sidebar.number_input("Expense Growth (%)", value=6.0)/100
 
-# =========================================================
-# UI START
-# =========================================================
+post_ret_return = st.sidebar.number_input("Post Retirement Return (%)", value=7.0)/100
 
-st.title("WealthTech Institutional Advisory Suite")
+years_to_ret = retirement_age - current_age
 
-age = st.sidebar.number_input("Current Age", 25, 70, 35)
-inflation = st.sidebar.number_input("Inflation (%)", 3.0, 10.0, 6.0) / 100
-risk_score = st.sidebar.slider("Risk Score (1-12)", 1, 12, 7)
+# ==========================================================
+# PRE-RETIREMENT CASHFLOW
+# ==========================================================
 
-# =========================================================
-# MULTI GOAL MONTE CARLO
-# =========================================================
+st.title("Cashflow-Based Retirement & Goal Planning")
 
-st.header("Monte Carlo Simulation Per Goal")
+cashflow_data = []
+income = annual_income
+expense = annual_expense
 
-ret_goal = st.number_input("Retirement Goal Today (₹)", value=1200000)
-ret_years = st.number_input("Years to Retirement", value=25)
+for year in range(years_to_ret):
+    surplus = income - expense
+    cashflow_data.append([current_age + year, income, expense, surplus])
+    income *= (1 + income_growth)
+    expense *= (1 + expense_growth)
 
-child_goal = st.number_input("Child Goal Today (₹)", value=2500000)
-child_years = st.number_input("Years to Child Goal", value=10)
+df_cashflow = pd.DataFrame(cashflow_data, columns=["Age", "Income", "Expense", "Surplus"])
 
-vac_goal = st.number_input("Vacation Goal Today (₹)", value=500000)
-vac_years = st.number_input("Years to Vacation", value=5)
+st.subheader("Pre-Retirement Cashflow Projection")
+st.dataframe(df_cashflow)
 
-ret_future = future_value(ret_goal, inflation, ret_years)
-child_future = future_value(child_goal, inflation, child_years)
-vac_future = future_value(vac_goal, inflation, vac_years)
+# ==========================================================
+# RETIREMENT CALCULATION
+# ==========================================================
 
-ret_mc = monte_carlo_goal(ret_future, ret_years)
-child_mc = monte_carlo_goal(child_future, child_years)
-vac_mc = monte_carlo_goal(vac_future, vac_years)
+expense_at_retirement = future_value(annual_expense, expense_growth, years_to_ret)
 
-fig, ax = plt.subplots()
-ax.hist(ret_mc/10000000, bins=40, alpha=0.5, label="Retirement")
-ax.hist(child_mc/10000000, bins=40, alpha=0.5, label="Child")
-ax.hist(vac_mc/10000000, bins=40, alpha=0.5, label="Vacation")
-ax.legend()
-ax.set_title("Monte Carlo Distribution (₹ Cr)")
-st.pyplot(fig)
+required_corpus = retirement_corpus(
+    expense_at_retirement,
+    expense_growth,
+    post_ret_return,
+    retirement_years=30
+)
 
-# =========================================================
-# MEAN VARIANCE OPTIMIZER
-# =========================================================
+st.subheader("Retirement Planning Summary")
 
-st.header("Mean-Variance Portfolio Optimizer")
+col1, col2 = st.columns(2)
 
-returns_data = pd.DataFrame({
-    "Equity": np.random.normal(0.12, 0.18, 100),
-    "Debt": np.random.normal(0.07, 0.05, 100),
-    "Gold": np.random.normal(0.08, 0.12, 100)
-})
+col1.metric("Expense at Retirement", f"₹ {expense_at_retirement:,.0f}")
+col2.metric("Required Retirement Corpus", f"₹ {required_corpus:,.0f}")
 
-weights, port_return, port_vol, sharpe = mean_variance_optimizer(returns_data)
+# ==========================================================
+# GOAL PLANNING
+# ==========================================================
 
-st.write("Optimized Weights:", dict(zip(returns_data.columns, weights)))
-st.write("Expected Return:", round(port_return*100,2), "%")
-st.write("Portfolio Volatility:", round(port_vol*100,2), "%")
-st.write("Sharpe Ratio:", round(sharpe,2))
+st.subheader("Goal Planning")
 
-# =========================================================
-# GLIDE PATH
-# =========================================================
+# Child 1
+child1_cost = st.number_input("Child 1 Education Cost Today (₹)", value=2500000)
+child1_years = st.number_input("Years to Child 1 Goal", value=10)
 
-st.header("Glide Path Allocation")
+# Child 2
+child2_cost = st.number_input("Child 2 Education Cost Today (₹)", value=2000000)
+child2_years = st.number_input("Years to Child 2 Goal", value=15)
 
-glide_alloc = glide_path_equity(age)
-st.write(glide_alloc)
+# Vacation
+vacation_cost = st.number_input("Vacation Cost Today (₹)", value=500000)
+vacation_years = st.number_input("Years to Vacation", value=5)
 
-fig2, ax2 = plt.subplots()
-ax2.pie(glide_alloc.values(), labels=glide_alloc.keys(), autopct='%1.1f%%')
-st.pyplot(fig2)
+child1_future = future_value(child1_cost, expense_growth, child1_years)
+child2_future = future_value(child2_cost, expense_growth, child2_years)
+vacation_future = future_value(vacation_cost, expense_growth, vacation_years)
 
-# =========================================================
-# NAV FETCH
-# =========================================================
+st.write(f"Child 1 Required Corpus: ₹ {child1_future:,.0f}")
+st.write(f"Child 2 Required Corpus: ₹ {child2_future:,.0f}")
+st.write(f"Vacation Required Corpus: ₹ {vacation_future:,.0f}")
 
-st.header("Mutual Fund NAV Fetch")
+# ==========================================================
+# TOTAL REQUIRED CASHFLOW
+# ==========================================================
 
-scheme_code = st.text_input("Enter MF Scheme Code (e.g., 119551)")
-if scheme_code:
-    nav = get_nav(scheme_code)
-    st.write("Latest NAV:", nav)
+total_goal_requirement = (
+    required_corpus +
+    child1_future +
+    child2_future +
+    vacation_future
+)
 
-# =========================================================
-# AI COMMENTARY
-# =========================================================
+st.subheader("Total Capital Required")
 
-st.header("AI Advisory Commentary")
-
-comment = advisory_commentary(risk_score, glide_alloc, sharpe)
-st.text_area("Advisory Summary", comment, height=200)
-
-# =========================================================
-# IPS GENERATOR
-# =========================================================
-
-def generate_ips():
-    file_path = "IPS_Report.pdf"
-    doc = SimpleDocTemplate(file_path, pagesize=letter)
-    styles = getSampleStyleSheet()
-    elements = []
-
-    elements.append(Paragraph("Investment Policy Statement", styles["Heading1"]))
-    elements.append(Spacer(1, 12))
-    elements.append(Paragraph(comment, styles["Normal"]))
-
-    doc.build(elements)
-    return file_path
-
-if st.button("Generate Client IPS PDF"):
-    pdf = generate_ips()
-    with open(pdf, "rb") as f:
-        st.download_button("Download IPS", f, file_name="IPS_Report.pdf")
+st.metric("Total Required Corpus (All Goals + Retirement)", 
+          f"₹ {total_goal_requirement:,.0f}")
