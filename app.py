@@ -1,3 +1,10 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from financial_engine import (
+    retirement_corpus,
+    retirement_projection,
+    sequence_risk_projection
+)
 import streamlit as st
 from financial_engine import retirement_corpus, monte_carlo_simulation
 
@@ -23,6 +30,23 @@ col1, col2 = st.columns(2)
 
 col1.metric("Expense at Retirement (₹)", f"₹ {expense_at_ret/10000000:.2f} Cr")
 col2.metric("Required Corpus (₹)", f"₹ {corpus/10000000:.2f} Cr")
+st.subheader("Retirement Sustainability (30 Years)")
+
+projection_df = retirement_projection(
+    corpus,
+    expense_at_ret,
+    inflation,
+    post_ret
+)
+
+fig, ax = plt.subplots()
+ax.plot(projection_df["Year"], projection_df["Closing Corpus"])
+ax.set_title("Corpus Depletion Over Time")
+ax.set_xlabel("Year")
+ax.set_ylabel("Corpus")
+st.pyplot(fig)
+
+st.dataframe(projection_df)
 
 if st.button("Run Monte Carlo Simulation"):
     success_rate = monte_carlo_simulation(
