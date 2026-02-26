@@ -91,22 +91,6 @@ inflation = st.sidebar.number_input("Inflation (%)", 0.0, 15.0, 6.0)/100
 def future_value(pv, rate, years):
     return pv * (1 + rate) ** years
 
-def sip_required(target, rate, years):
-    if years <= 0:
-        return 0
-    return target / (((1 + rate) ** years - 1) / rate)
-
-def monte_carlo(target, sip, years, simulations=1000):
-    success = 0
-    for _ in range(simulations):
-        corpus = 0
-        for _ in range(years):
-            annual_return = np.random.normal(expected_return, 0.15)
-            corpus = (corpus + sip*12) * (1 + annual_return)
-        if corpus >= target:
-            success += 1
-    return success / simulations
-
 # =====================================================
 # HOME PAGE
 # =====================================================
@@ -116,6 +100,7 @@ if st.session_state.page == "home":
     col1, col2, col3 = st.columns(3)
 
     with col1:
+        st.button("SIP Calculator", on_click=lambda: go("sip"))
         st.button("Children Planner", on_click=lambda: go("children"))
 
     with col2:
@@ -126,13 +111,50 @@ if st.session_state.page == "home":
         st.button("Term Insurance", on_click=lambda: go("term"))
 
 # =====================================================
+# SIP CALCULATOR (NEW SEPARATE PAGE)
+# =====================================================
+
+if st.session_state.page == "sip":
+
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("SIP Calculator")
+
+    monthly_sip = st.number_input("Monthly SIP (₹)", value=5000)
+    years = st.number_input("Investment Years", value=10)
+    stepup = st.number_input("Annual Step-Up (%)", value=10.0)/100
+
+    corpus = 0
+    table = []
+
+    for y in range(years):
+        yearly_sip = monthly_sip * 12 * ((1 + stepup) ** y)
+        corpus = (corpus + yearly_sip) * (1 + expected_return)
+
+        table.append([
+            y+1,
+            entry_age+y,
+            round(yearly_sip,0),
+            round(corpus,0)
+        ])
+
+    df = pd.DataFrame(table, columns=[
+        "Year No.",
+        "Age",
+        "Yearly Investment (₹)",
+        "Year End Corpus (₹)"
+    ])
+
+    st.dataframe(df, use_container_width=True)
+    st.success(f"Final Corpus After {years} Years: ₹ {corpus:,.0f}")
+
+# =====================================================
 # CHILDREN PLANNER
 # =====================================================
 
 if st.session_state.page == "children":
 
     st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("Advanced Multi-Child Planning")
+    st.subheader("Children Planner")
 
     num_children = st.number_input("Number of Children", 1, 4, 1)
 
@@ -141,126 +163,57 @@ if st.session_state.page == "children":
     for i in range(num_children):
 
         st.markdown(f"## Child {i+1}")
+        child_age = st.number_input(f"Child {i+1} Age", 0, 18, 2, key=f"child{i}")
 
-        child_age = st.number_input(
-            f"Child {i+1} Current Age",
-            0, 18, 2,
-            key=f"child_age_{i}"
-        )
+        edu_age = st.number_input("Education Age", 15, 30, 18, key=f"edu{i}")
+        edu_cost = st.number_input("Education Cost Today (₹)", 2000000, key=f"ec{i}")
 
-        # EDUCATION
-        st.markdown("### 🎓 Education Goal")
+        years = edu_age - child_age
+        future_cost = future_value(edu_cost, inflation, years)
 
-        edu_age = st.number_input(
-            "Education Goal Age",
-            15, 30, 18,
-            key=f"edu_age_{i}"
-        )
+        summary.append([f"Child {i+1}", edu_age, round(future_cost,0)])
 
-        edu_cost = st.number_input(
-            "Education Cost Today (₹)",
-            value=2000000,
-            key=f"edu_cost_{i}"
-        )
-
-        edu_years = edu_age - child_age
-        edu_future = future_value(edu_cost, inflation, edu_years)
-        edu_sip = sip_required(edu_future, expected_return, edu_years)
-        edu_prob = monte_carlo(edu_future, edu_sip/12, edu_years)
-
-        # MARRIAGE
-        st.markdown("### 💍 Marriage Goal")
-
-        mar_age = st.number_input(
-            "Marriage Goal Age",
-            18, 35, 24,
-            key=f"mar_age_{i}"
-        )
-
-        mar_cost = st.number_input(
-            "Marriage Cost Today (₹)",
-            value=3000000,
-            key=f"mar_cost_{i}"
-        )
-
-        mar_years = mar_age - child_age
-        mar_future = future_value(mar_cost, inflation, mar_years)
-        mar_sip = sip_required(mar_future, expected_return, mar_years)
-        mar_prob = monte_carlo(mar_future, mar_sip/12, mar_years)
-
-        summary.append([
-            f"Child {i+1} - Education",
-            edu_age,
-            round(edu_future,0),
-            round(edu_sip/12,0),
-            f"{round(edu_prob*100,1)}%"
-        ])
-
-        summary.append([
-            f"Child {i+1} - Marriage",
-            mar_age,
-            round(mar_future,0),
-            round(mar_sip/12,0),
-            f"{round(mar_prob*100,1)}%"
-        ])
-
-    df = pd.DataFrame(summary, columns=[
-        "Goal",
-        "Goal Age",
-        "Future Cost (₹)",
-        "Required Monthly SIP (₹)",
-        "Success Probability"
-    ])
-
-    st.markdown("## Goal Summary")
+    df = pd.DataFrame(summary, columns=["Child", "Goal Age", "Future Cost (₹)"])
     st.dataframe(df, use_container_width=True)
 
 # =====================================================
-# SWP CALCULATOR (START & END AGE)
+# SWP CALCULATOR
 # =====================================================
 
 if st.session_state.page == "swp":
 
     st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("Advanced SWP Calculator")
+    st.subheader("SWP Calculator")
 
     corpus = st.number_input("Initial Corpus (₹)", value=10000000)
-    start_age = st.number_input("Withdrawal Start Age", 30, 80, 60)
-    end_age = st.number_input("Withdrawal End Age", 40, 95, 80)
     monthly_withdrawal = st.number_input("Monthly Withdrawal (₹)", value=100000)
+    years = st.number_input("Withdrawal Years", value=20)
 
     balance = corpus
     table = []
 
-    for age in range(entry_age, end_age + 1):
+    for y in range(years):
+        withdrawal = monthly_withdrawal * 12
+        balance = balance * (1 + expected_return) - withdrawal
 
-        if age < start_age:
-            withdrawal = 0
-            balance = balance * (1 + expected_return)
-        else:
-            withdrawal = monthly_withdrawal * 12
-            balance = balance * (1 + expected_return) - withdrawal
-
-        table.append([age, withdrawal, round(balance,0)])
-
-        if balance <= 0:
-            break
+        table.append([
+            y+1,
+            entry_age+y,
+            withdrawal,
+            round(balance,0)
+        ])
 
     df = pd.DataFrame(table, columns=[
+        "Year No.",
         "Age",
-        "Yearly Withdrawal",
-        "Year End Corpus"
+        "Yearly Withdrawal (₹)",
+        "Year End Corpus (₹)"
     ])
 
     st.dataframe(df, use_container_width=True)
 
-    if balance > 0:
-        st.success(f"Corpus Remaining at Age {end_age}: ₹ {balance:,.0f}")
-    else:
-        st.error("⚠ Corpus depleted before end age")
-
 # =====================================================
-# RETIREMENT PLANNER
+# RETIREMENT
 # =====================================================
 
 if st.session_state.page == "retirement":
@@ -295,4 +248,4 @@ if st.session_state.page == "term":
     st.success(f"Recommended Term Cover: ₹ {cover:,.0f}")
 
 st.markdown("---")
-st.caption("Monte Carlo based probability uses 15% volatility assumption. For illustration purposes only.")
+st.caption("For illustration purposes only.")
