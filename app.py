@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import sqlite3
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 
 
@@ -16,14 +15,14 @@ st.set_page_config(page_title="Wealth Advisory Platform", layout="wide")
 
 
 # ----------------------------
-# Database Setup
+# Database Setup (Multi-Client Storage)
 # ----------------------------
 conn = sqlite3.connect("clients.db", check_same_thread=False)
 c = conn.cursor()
 
 c.execute("""
 CREATE TABLE IF NOT EXISTS clients (
-    username TEXT,
+    name TEXT,
     age INTEGER,
     ret_age INTEGER,
     expense REAL,
@@ -32,29 +31,6 @@ CREATE TABLE IF NOT EXISTS clients (
 )
 """)
 conn.commit()
-
-
-# ----------------------------
-# Login System
-# ----------------------------
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-
-if not st.session_state.logged_in:
-    st.title("Client Login")
-
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-
-    if st.button("Login"):
-        if password == "wealth123":  # simple demo login
-            st.session_state.logged_in = True
-            st.session_state.username = username
-            st.success("Login Successful")
-        else:
-            st.error("Invalid Credentials")
-
-    st.stop()
 
 
 # ----------------------------
@@ -75,7 +51,6 @@ def retirement_corpus(expense_today, inflation, years_to_ret, post_ret_return, r
 
 def monte_carlo_distribution(initial_corpus, withdrawal, mean_return, std_dev, years=30, simulations=1000):
     results = []
-
     for _ in range(simulations):
         corpus = initial_corpus
         for year in range(years):
@@ -84,7 +59,6 @@ def monte_carlo_distribution(initial_corpus, withdrawal, mean_return, std_dev, y
             if corpus <= 0:
                 break
         results.append(corpus)
-
     return np.array(results)
 
 
@@ -92,7 +66,9 @@ def monte_carlo_distribution(initial_corpus, withdrawal, mean_return, std_dev, y
 # Sidebar Inputs
 # ----------------------------
 
-st.sidebar.header("Client Inputs")
+st.sidebar.header("Client Details")
+
+client_name = st.sidebar.text_input("Client Name")
 
 age = st.sidebar.number_input("Current Age", 25, 70, 40)
 ret_age = st.sidebar.number_input("Retirement Age", 40, 75, 60)
@@ -105,12 +81,12 @@ years_to_ret = ret_age - age
 corpus, expense_at_ret = retirement_corpus(expense, inflation, years_to_ret, post_ret)
 
 
-# Save client data
-if st.sidebar.button("Save Client"):
+# Save Client
+if st.sidebar.button("Save Client Data"):
     c.execute("INSERT INTO clients VALUES (?,?,?,?,?,?)",
-              (st.session_state.username, age, ret_age, expense, inflation, post_ret))
+              (client_name, age, ret_age, expense, inflation, post_ret))
     conn.commit()
-    st.sidebar.success("Client Saved")
+    st.sidebar.success("Client Saved Successfully")
 
 
 # ----------------------------
@@ -135,10 +111,10 @@ current_investment = st.number_input("Current Investment (₹)", value=0)
 gap = corpus - current_investment
 
 if gap > 0:
-    sip_required = gap / ((1 + 0.12) ** years_to_ret - 1) * 12
-    st.write(f"SIP Required (₹/month): ₹ {sip_required:,.0f}")
+    sip_required = gap / (((1 + 0.12) ** years_to_ret - 1) / 0.12)
+    st.write(f"Required Monthly SIP: ₹ {sip_required:,.0f}")
 else:
-    st.success("No SIP required. Goal funded.")
+    st.success("Goal Already Funded")
 
 
 # ----------------------------
@@ -187,6 +163,7 @@ def generate_pdf():
 
     elements.append(Paragraph("Wealth Advisory Report", styles["Heading1"]))
     elements.append(Spacer(1, 12))
+    elements.append(Paragraph(f"Client: {client_name}", styles["Normal"]))
     elements.append(Paragraph(f"Required Corpus: ₹ {corpus/10000000:.2f} Cr", styles["Normal"]))
     elements.append(Paragraph(f"Probability of Ruin: {round(prob_ruin*100,2)}%", styles["Normal"]))
 
