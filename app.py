@@ -21,7 +21,7 @@ st.subheader("Retirement Analysis")
 
 col1, col2 = st.columns(2)
 
-col1.metric("Expense at Retirement (₹)", f"₹ {corpus/10000000:.2f} Cr")
+col1.metric("Expense at Retirement (₹)", f"₹ {expense_at_ret/10000000:.2f} Cr")
 col2.metric("Required Corpus (₹)", f"₹ {corpus/10000000:.2f} Cr")
 
 if st.button("Run Monte Carlo Simulation"):
