@@ -2,170 +2,208 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import letter
+from datetime import datetime
+import requests
 
-st.set_page_config(page_title="Wealth Advisory Engine", layout="wide")
+st.set_page_config(page_title="WealthTech Advisory Suite", layout="wide")
 
-# ======================================================
+# =========================================================
 # CORE FINANCIAL FUNCTIONS
-# ======================================================
+# =========================================================
 
 def future_value(present, inflation, years):
     return present * (1 + inflation) ** years
 
-def goal_corpus(goal_amount_today, inflation, years):
-    return future_value(goal_amount_today, inflation, years)
+def monte_carlo_goal(target, years, mean=0.12, std=0.15, simulations=1000):
+    results = []
+    for _ in range(simulations):
+        value = target
+        for _ in range(years):
+            annual_return = np.random.normal(mean, std)
+            value = value * (1 + annual_return)
+        results.append(value)
+    return np.array(results)
 
-def sip_required(target, rate, years):
-    r = rate
-    n = years
-    return target / (((1 + r)**n - 1) / r)
+# =========================================================
+# MEAN-VARIANCE OPTIMIZER
+# =========================================================
 
-# ======================================================
-# RISK PROFILING
-# ======================================================
+def mean_variance_optimizer(returns, risk_free=0.06):
+    cov_matrix = returns.cov()
+    mean_returns = returns.mean()
 
-def calculate_risk_score(age, volatility_tolerance, investment_horizon, reaction_to_loss):
-    score = 0
-    
-    if age < 35:
-        score += 3
-    elif age < 50:
-        score += 2
+    weights = np.ones(len(mean_returns)) / len(mean_returns)
+
+    portfolio_return = np.dot(weights, mean_returns)
+    portfolio_vol = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
+
+    sharpe = (portfolio_return - risk_free) / portfolio_vol
+
+    return weights, portfolio_return, portfolio_vol, sharpe
+
+# =========================================================
+# GLIDE PATH MODEL
+# =========================================================
+
+def glide_path_equity(age):
+    equity = max(100 - age, 30)
+    debt = 100 - equity
+    return {"Equity": equity, "Debt": debt}
+
+# =========================================================
+# NAV INTEGRATION (AMFI API)
+# =========================================================
+
+def get_nav(scheme_code):
+    try:
+        url = f"https://api.mfapi.in/mf/{scheme_code}"
+        response = requests.get(url)
+        data = response.json()
+        nav = data["data"][0]["nav"]
+        return nav
+    except:
+        return "NAV Fetch Error"
+
+# =========================================================
+# AI COMMENTARY (Rule-Based Smart Engine)
+# =========================================================
+
+def advisory_commentary(risk_score, glide_alloc, sharpe):
+    if risk_score > 8:
+        profile = "Aggressive"
+    elif risk_score > 5:
+        profile = "Balanced"
     else:
-        score += 1
-    
-    score += volatility_tolerance
-    score += investment_horizon
-    score += reaction_to_loss
-    
-    return score
+        profile = "Conservative"
 
-def asset_allocation(score):
-    if score <= 5:
-        return {"Equity": 30, "Debt": 60, "Gold": 10}
-    elif score <= 8:
-        return {"Equity": 50, "Debt": 40, "Gold": 10}
-    elif score <= 11:
-        return {"Equity": 70, "Debt": 20, "Gold": 10}
-    else:
-        return {"Equity": 85, "Debt": 10, "Gold": 5}
+    comment = f"""
+    Client Risk Profile: {profile}
 
-# ======================================================
-# REBALANCING ENGINE
-# ======================================================
+    Recommended Equity Allocation: {glide_alloc['Equity']}%
 
-def rebalance_portfolio(current_allocation, target_allocation, total_value):
-    rebalance_plan = {}
-    for asset in target_allocation:
-        target_value = total_value * (target_allocation[asset] / 100)
-        current_value = total_value * (current_allocation.get(asset, 0) / 100)
-        rebalance_plan[asset] = target_value - current_value
-    return rebalance_plan
+    Portfolio Sharpe Ratio: {round(sharpe,2)}
 
-# ======================================================
-# SIDEBAR INPUTS
-# ======================================================
+    Advisory Insight:
+    Maintain disciplined allocation and rebalance annually.
+    Consider staggered investments to reduce volatility risk.
+    """
 
-st.sidebar.header("Client Inputs")
+    return comment
 
-age = st.sidebar.number_input("Current Age", 20, 70, 35)
-ret_age = st.sidebar.number_input("Retirement Age", 40, 75, 60)
+# =========================================================
+# UI START
+# =========================================================
 
+st.title("WealthTech Institutional Advisory Suite")
+
+age = st.sidebar.number_input("Current Age", 25, 70, 35)
 inflation = st.sidebar.number_input("Inflation (%)", 3.0, 10.0, 6.0) / 100
-expected_return = st.sidebar.number_input("Expected Return (%)", 5.0, 15.0, 12.0) / 100
+risk_score = st.sidebar.slider("Risk Score (1-12)", 1, 12, 7)
 
-# ======================================================
-# MULTI-GOAL PLANNING
-# ======================================================
+# =========================================================
+# MULTI GOAL MONTE CARLO
+# =========================================================
 
-st.title("Multi-Goal Wealth Planning Engine")
+st.header("Monte Carlo Simulation Per Goal")
 
-st.header("Goal Planning")
+ret_goal = st.number_input("Retirement Goal Today (₹)", value=1200000)
+ret_years = st.number_input("Years to Retirement", value=25)
 
-col1, col2, col3 = st.columns(3)
+child_goal = st.number_input("Child Goal Today (₹)", value=2500000)
+child_years = st.number_input("Years to Child Goal", value=10)
 
-# Retirement Goal
-ret_expense = col1.number_input("Retirement Annual Expense (₹)", value=1200000)
-ret_years = ret_age - age
-ret_corpus = goal_corpus(ret_expense, inflation, ret_years)
+vac_goal = st.number_input("Vacation Goal Today (₹)", value=500000)
+vac_years = st.number_input("Years to Vacation", value=5)
 
-# Child Education
-child_goal = col2.number_input("Child Education Goal Today (₹)", value=2500000)
-child_years = col2.number_input("Years to Child Goal", value=10)
-child_corpus = goal_corpus(child_goal, inflation, child_years)
+ret_future = future_value(ret_goal, inflation, ret_years)
+child_future = future_value(child_goal, inflation, child_years)
+vac_future = future_value(vac_goal, inflation, vac_years)
 
-# Vacation Goal
-vac_goal = col3.number_input("Vacation Goal Today (₹)", value=500000)
-vac_years = col3.number_input("Years to Vacation", value=5)
-vac_corpus = goal_corpus(vac_goal, inflation, vac_years)
+ret_mc = monte_carlo_goal(ret_future, ret_years)
+child_mc = monte_carlo_goal(child_future, child_years)
+vac_mc = monte_carlo_goal(vac_future, vac_years)
 
-st.subheader("Goal Corpus Required (Future Value)")
+fig, ax = plt.subplots()
+ax.hist(ret_mc/10000000, bins=40, alpha=0.5, label="Retirement")
+ax.hist(child_mc/10000000, bins=40, alpha=0.5, label="Child")
+ax.hist(vac_mc/10000000, bins=40, alpha=0.5, label="Vacation")
+ax.legend()
+ax.set_title("Monte Carlo Distribution (₹ Cr)")
+st.pyplot(fig)
 
-st.write(f"Retirement Corpus Needed: ₹ {ret_corpus:,.0f}")
-st.write(f"Child Education Corpus Needed: ₹ {child_corpus:,.0f}")
-st.write(f"Vacation Corpus Needed: ₹ {vac_corpus:,.0f}")
+# =========================================================
+# MEAN VARIANCE OPTIMIZER
+# =========================================================
 
-# SIP Calculations
-st.subheader("Required Monthly SIP for Each Goal")
+st.header("Mean-Variance Portfolio Optimizer")
 
-ret_sip = sip_required(ret_corpus, expected_return, ret_years) / 12
-child_sip = sip_required(child_corpus, expected_return, child_years) / 12
-vac_sip = sip_required(vac_corpus, expected_return, vac_years) / 12
+returns_data = pd.DataFrame({
+    "Equity": np.random.normal(0.12, 0.18, 100),
+    "Debt": np.random.normal(0.07, 0.05, 100),
+    "Gold": np.random.normal(0.08, 0.12, 100)
+})
 
-st.write(f"Retirement SIP: ₹ {ret_sip:,.0f}")
-st.write(f"Child SIP: ₹ {child_sip:,.0f}")
-st.write(f"Vacation SIP: ₹ {vac_sip:,.0f}")
+weights, port_return, port_vol, sharpe = mean_variance_optimizer(returns_data)
 
-# ======================================================
-# RISK PROFILING SECTION
-# ======================================================
+st.write("Optimized Weights:", dict(zip(returns_data.columns, weights)))
+st.write("Expected Return:", round(port_return*100,2), "%")
+st.write("Portfolio Volatility:", round(port_vol*100,2), "%")
+st.write("Sharpe Ratio:", round(sharpe,2))
 
-st.header("Risk Profiling Questionnaire")
+# =========================================================
+# GLIDE PATH
+# =========================================================
 
-volatility = st.slider("Comfort with Market Volatility (1 Low - 3 High)", 1, 3, 2)
-horizon = st.slider("Investment Horizon Comfort (1 Short - 3 Long)", 1, 3, 2)
-reaction = st.slider("Reaction to 20% Market Fall (1 Panic - 3 Buy More)", 1, 3, 2)
+st.header("Glide Path Allocation")
 
-risk_score = calculate_risk_score(age, volatility, horizon, reaction)
+glide_alloc = glide_path_equity(age)
+st.write(glide_alloc)
 
-st.write(f"Risk Score: {risk_score}")
+fig2, ax2 = plt.subplots()
+ax2.pie(glide_alloc.values(), labels=glide_alloc.keys(), autopct='%1.1f%%')
+st.pyplot(fig2)
 
-allocation = asset_allocation(risk_score)
+# =========================================================
+# NAV FETCH
+# =========================================================
 
-st.subheader("Recommended Asset Allocation")
+st.header("Mutual Fund NAV Fetch")
 
-st.write(allocation)
+scheme_code = st.text_input("Enter MF Scheme Code (e.g., 119551)")
+if scheme_code:
+    nav = get_nav(scheme_code)
+    st.write("Latest NAV:", nav)
 
-# Pie Chart
-fig1, ax1 = plt.subplots()
-ax1.pie(allocation.values(), labels=allocation.keys(), autopct='%1.1f%%')
-ax1.set_title("Recommended Allocation")
-st.pyplot(fig1)
+# =========================================================
+# AI COMMENTARY
+# =========================================================
 
-# ======================================================
-# PORTFOLIO REBALANCING
-# ======================================================
+st.header("AI Advisory Commentary")
 
-st.header("Portfolio Rebalancing Engine")
+comment = advisory_commentary(risk_score, glide_alloc, sharpe)
+st.text_area("Advisory Summary", comment, height=200)
 
-total_value = st.number_input("Current Portfolio Value (₹)", value=1000000)
+# =========================================================
+# IPS GENERATOR
+# =========================================================
 
-eq_current = st.slider("Current Equity %", 0, 100, 50)
-debt_current = st.slider("Current Debt %", 0, 100, 40)
-gold_current = st.slider("Current Gold %", 0, 100, 10)
+def generate_ips():
+    file_path = "IPS_Report.pdf"
+    doc = SimpleDocTemplate(file_path, pagesize=letter)
+    styles = getSampleStyleSheet()
+    elements = []
 
-current_alloc = {
-    "Equity": eq_current,
-    "Debt": debt_current,
-    "Gold": gold_current
-}
+    elements.append(Paragraph("Investment Policy Statement", styles["Heading1"]))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(comment, styles["Normal"]))
 
-rebalance = rebalance_portfolio(current_alloc, allocation, total_value)
+    doc.build(elements)
+    return file_path
 
-st.subheader("Rebalancing Action (₹)")
-
-for asset, value in rebalance.items():
-    if value > 0:
-        st.write(f"Buy {asset}: ₹ {value:,.0f}")
-    else:
-        st.write(f"Sell {asset}: ₹ {abs(value):,.0f}")
+if st.button("Generate Client IPS PDF"):
+    pdf = generate_ips()
+    with open(pdf, "rb") as f:
+        st.download_button("Download IPS", f, file_name="IPS_Report.pdf")
