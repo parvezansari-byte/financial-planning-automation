@@ -38,6 +38,20 @@ projection_df = retirement_projection(
     inflation,
     post_ret
 )
+st.subheader("Scenario Comparison")
+
+corpus_8, _ = retirement_corpus(expense, inflation, years_to_ret, 0.08)
+corpus_12, _ = retirement_corpus(expense, inflation, years_to_ret, 0.12)
+
+comparison = pd.DataFrame({
+    "Scenario": ["8% Return", "12% Return"],
+    "Required Corpus (₹ Cr)": [
+        corpus_8 / 10000000,
+        corpus_12 / 10000000
+    ]
+})
+
+st.table(comparison)
 
 fig, ax = plt.subplots()
 ax.plot(projection_df["Year"], projection_df["Closing Corpus"])
