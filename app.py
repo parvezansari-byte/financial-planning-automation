@@ -5,13 +5,11 @@ import numpy as np
 # =====================================================
 # PAGE CONFIG
 # =====================================================
-
 st.set_page_config(page_title="Freedom", layout="wide")
 
 # =====================================================
 # DARK FINTECH THEME
 # =====================================================
-
 st.markdown("""
 <style>
 .stApp { background-color: #0F172A; }
@@ -53,14 +51,12 @@ tbody tr:nth-child(even) { background-color: #111827 !important; }
 
 section[data-testid="stSidebar"] { background-color: #111827; }
 label { color: #CBD5E1 !important; }
-
 </style>
 """, unsafe_allow_html=True)
 
 # =====================================================
 # SESSION NAVIGATION
 # =====================================================
-
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
@@ -70,7 +66,6 @@ def go(page):
 # =====================================================
 # HEADER
 # =====================================================
-
 st.markdown('<div class="header-box">Freedom</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">Investment & Insurance Planner</div>', unsafe_allow_html=True)
 st.markdown("---")
@@ -78,7 +73,6 @@ st.markdown("---")
 # =====================================================
 # SIDEBAR GLOBAL INPUTS
 # =====================================================
-
 st.sidebar.header("Client Profile")
 entry_age = st.sidebar.number_input("Entry Age", 18, 65, 30)
 expected_return = st.sidebar.number_input("Expected Return (%)", 0.0, 20.0, 12.0)/100
@@ -87,14 +81,17 @@ inflation = st.sidebar.number_input("Inflation (%)", 0.0, 15.0, 6.0)/100
 # =====================================================
 # COMMON FUNCTIONS
 # =====================================================
-
 def future_value(pv, rate, years):
     return pv * (1 + rate) ** years
+
+def sip_required(target, rate, years):
+    if years <= 0:
+        return 0
+    return target / (((1 + rate) ** years - 1) / rate)
 
 # =====================================================
 # HOME PAGE
 # =====================================================
-
 if st.session_state.page == "home":
 
     col1, col2, col3 = st.columns(3)
@@ -111,9 +108,8 @@ if st.session_state.page == "home":
         st.button("Term Insurance", on_click=lambda: go("term"))
 
 # =====================================================
-# SIP CALCULATOR (NEW SEPARATE PAGE)
+# SIP CALCULATOR
 # =====================================================
-
 if st.session_state.page == "sip":
 
     st.button("⬅ Back", on_click=lambda: go("home"))
@@ -127,13 +123,13 @@ if st.session_state.page == "sip":
     table = []
 
     for y in range(years):
-        yearly_sip = monthly_sip * 12 * ((1 + stepup) ** y)
-        corpus = (corpus + yearly_sip) * (1 + expected_return)
+        yearly_investment = monthly_sip * 12 * ((1 + stepup) ** y)
+        corpus = (corpus + yearly_investment) * (1 + expected_return)
 
         table.append([
             y+1,
             entry_age+y,
-            round(yearly_sip,0),
+            round(yearly_investment,0),
             round(corpus,0)
         ])
 
@@ -145,16 +141,15 @@ if st.session_state.page == "sip":
     ])
 
     st.dataframe(df, use_container_width=True)
-    st.success(f"Final Corpus After {years} Years: ₹ {corpus:,.0f}")
+    st.success(f"Final Corpus: ₹ {corpus:,.0f}")
 
 # =====================================================
 # CHILDREN PLANNER
 # =====================================================
-
 if st.session_state.page == "children":
 
     st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("Children Planner")
+    st.subheader("Complete Education & Marriage Planning")
 
     num_children = st.number_input("Number of Children", 1, 4, 1)
 
@@ -163,48 +158,89 @@ if st.session_state.page == "children":
     for i in range(num_children):
 
         st.markdown(f"## Child {i+1}")
-        child_age = st.number_input(f"Child {i+1} Age", 0, 18, 2, key=f"child{i}")
 
-        edu_age = st.number_input("Education Age", 15, 30, 18, key=f"edu{i}")
-        edu_cost = st.number_input("Education Cost Today (₹)", 2000000, key=f"ec{i}")
+        child_age = st.number_input(
+            f"Child {i+1} Current Age",
+            0, 18, 2,
+            key=f"child_age_{i}"
+        )
 
-        years = edu_age - child_age
-        future_cost = future_value(edu_cost, inflation, years)
+        goals = {
+            "10th Standard": (14, 200000),
+            "12th Standard": (16, 300000),
+            "Graduation": (18, 2000000),
+            "Masters": (22, 3000000),
+            "Marriage": (24, 4000000)
+        }
 
-        summary.append([f"Child {i+1}", edu_age, round(future_cost,0)])
+        for goal_name, (default_age, default_cost) in goals.items():
 
-    df = pd.DataFrame(summary, columns=["Child", "Goal Age", "Future Cost (₹)"])
+            goal_age = st.number_input(
+                f"{goal_name} Age",
+                10, 35,
+                default_age,
+                key=f"{goal_name}_age_{i}"
+            )
+
+            goal_cost_today = st.number_input(
+                f"{goal_name} Cost Today (₹)",
+                value=default_cost,
+                key=f"{goal_name}_cost_{i}"
+            )
+
+            years_to_goal = goal_age - child_age
+
+            future_cost = future_value(goal_cost_today, inflation, years_to_goal)
+            required_sip = sip_required(future_cost, expected_return, years_to_goal)
+
+            summary.append([
+                f"Child {i+1} - {goal_name}",
+                goal_age,
+                round(future_cost,0),
+                round(required_sip/12,0)
+            ])
+
+    df = pd.DataFrame(summary, columns=[
+        "Goal",
+        "Goal Age",
+        "Future Cost (₹)",
+        "Required Monthly SIP (₹)"
+    ])
+
+    st.markdown("## Goal Summary")
     st.dataframe(df, use_container_width=True)
 
 # =====================================================
 # SWP CALCULATOR
 # =====================================================
-
 if st.session_state.page == "swp":
 
     st.button("⬅ Back", on_click=lambda: go("home"))
     st.subheader("SWP Calculator")
 
     corpus = st.number_input("Initial Corpus (₹)", value=10000000)
+    start_age = st.number_input("Withdrawal Start Age", 30, 80, 60)
+    end_age = st.number_input("Withdrawal End Age", 40, 95, 80)
     monthly_withdrawal = st.number_input("Monthly Withdrawal (₹)", value=100000)
-    years = st.number_input("Withdrawal Years", value=20)
 
     balance = corpus
     table = []
 
-    for y in range(years):
-        withdrawal = monthly_withdrawal * 12
-        balance = balance * (1 + expected_return) - withdrawal
+    for age in range(entry_age, end_age + 1):
 
-        table.append([
-            y+1,
-            entry_age+y,
-            withdrawal,
-            round(balance,0)
-        ])
+        if age < start_age:
+            withdrawal = 0
+            balance = balance * (1 + expected_return)
+        else:
+            withdrawal = monthly_withdrawal * 12
+            balance = balance * (1 + expected_return) - withdrawal
+
+        table.append([age, withdrawal, round(balance,0)])
+
+        if balance <= 0:
+            break
 
     df = pd.DataFrame(table, columns=[
-        "Year No.",
         "Age",
         "Yearly Withdrawal (₹)",
         "Year End Corpus (₹)"
@@ -212,10 +248,14 @@ if st.session_state.page == "swp":
 
     st.dataframe(df, use_container_width=True)
 
-# =====================================================
-# RETIREMENT
-# =====================================================
+    if balance > 0:
+        st.success(f"Corpus Remaining at Age {end_age}: ₹ {balance:,.0f}")
+    else:
+        st.error("⚠ Corpus depleted before end age")
 
+# =====================================================
+# RETIREMENT PLANNER
+# =====================================================
 if st.session_state.page == "retirement":
 
     st.button("⬅ Back", on_click=lambda: go("home"))
@@ -233,7 +273,6 @@ if st.session_state.page == "retirement":
 # =====================================================
 # TERM INSURANCE
 # =====================================================
-
 if st.session_state.page == "term":
 
     st.button("⬅ Back", on_click=lambda: go("home"))
