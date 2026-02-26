@@ -1,156 +1,162 @@
 import streamlit as st
-import pandas as pd
 import numpy as np
 
-st.set_page_config(page_title="Goal Feasibility Advisory Dashboard", layout="wide")
+st.set_page_config(page_title="Investment & Insurance Planner", layout="wide")
+
+# ======================================================
+# HEADER
+# ======================================================
+
+st.markdown(
+    """
+    <h1 style='text-align:center; background-color:#6A35A3; color:white; padding:15px;'>
+    Investment & Insurance Planner
+    </h1>
+    """,
+    unsafe_allow_html=True
+)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    client_name = st.text_input("Client Name", "Aditya")
+
+with col2:
+    distributor_name = st.text_input("Distributor Name", "Saurabh")
+
+st.markdown("---")
+
+# ======================================================
+# ENTRY AGE FILTER
+# ======================================================
+
+st.sidebar.header("Client Profile")
+
+entry_age = st.sidebar.number_input("Entry Age", 18, 65, 30)
+retirement_age = st.sidebar.number_input("Retirement Age", 45, 75, 60)
+expected_return = st.sidebar.number_input("Expected Return (%)", value=12.0)/100
+inflation = st.sidebar.number_input("Inflation (%)", value=6.0)/100
+
+years_to_ret = retirement_age - entry_age
+
+st.sidebar.markdown("---")
+selected_tool = st.sidebar.radio(
+    "Select Calculator",
+    [
+        "Lumpsum & SIP Calculator",
+        "SWP Calculator",
+        "SIP + SWP",
+        "Future Planning for Children",
+        "Retirement Planner",
+        "Term Insurance Calculator"
+    ]
+)
 
 # ======================================================
 # FUNCTIONS
 # ======================================================
 
-def future_value(amount, inflation, years):
-    return amount * (1 + inflation) ** years
+def future_value(amount, rate, years):
+    return amount * (1 + rate) ** years
 
-def sip_required(target, current_savings, return_rate, years):
-    r = return_rate
-    n = years
+def sip_future_value(sip, rate, years):
+    return sip * (((1 + rate)**years - 1) / rate)
 
-    if target <= current_savings:
-        return 0
-
-    gap = target - current_savings
-    sip = gap / (((1 + r)**n - 1) / r)
-    return sip
-
-def retirement_corpus(expense_at_ret, inflation, return_rate, retirement_years=30):
-    r = return_rate
-    g = inflation
-
-    if r == g:
-        return expense_at_ret * retirement_years
-    else:
-        return expense_at_ret * (1 - ((1 + g)/(1 + r))**retirement_years)/(r - g)
+def retirement_corpus(expense, inflation, years):
+    inflated_expense = future_value(expense, inflation, years)
+    return inflated_expense * 20
 
 # ======================================================
-# SIDEBAR INPUTS
+# CALCULATOR MODULES
 # ======================================================
 
-st.sidebar.header("Client Inputs")
+# 1️⃣ LUMPSUM & SIP
+if selected_tool == "Lumpsum & SIP Calculator":
+    st.header("Lumpsum & SIP Calculator")
 
-current_age = st.sidebar.number_input("Current Age", 25, 70, 40)
-retirement_age = st.sidebar.number_input("Retirement Age", 45, 75, 60)
+    investment = st.number_input("Lumpsum Investment (₹)", value=100000)
+    sip = st.number_input("Monthly SIP (₹)", value=10000)
+    years = st.number_input("Investment Years", value=10)
 
-annual_income = st.sidebar.number_input("Annual Income (₹)", value=3000000)
-annual_expense = st.sidebar.number_input("Annual Expense (₹)", value=1200000)
+    lumpsum_value = future_value(investment, expected_return, years)
+    sip_value = sip_future_value(sip, expected_return, years)
 
-income_growth = st.sidebar.number_input("Income Growth (%)", value=8.0)/100
-inflation = st.sidebar.number_input("Inflation (%)", value=6.0)/100
-return_rate = st.sidebar.number_input("Expected Return (%)", value=12.0)/100
-post_ret_return = st.sidebar.number_input("Post Retirement Return (%)", value=7.0)/100
+    total_value = lumpsum_value + sip_value
 
-years_to_ret = retirement_age - current_age
+    st.success(f"Total Future Value: ₹ {total_value:,.0f}")
 
-# ======================================================
-# SURPLUS CALCULATION
-# ======================================================
+# 2️⃣ SWP
+elif selected_tool == "SWP Calculator":
+    st.header("SWP Calculator")
 
-annual_surplus = annual_income - annual_expense
-monthly_surplus = annual_surplus / 12
+    corpus = st.number_input("Initial Corpus (₹)", value=5000000)
+    withdrawal = st.number_input("Monthly Withdrawal (₹)", value=30000)
+    years = st.number_input("Withdrawal Years", value=20)
 
-# ======================================================
-# RETIREMENT
-# ======================================================
+    remaining = corpus
+    for _ in range(years):
+        remaining = remaining * (1 + expected_return) - (withdrawal * 12)
 
-st.title("Goal Feasibility Dashboard")
+    st.success(f"Remaining Corpus After {years} Years: ₹ {remaining:,.0f}")
 
-expense_at_ret = future_value(annual_expense, inflation, years_to_ret)
+# 3️⃣ SIP + SWP
+elif selected_tool == "SIP + SWP":
+    st.header("SIP Accumulation + SWP Distribution")
 
-ret_corpus = retirement_corpus(
-    expense_at_ret,
-    inflation,
-    post_ret_return
-)
+    sip = st.number_input("Monthly SIP (₹)", value=15000)
+    accumulation_years = st.number_input("Accumulation Years", value=15)
+    withdrawal_years = st.number_input("Withdrawal Years", value=20)
+    withdrawal = st.number_input("Monthly Withdrawal (₹)", value=50000)
 
-ret_current = st.number_input("Current Retirement Savings (₹)", value=0)
-ret_sip = sip_required(ret_corpus, ret_current, return_rate, years_to_ret)
+    corpus = sip_future_value(sip, expected_return, accumulation_years)
 
-# ======================================================
-# CHILD 1
-# ======================================================
+    remaining = corpus
+    for _ in range(withdrawal_years):
+        remaining = remaining * (1 + expected_return) - (withdrawal * 12)
 
-child1_today = st.number_input("Child 1 Cost Today (₹)", value=2500000)
-child1_years = st.number_input("Years to Child 1 Goal", value=10)
-child1_current = st.number_input("Current Child 1 Savings (₹)", value=0)
+    st.success(f"Corpus Built: ₹ {corpus:,.0f}")
+    st.info(f"Remaining After Withdrawal: ₹ {remaining:,.0f}")
 
-child1_future = future_value(child1_today, inflation, child1_years)
-child1_sip = sip_required(child1_future, child1_current, return_rate, child1_years)
+# 4️⃣ CHILD FUTURE PLANNING
+elif selected_tool == "Future Planning for Children":
+    st.header("Child Future Planning")
 
-# ======================================================
-# CHILD 2
-# ======================================================
+    child_cost_today = st.number_input("Education Cost Today (₹)", value=2500000)
+    years = st.number_input("Years to Goal", value=10)
+    current_savings = st.number_input("Current Savings (₹)", value=0)
 
-child2_today = st.number_input("Child 2 Cost Today (₹)", value=2000000)
-child2_years = st.number_input("Years to Child 2 Goal", value=15)
-child2_current = st.number_input("Current Child 2 Savings (₹)", value=0)
+    future_cost = future_value(child_cost_today, inflation, years)
+    gap = future_cost - current_savings
 
-child2_future = future_value(child2_today, inflation, child2_years)
-child2_sip = sip_required(child2_future, child2_current, return_rate, child2_years)
+    sip_required = gap / (((1 + expected_return)**years - 1) / expected_return)
 
-# ======================================================
-# VACATION
-# ======================================================
+    st.success(f"Future Cost: ₹ {future_cost:,.0f}")
+    st.warning(f"Required Monthly SIP: ₹ {sip_required/12:,.0f}")
 
-vac_today = st.number_input("Vacation Cost Today (₹)", value=500000)
-vac_years = st.number_input("Years to Vacation", value=5)
-vac_current = st.number_input("Current Vacation Savings (₹)", value=0)
+# 5️⃣ RETIREMENT PLANNER
+elif selected_tool == "Retirement Planner":
+    st.header("Retirement Planner")
 
-vac_future = future_value(vac_today, inflation, vac_years)
-vac_sip = sip_required(vac_future, vac_current, return_rate, vac_years)
+    annual_expense = st.number_input("Annual Expense Today (₹)", value=1000000)
 
-# ======================================================
-# TOTAL SIP
-# ======================================================
+    corpus_needed = retirement_corpus(annual_expense, inflation, years_to_ret)
 
-total_monthly_sip = (ret_sip + child1_sip + child2_sip + vac_sip) / 12
+    st.success(f"Required Retirement Corpus: ₹ {corpus_needed:,.0f}")
 
-# ======================================================
-# FEASIBILITY LOGIC
-# ======================================================
+# 6️⃣ TERM INSURANCE
+elif selected_tool == "Term Insurance Calculator":
+    st.header("Term Insurance Calculator")
 
-st.subheader("Financial Health Overview")
+    annual_expense = st.number_input("Annual Family Expense (₹)", value=800000)
+    income_years = retirement_age - entry_age
 
-col1, col2 = st.columns(2)
+    cover_needed = annual_expense * income_years
 
-col1.metric("Monthly Surplus Available", f"₹ {monthly_surplus:,.0f}")
-col2.metric("Total Monthly SIP Required", f"₹ {total_monthly_sip:,.0f}")
-
-coverage_ratio = monthly_surplus / total_monthly_sip if total_monthly_sip > 0 else 0
-
-if total_monthly_sip == 0:
-    st.success("All Goals Fully Funded 🎉")
-else:
-    if coverage_ratio >= 1:
-        st.success("Goals Feasible ✅")
-    elif coverage_ratio >= 0.7:
-        st.warning("Partially Feasible ⚠️ — Optimization Needed")
-    else:
-        st.error("Goals Not Feasible ❌ — Major Gap Exists")
+    st.success(f"Recommended Term Cover: ₹ {cover_needed:,.0f}")
 
 # ======================================================
-# GOAL LEVEL STATUS
+# FOOTER
 # ======================================================
 
-st.subheader("Goal-wise Feasibility")
-
-def goal_status(sip):
-    if sip/12 <= monthly_surplus:
-        return "Feasible"
-    elif sip/12 <= monthly_surplus * 1.3:
-        return "Tight"
-    else:
-        return "Not Feasible"
-
-st.write(f"Retirement: {goal_status(ret_sip)}")
-st.write(f"Child 1: {goal_status(child1_sip)}")
-st.write(f"Child 2: {goal_status(child2_sip)}")
-st.write(f"Vacation: {goal_status(vac_sip)}")
+st.markdown("---")
+st.caption("Disclaimer: Results are illustrative. Consult a financial advisor before investing.")
