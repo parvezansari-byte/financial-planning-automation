@@ -2,223 +2,170 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import sqlite3
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.pagesizes import letter
-from datetime import datetime
-import os
 
-st.set_page_config(page_title="Wealth Advisory Platform", layout="wide")
+st.set_page_config(page_title="Wealth Advisory Engine", layout="wide")
 
 # ======================================================
-# DATABASE INITIALIZATION (Cloud Safe)
-# ======================================================
-
-def init_db():
-    conn = sqlite3.connect("clients.db", check_same_thread=False)
-    c = conn.cursor()
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS clients (
-            name TEXT,
-            age INTEGER,
-            ret_age INTEGER,
-            expense REAL,
-            inflation REAL,
-            return_rate REAL
-        )
-    """)
-    conn.commit()
-    return conn
-
-conn = init_db()
-
-# ======================================================
-# FINANCIAL FUNCTIONS
+# CORE FINANCIAL FUNCTIONS
 # ======================================================
 
 def future_value(present, inflation, years):
     return present * (1 + inflation) ** years
 
-def retirement_corpus(expense_today, inflation, years_to_ret, post_ret_return, retirement_years=30):
-    expense_at_ret = future_value(expense_today, inflation, years_to_ret)
-    r = post_ret_return
-    g = inflation
+def goal_corpus(goal_amount_today, inflation, years):
+    return future_value(goal_amount_today, inflation, years)
 
-    if r == g:
-        corpus = expense_at_ret * retirement_years
+def sip_required(target, rate, years):
+    r = rate
+    n = years
+    return target / (((1 + r)**n - 1) / r)
+
+# ======================================================
+# RISK PROFILING
+# ======================================================
+
+def calculate_risk_score(age, volatility_tolerance, investment_horizon, reaction_to_loss):
+    score = 0
+    
+    if age < 35:
+        score += 3
+    elif age < 50:
+        score += 2
     else:
-        corpus = expense_at_ret * (1 - ((1 + g)/(1 + r))**retirement_years)/(r - g)
+        score += 1
+    
+    score += volatility_tolerance
+    score += investment_horizon
+    score += reaction_to_loss
+    
+    return score
 
-    return corpus, expense_at_ret
-
-def monte_carlo_distribution(initial_corpus, withdrawal, mean_return=0.10, std_dev=0.15, years=30, simulations=1000):
-    results = []
-    for _ in range(simulations):
-        corpus = initial_corpus
-        for _ in range(years):
-            annual_return = np.random.normal(mean_return, std_dev)
-            corpus = corpus * (1 + annual_return) - withdrawal
-            if corpus <= 0:
-                break
-        results.append(corpus)
-    return np.array(results)
-
-# ======================================================
-# INDIA TAX ENGINE
-# ======================================================
-
-def india_equity_tax(purchase, sale, holding_days):
-    gain = sale - purchase
-
-    if gain <= 0:
-        return gain, 0, "No Gain"
-
-    if holding_days < 365:
-        tax = gain * 0.15
-        return gain, tax, "STCG (15%)"
+def asset_allocation(score):
+    if score <= 5:
+        return {"Equity": 30, "Debt": 60, "Gold": 10}
+    elif score <= 8:
+        return {"Equity": 50, "Debt": 40, "Gold": 10}
+    elif score <= 11:
+        return {"Equity": 70, "Debt": 20, "Gold": 10}
     else:
-        exempt = 100000
-        taxable = max(gain - exempt, 0)
-        tax = taxable * 0.10
-        return gain, tax, "LTCG (10% above ₹1L)"
+        return {"Equity": 85, "Debt": 10, "Gold": 5}
 
 # ======================================================
-# XIRR CALCULATOR
+# REBALANCING ENGINE
 # ======================================================
 
-def xirr(cashflows, dates):
-    def npv(rate):
-        return sum([cf / (1 + rate) ** ((dates[i] - dates[0]).days / 365)
-                    for i, cf in enumerate(cashflows)])
-
-    rate = 0.1
-    for _ in range(100):
-        rate -= npv(rate) / 100000
-    return rate
+def rebalance_portfolio(current_allocation, target_allocation, total_value):
+    rebalance_plan = {}
+    for asset in target_allocation:
+        target_value = total_value * (target_allocation[asset] / 100)
+        current_value = total_value * (current_allocation.get(asset, 0) / 100)
+        rebalance_plan[asset] = target_value - current_value
+    return rebalance_plan
 
 # ======================================================
-# SIDEBAR – CLIENT MANAGEMENT
+# SIDEBAR INPUTS
 # ======================================================
 
-st.sidebar.header("Client Management")
+st.sidebar.header("Client Inputs")
 
-try:
-    clients_df = pd.read_sql("SELECT DISTINCT name FROM clients", conn)
-    client_list = clients_df["name"].tolist()
-except:
-    client_list = []
+age = st.sidebar.number_input("Current Age", 20, 70, 35)
+ret_age = st.sidebar.number_input("Retirement Age", 40, 75, 60)
 
-selected = st.sidebar.selectbox("Load Client", ["New Client"] + client_list)
-
-if selected != "New Client":
-    data = pd.read_sql(f"SELECT * FROM clients WHERE name = '{selected}'", conn)
-    age = int(data["age"].values[0])
-    ret_age = int(data["ret_age"].values[0])
-    expense = float(data["expense"].values[0])
-    inflation = float(data["inflation"].values[0])
-    post_ret = float(data["return_rate"].values[0])
-else:
-    age = st.sidebar.number_input("Current Age", 25, 70, 40)
-    ret_age = st.sidebar.number_input("Retirement Age", 40, 75, 60)
-    expense = st.sidebar.number_input("Annual Expense (₹)", value=1200000)
-    inflation = st.sidebar.number_input("Inflation (%)", value=6.0) / 100
-    post_ret = st.sidebar.number_input("Return (%)", value=7.0) / 100
-
-client_name = st.sidebar.text_input("Client Name")
-
-if st.sidebar.button("Save Client"):
-    conn.execute("INSERT INTO clients VALUES (?,?,?,?,?,?)",
-                 (client_name, age, ret_age, expense, inflation, post_ret))
-    conn.commit()
-    st.sidebar.success("Client Saved")
+inflation = st.sidebar.number_input("Inflation (%)", 3.0, 10.0, 6.0) / 100
+expected_return = st.sidebar.number_input("Expected Return (%)", 5.0, 15.0, 12.0) / 100
 
 # ======================================================
-# CALCULATIONS
+# MULTI-GOAL PLANNING
 # ======================================================
 
-years_to_ret = ret_age - age
-corpus, expense_at_ret = retirement_corpus(expense, inflation, years_to_ret, post_ret)
+st.title("Multi-Goal Wealth Planning Engine")
+
+st.header("Goal Planning")
+
+col1, col2, col3 = st.columns(3)
+
+# Retirement Goal
+ret_expense = col1.number_input("Retirement Annual Expense (₹)", value=1200000)
+ret_years = ret_age - age
+ret_corpus = goal_corpus(ret_expense, inflation, ret_years)
+
+# Child Education
+child_goal = col2.number_input("Child Education Goal Today (₹)", value=2500000)
+child_years = col2.number_input("Years to Child Goal", value=10)
+child_corpus = goal_corpus(child_goal, inflation, child_years)
+
+# Vacation Goal
+vac_goal = col3.number_input("Vacation Goal Today (₹)", value=500000)
+vac_years = col3.number_input("Years to Vacation", value=5)
+vac_corpus = goal_corpus(vac_goal, inflation, vac_years)
+
+st.subheader("Goal Corpus Required (Future Value)")
+
+st.write(f"Retirement Corpus Needed: ₹ {ret_corpus:,.0f}")
+st.write(f"Child Education Corpus Needed: ₹ {child_corpus:,.0f}")
+st.write(f"Vacation Corpus Needed: ₹ {vac_corpus:,.0f}")
+
+# SIP Calculations
+st.subheader("Required Monthly SIP for Each Goal")
+
+ret_sip = sip_required(ret_corpus, expected_return, ret_years) / 12
+child_sip = sip_required(child_corpus, expected_return, child_years) / 12
+vac_sip = sip_required(vac_corpus, expected_return, vac_years) / 12
+
+st.write(f"Retirement SIP: ₹ {ret_sip:,.0f}")
+st.write(f"Child SIP: ₹ {child_sip:,.0f}")
+st.write(f"Vacation SIP: ₹ {vac_sip:,.0f}")
 
 # ======================================================
-# DASHBOARD
+# RISK PROFILING SECTION
 # ======================================================
 
-st.title("Institutional Wealth Advisory Dashboard")
+st.header("Risk Profiling Questionnaire")
 
-col1, col2 = st.columns(2)
-col1.metric("Expense at Retirement", f"₹ {expense_at_ret/10000000:.2f} Cr")
-col2.metric("Required Corpus", f"₹ {corpus/10000000:.2f} Cr")
+volatility = st.slider("Comfort with Market Volatility (1 Low - 3 High)", 1, 3, 2)
+horizon = st.slider("Investment Horizon Comfort (1 Short - 3 Long)", 1, 3, 2)
+reaction = st.slider("Reaction to 20% Market Fall (1 Panic - 3 Buy More)", 1, 3, 2)
 
-# ======================================================
-# MONTE CARLO
-# ======================================================
+risk_score = calculate_risk_score(age, volatility, horizon, reaction)
 
-st.subheader("Monte Carlo Simulation")
+st.write(f"Risk Score: {risk_score}")
 
-results = monte_carlo_distribution(corpus, expense_at_ret)
-fig, ax = plt.subplots()
-ax.hist(results/10000000, bins=50)
-ax.set_title("Final Corpus Distribution (₹ Cr)")
-st.pyplot(fig)
+allocation = asset_allocation(risk_score)
 
-prob_ruin = np.sum(results <= 0) / len(results)
-st.write(f"Probability of Ruin: {round(prob_ruin*100,2)}%")
+st.subheader("Recommended Asset Allocation")
 
-# ======================================================
-# PORTFOLIO UPLOAD + XIRR
-# ======================================================
+st.write(allocation)
 
-st.subheader("Portfolio Upload (CSV: Date, Cashflow)")
-
-file = st.file_uploader("Upload CSV", type="csv")
-
-if file:
-    df = pd.read_csv(file)
-    df["Date"] = pd.to_datetime(df["Date"])
-    rate = xirr(df["Cashflow"].tolist(), df["Date"].tolist())
-    st.success(f"Portfolio XIRR: {round(rate*100,2)}%")
+# Pie Chart
+fig1, ax1 = plt.subplots()
+ax1.pie(allocation.values(), labels=allocation.keys(), autopct='%1.1f%%')
+ax1.set_title("Recommended Allocation")
+st.pyplot(fig1)
 
 # ======================================================
-# INDIA TAX ENGINE UI
+# PORTFOLIO REBALANCING
 # ======================================================
 
-st.subheader("India Equity Tax Calculator")
+st.header("Portfolio Rebalancing Engine")
 
-purchase = st.number_input("Purchase Value", value=1000000)
-sale = st.number_input("Sale Value", value=1500000)
-holding = st.number_input("Holding Days", value=400)
+total_value = st.number_input("Current Portfolio Value (₹)", value=1000000)
 
-gain, tax, tax_type = india_equity_tax(purchase, sale, holding)
+eq_current = st.slider("Current Equity %", 0, 100, 50)
+debt_current = st.slider("Current Debt %", 0, 100, 40)
+gold_current = st.slider("Current Gold %", 0, 100, 10)
 
-st.write(f"Capital Gain: ₹ {gain:,.0f}")
-st.write(f"Tax Type: {tax_type}")
-st.write(f"Tax Payable: ₹ {tax:,.0f}")
+current_alloc = {
+    "Equity": eq_current,
+    "Debt": debt_current,
+    "Gold": gold_current
+}
 
-# ======================================================
-# PROFESSIONAL PDF GENERATOR
-# ======================================================
+rebalance = rebalance_portfolio(current_alloc, allocation, total_value)
 
-def generate_pdf():
-    file_path = "wealth_report.pdf"
-    doc = SimpleDocTemplate(file_path, pagesize=letter)
-    styles = getSampleStyleSheet()
-    elements = []
+st.subheader("Rebalancing Action (₹)")
 
-    elements.append(Paragraph("Wealth Advisory Report", styles["Heading1"]))
-    elements.append(Spacer(1, 12))
-    elements.append(Paragraph(f"Required Corpus: ₹ {corpus/10000000:.2f} Cr", styles["Normal"]))
-    elements.append(Paragraph(f"Probability of Ruin: {round(prob_ruin*100,2)}%", styles["Normal"]))
-
-    chart_path = "chart.png"
-    fig.savefig(chart_path)
-    elements.append(Spacer(1, 12))
-    elements.append(Image(chart_path, width=400, height=250))
-
-    doc.build(elements)
-    return file_path
-
-if st.button("Generate Professional PDF"):
-    pdf_path = generate_pdf()
-    with open(pdf_path, "rb") as f:
-        st.download_button("Download Report", f, file_name="Wealth_Report.pdf")
+for asset, value in rebalance.items():
+    if value > 0:
+        st.write(f"Buy {asset}: ₹ {value:,.0f}")
+    else:
+        st.write(f"Sell {asset}: ₹ {abs(value):,.0f}")
