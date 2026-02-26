@@ -6,35 +6,36 @@ import sqlite3
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import letter
-from reportlab.lib import colors
 from datetime import datetime
-from dateutil import relativedelta
-import tempfile
 import os
 
-st.set_page_config(page_title="Institutional Wealth Advisory Platform", layout="wide")
+st.set_page_config(page_title="Wealth Advisory Platform", layout="wide")
 
-# ----------------------------
-# Database
-# ----------------------------
-conn = sqlite3.connect("clients.db", check_same_thread=False)
-c = conn.cursor()
+# ======================================================
+# DATABASE INITIALIZATION (Cloud Safe)
+# ======================================================
 
-c.execute("""
-CREATE TABLE IF NOT EXISTS clients (
-    name TEXT,
-    age INTEGER,
-    ret_age INTEGER,
-    expense REAL,
-    inflation REAL,
-    return_rate REAL
-)
-""")
-conn.commit()
+def init_db():
+    conn = sqlite3.connect("clients.db", check_same_thread=False)
+    c = conn.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS clients (
+            name TEXT,
+            age INTEGER,
+            ret_age INTEGER,
+            expense REAL,
+            inflation REAL,
+            return_rate REAL
+        )
+    """)
+    conn.commit()
+    return conn
 
-# ----------------------------
-# Financial Logic
-# ----------------------------
+conn = init_db()
+
+# ======================================================
+# FINANCIAL FUNCTIONS
+# ======================================================
 
 def future_value(present, inflation, years):
     return present * (1 + inflation) ** years
@@ -43,14 +44,19 @@ def retirement_corpus(expense_today, inflation, years_to_ret, post_ret_return, r
     expense_at_ret = future_value(expense_today, inflation, years_to_ret)
     r = post_ret_return
     g = inflation
-    corpus = expense_at_ret * (1 - ((1 + g) / (1 + r)) ** retirement_years) / (r - g)
+
+    if r == g:
+        corpus = expense_at_ret * retirement_years
+    else:
+        corpus = expense_at_ret * (1 - ((1 + g)/(1 + r))**retirement_years)/(r - g)
+
     return corpus, expense_at_ret
 
-def monte_carlo_distribution(initial_corpus, withdrawal, mean_return, std_dev, years=30, simulations=1000):
+def monte_carlo_distribution(initial_corpus, withdrawal, mean_return=0.10, std_dev=0.15, years=30, simulations=1000):
     results = []
     for _ in range(simulations):
         corpus = initial_corpus
-        for year in range(years):
+        for _ in range(years):
             annual_return = np.random.normal(mean_return, std_dev)
             corpus = corpus * (1 + annual_return) - withdrawal
             if corpus <= 0:
@@ -58,27 +64,28 @@ def monte_carlo_distribution(initial_corpus, withdrawal, mean_return, std_dev, y
         results.append(corpus)
     return np.array(results)
 
-# ----------------------------
-# India Tax Engine (Equity)
-# ----------------------------
+# ======================================================
+# INDIA TAX ENGINE
+# ======================================================
 
-def india_equity_tax(purchase_price, sale_price, holding_days):
-    gain = sale_price - purchase_price
+def india_equity_tax(purchase, sale, holding_days):
+    gain = sale - purchase
+
+    if gain <= 0:
+        return gain, 0, "No Gain"
 
     if holding_days < 365:
-        tax = gain * 0.15  # STCG 15%
-        tax_type = "STCG (15%)"
+        tax = gain * 0.15
+        return gain, tax, "STCG (15%)"
     else:
         exempt = 100000
-        taxable_gain = max(gain - exempt, 0)
-        tax = taxable_gain * 0.10
-        tax_type = "LTCG (10% above ₹1L)"
+        taxable = max(gain - exempt, 0)
+        tax = taxable * 0.10
+        return gain, tax, "LTCG (10% above ₹1L)"
 
-    return gain, tax, tax_type
-
-# ----------------------------
-# XIRR Calculator
-# ----------------------------
+# ======================================================
+# XIRR CALCULATOR
+# ======================================================
 
 def xirr(cashflows, dates):
     def npv(rate):
@@ -90,21 +97,22 @@ def xirr(cashflows, dates):
         rate -= npv(rate) / 100000
     return rate
 
-# ----------------------------
-# Sidebar Inputs
-# ----------------------------
+# ======================================================
+# SIDEBAR – CLIENT MANAGEMENT
+# ======================================================
 
 st.sidebar.header("Client Management")
 
-clients = pd.read_sql("SELECT DISTINCT name FROM clients", conn)
+try:
+    clients_df = pd.read_sql("SELECT DISTINCT name FROM clients", conn)
+    client_list = clients_df["name"].tolist()
+except:
+    client_list = []
 
-selected_client = st.sidebar.selectbox(
-    "Load Client",
-    ["New Client"] + clients["name"].tolist()
-)
+selected = st.sidebar.selectbox("Load Client", ["New Client"] + client_list)
 
-if selected_client != "New Client":
-    data = pd.read_sql(f"SELECT * FROM clients WHERE name='{selected_client}'", conn)
+if selected != "New Client":
+    data = pd.read_sql(f"SELECT * FROM clients WHERE name = '{selected}'", conn)
     age = int(data["age"].values[0])
     ret_age = int(data["ret_age"].values[0])
     expense = float(data["expense"].values[0])
@@ -120,17 +128,21 @@ else:
 client_name = st.sidebar.text_input("Client Name")
 
 if st.sidebar.button("Save Client"):
-    c.execute("INSERT INTO clients VALUES (?,?,?,?,?,?)",
-              (client_name, age, ret_age, expense, inflation, post_ret))
+    conn.execute("INSERT INTO clients VALUES (?,?,?,?,?,?)",
+                 (client_name, age, ret_age, expense, inflation, post_ret))
     conn.commit()
     st.sidebar.success("Client Saved")
+
+# ======================================================
+# CALCULATIONS
+# ======================================================
 
 years_to_ret = ret_age - age
 corpus, expense_at_ret = retirement_corpus(expense, inflation, years_to_ret, post_ret)
 
-# ----------------------------
-# Dashboard
-# ----------------------------
+# ======================================================
+# DASHBOARD
+# ======================================================
 
 st.title("Institutional Wealth Advisory Dashboard")
 
@@ -138,13 +150,13 @@ col1, col2 = st.columns(2)
 col1.metric("Expense at Retirement", f"₹ {expense_at_ret/10000000:.2f} Cr")
 col2.metric("Required Corpus", f"₹ {corpus/10000000:.2f} Cr")
 
-# ----------------------------
-# Monte Carlo Histogram
-# ----------------------------
+# ======================================================
+# MONTE CARLO
+# ======================================================
 
-st.subheader("Monte Carlo Distribution")
+st.subheader("Monte Carlo Simulation")
 
-results = monte_carlo_distribution(corpus, expense_at_ret, 0.10, 0.15)
+results = monte_carlo_distribution(corpus, expense_at_ret)
 fig, ax = plt.subplots()
 ax.hist(results/10000000, bins=50)
 ax.set_title("Final Corpus Distribution (₹ Cr)")
@@ -153,28 +165,28 @@ st.pyplot(fig)
 prob_ruin = np.sum(results <= 0) / len(results)
 st.write(f"Probability of Ruin: {round(prob_ruin*100,2)}%")
 
-# ----------------------------
-# Portfolio Upload + XIRR
-# ----------------------------
+# ======================================================
+# PORTFOLIO UPLOAD + XIRR
+# ======================================================
 
-st.subheader("Portfolio Upload (CSV for XIRR)")
+st.subheader("Portfolio Upload (CSV: Date, Cashflow)")
 
-uploaded_file = st.file_uploader("Upload Portfolio CSV (Date, Cashflow)", type="csv")
+file = st.file_uploader("Upload CSV", type="csv")
 
-if uploaded_file:
-    df = pd.read_csv(uploaded_file)
+if file:
+    df = pd.read_csv(file)
     df["Date"] = pd.to_datetime(df["Date"])
     rate = xirr(df["Cashflow"].tolist(), df["Date"].tolist())
     st.success(f"Portfolio XIRR: {round(rate*100,2)}%")
 
-# ----------------------------
-# India Tax Calculator
-# ----------------------------
+# ======================================================
+# INDIA TAX ENGINE UI
+# ======================================================
 
 st.subheader("India Equity Tax Calculator")
 
-purchase = st.number_input("Purchase Value (₹)", value=1000000)
-sale = st.number_input("Sale Value (₹)", value=1500000)
+purchase = st.number_input("Purchase Value", value=1000000)
+sale = st.number_input("Sale Value", value=1500000)
 holding = st.number_input("Holding Days", value=400)
 
 gain, tax, tax_type = india_equity_tax(purchase, sale, holding)
@@ -183,9 +195,9 @@ st.write(f"Capital Gain: ₹ {gain:,.0f}")
 st.write(f"Tax Type: {tax_type}")
 st.write(f"Tax Payable: ₹ {tax:,.0f}")
 
-# ----------------------------
-# Styled PDF Generator (With Chart)
-# ----------------------------
+# ======================================================
+# PROFESSIONAL PDF GENERATOR
+# ======================================================
 
 def generate_pdf():
     file_path = "wealth_report.pdf"
@@ -206,7 +218,7 @@ def generate_pdf():
     doc.build(elements)
     return file_path
 
-if st.button("Generate Professional PDF Report"):
+if st.button("Generate Professional PDF"):
     pdf_path = generate_pdf()
     with open(pdf_path, "rb") as f:
-        st.download_button("Download PDF", f, file_name="Wealth_Report.pdf")
+        st.download_button("Download Report", f, file_name="Wealth_Report.pdf")
