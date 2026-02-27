@@ -256,7 +256,7 @@ if st.session_state.page == "children":
     st.dataframe(df, use_container_width=True)
 
 # =====================================================
-# SWP CALCULATOR
+# SWP CALCULATOR (Corrected Version)
 # =====================================================
 if st.session_state.page == "swp":
 
@@ -265,17 +265,35 @@ if st.session_state.page == "swp":
 
     corpus = st.number_input("Initial Corpus (₹)", value=10000000)
 
-    withdrawal_start_age = st.number_input("Withdrawal Start Age", 40, 80, 60)
-    withdrawal_end_age = st.number_input("Withdrawal End Age", 50, 100, 80)
+    withdrawal_start_age = st.number_input(
+        "Withdrawal Start Age",
+        min_value=current_age,
+        max_value=100,
+        value=60
+    )
 
-    withdrawal_per_year = st.number_input("Withdrawal Per Year (₹)", value=1200000)
+    withdrawal_end_age = st.number_input(
+        "Withdrawal End Age",
+        min_value=withdrawal_start_age + 1,
+        max_value=100,
+        value=80
+    )
+
+    withdrawal_per_year = st.number_input(
+        "Withdrawal Per Year (₹)",
+        value=1200000
+    )
 
     balance = corpus
     table = []
 
     for age in range(withdrawal_start_age, withdrawal_end_age + 1):
 
-        balance = balance * (1 + expected_return) - withdrawal_per_year
+        # First grow corpus
+        balance = balance * (1 + expected_return)
+
+        # Then withdraw
+        balance = balance - withdrawal_per_year
 
         table.append([
             age,
@@ -288,11 +306,7 @@ if st.session_state.page == "swp":
 
     df = pd.DataFrame(
         table,
-        columns=[
-            "Age",
-            "Withdrawal Per Year",
-            "Year End Corpus"
-        ]
+        columns=["Age", "Withdrawal Per Year", "Year End Corpus"]
     )
 
     st.dataframe(df, use_container_width=True)
@@ -301,7 +315,6 @@ if st.session_state.page == "swp":
         st.success(f"Corpus Survives Till Age {age}")
     else:
         st.error(f"Corpus Exhausted at Age {age}")
-
 # =====================================================
 # TERM INSURANCE
 # =====================================================
