@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import plotly.graph_objects as go
 
 # =====================================================
 # PAGE CONFIG
@@ -40,21 +41,13 @@ st.markdown("""
     border: none;
 }
 
-thead tr th {
-    background-color: #2563EB !important;
-    color: white !important;
-}
-
-tbody tr td { color: #E2E8F0 !important; }
-tbody tr:nth-child(even) { background-color: #111827 !important; }
-
 section[data-testid="stSidebar"] { background-color: #111827; }
 label { color: #CBD5E1 !important; }
 </style>
 """, unsafe_allow_html=True)
 
 # =====================================================
-# SESSION NAVIGATION
+# NAVIGATION
 # =====================================================
 if "page" not in st.session_state:
     st.session_state.page = "home"
@@ -106,75 +99,7 @@ if st.session_state.page == "home":
 
     with col3:
         st.button("Term Insurance", on_click=lambda: go("term"))
-
-# =====================================================
-# RETIREMENT PLANNER (FULL DETAIL)
-# =====================================================
-if st.session_state.page == "retirement":
-
-    st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("Advanced Retirement Planner")
-
-    retirement_age = st.number_input("Retirement Age", 45, 75, 60)
-    life_expectancy = st.number_input("Plan Till Age", 70, 100, 90)
-
-    years_to_ret = retirement_age - current_age
-    retirement_years = life_expectancy - retirement_age
-
-    # Expense breakup
-    st.markdown("### Monthly Expense Breakdown")
-    rent = st.number_input("Rent", 0, 1000000, 0)
-    grocery = st.number_input("Groceries + Medicine", 0, 1000000, 30000)
-    utilities = st.number_input("Utilities", 0, 1000000, 5000)
-    discretionary = st.number_input("Discretionary", 0, 1000000, 10000)
-    vehicle = st.number_input("Vehicle", 0, 1000000, 10000)
-
-    monthly_expense = rent + grocery + utilities + discretionary + vehicle
-    annual_expense = monthly_expense * 12
-
-    # Current Corpus
-    st.markdown("### Current Investment Corpus")
-    equity = st.number_input("Equity (₹)", value=1000000)
-    debt = st.number_input("Debt (₹)", value=1000000)
-    total_corpus = equity + debt
-
-    blended_return = expected_return
-    future_existing = total_corpus * ((1 + blended_return) ** years_to_ret)
-
-    expense_at_ret = annual_expense * ((1 + inflation) ** years_to_ret)
-
-    if blended_return > inflation:
-        required_corpus = expense_at_ret * (
-            (1 - ((1 + inflation)/(1 + blended_return))**retirement_years)
-            / (blended_return - inflation)
-        )
-    else:
-        required_corpus = expense_at_ret * retirement_years
-
-    gap = required_corpus - future_existing
-
-    summary = pd.DataFrame({
-        "Metric":[
-            "Expense at Retirement",
-            "Future Value of Existing Corpus",
-            "Required Retirement Corpus",
-            "Retirement Gap"
-        ],
-        "Value":[
-            f"₹ {expense_at_ret:,.0f}",
-            f"₹ {future_existing:,.0f}",
-            f"₹ {required_corpus:,.0f}",
-            f"₹ {gap:,.0f}"
-        ]
-    })
-
-    st.table(summary)
-
-    if gap > 0:
-        required_sip = sip_required(gap, blended_return, years_to_ret)
-        st.success(f"Required Monthly SIP: ₹ {required_sip/12:,.0f}")
-    else:
-        st.success("Retirement Fully Funded")
+        st.button("Cashflow Planner", on_click=lambda: go("cashflow"))
 
 # =====================================================
 # SIP CALCULATOR
@@ -188,16 +113,22 @@ if st.session_state.page == "sip":
     years = st.number_input("Investment Years", value=10)
 
     corpus = 0
-    table = []
+    ages = []
+    corpus_list = []
 
     for y in range(years):
-        yearly = monthly_sip * 12
-        corpus = (corpus + yearly) * (1 + expected_return)
-        table.append([y+1, round(corpus,0)])
+        corpus = (corpus + monthly_sip*12) * (1 + expected_return)
+        ages.append(current_age+y)
+        corpus_list.append(corpus)
 
-    df = pd.DataFrame(table, columns=["Year", "Corpus"])
-    st.dataframe(df, use_container_width=True)
-    st.success(f"Final Corpus: ₹ {corpus:,.0f}")
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=ages, y=corpus_list,
+                             mode='lines+markers',
+                             name="Corpus Growth"))
+    fig.update_layout(template="plotly_dark",
+                      title="SIP Wealth Growth")
+
+    st.plotly_chart(fig, use_container_width=True)
 
 # =====================================================
 # CHILDREN PLANNER
@@ -208,7 +139,6 @@ if st.session_state.page == "children":
     st.subheader("Children Planner")
 
     num_children = st.number_input("Number of Children", 1, 4, 1)
-
     summary = []
 
     for i in range(num_children):
@@ -233,7 +163,7 @@ if st.session_state.page == "children":
 
             summary.append([f"Child {i+1}-{goal}", age, round(future_cost,0), round(sip/12,0)])
 
-    df = pd.DataFrame(summary, columns=["Goal", "Age", "Future Cost", "Required SIP"])
+    df = pd.DataFrame(summary, columns=["Goal", "Age", "Future Cost", "Monthly SIP"])
     st.dataframe(df, use_container_width=True)
 
 # =====================================================
@@ -248,19 +178,47 @@ if st.session_state.page == "swp":
     monthly_withdrawal = st.number_input("Monthly Withdrawal", value=100000)
     years = st.number_input("Withdrawal Years", value=20)
 
-    balance = corpus
-    table = []
+    ages = []
+    balances = []
 
     for y in range(years):
-        withdrawal = monthly_withdrawal * 12
-        balance = balance * (1 + expected_return) - withdrawal
-        table.append([y+1, round(balance,0)])
-
-        if balance <= 0:
+        corpus = corpus*(1+expected_return)-(monthly_withdrawal*12)
+        ages.append(current_age+y)
+        balances.append(corpus)
+        if corpus <= 0:
             break
 
-    df = pd.DataFrame(table, columns=["Year", "Remaining Corpus"])
-    st.dataframe(df, use_container_width=True)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=ages, y=balances,
+                             mode='lines+markers',
+                             name="Corpus Depletion"))
+    fig.update_layout(template="plotly_dark",
+                      title="SWP Corpus Depletion")
+
+    st.plotly_chart(fig, use_container_width=True)
+
+# =====================================================
+# RETIREMENT PLANNER
+# =====================================================
+if st.session_state.page == "retirement":
+
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("Retirement Planner")
+
+    retirement_age = st.number_input("Retirement Age", 45, 75, 60)
+    annual_expense = st.number_input("Annual Expense Today (₹)", value=900000)
+
+    years = retirement_age - current_age
+    expense_at_ret = future_value(annual_expense, inflation, years)
+    required_corpus = expense_at_ret * 25
+
+    fig = go.Figure()
+    fig.add_hline(y=required_corpus, line_dash="dash",
+                  annotation_text="Required Corpus")
+    fig.update_layout(template="plotly_dark",
+                      title="Required Retirement Corpus")
+
+    st.plotly_chart(fig, use_container_width=True)
 
 # =====================================================
 # TERM INSURANCE
@@ -276,7 +234,47 @@ if st.session_state.page == "term":
     years_left = retirement_age - current_age
     cover = annual_income * years_left
 
-    st.success(f"Recommended Cover: ₹ {cover:,.0f}")
+    fig = go.Figure(go.Indicator(
+        mode="number",
+        value=cover,
+        title={"text": "Recommended Cover (₹)"}
+    ))
+
+    fig.update_layout(template="plotly_dark")
+    st.plotly_chart(fig, use_container_width=True)
+
+# =====================================================
+# CASHFLOW PLANNER
+# =====================================================
+if st.session_state.page == "cashflow":
+
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("Cashflow Planner")
+
+    plan_till_age = st.number_input("Plan Till Age", 60, 100, 85)
+    annual_income = st.number_input("Annual Income (₹)", value=1800000)
+    annual_expense = st.number_input("Annual Expense (₹)", value=900000)
+    annual_investment = st.number_input("Annual Investment (₹)", value=300000)
+    corpus = st.number_input("Current Corpus (₹)", value=1000000)
+
+    balance = corpus
+    ages = []
+    corpus_list = []
+
+    for age in range(current_age, plan_till_age + 1):
+        surplus = annual_income - annual_expense - annual_investment
+        balance = (balance + annual_investment) * (1 + expected_return)
+        ages.append(age)
+        corpus_list.append(balance)
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=ages, y=corpus_list,
+                             mode='lines',
+                             name="Wealth Projection"))
+    fig.update_layout(template="plotly_dark",
+                      title="Cashflow Wealth Projection")
+
+    st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("---")
-st.caption("Integrated Wealth Platform | For Illustration Only")
+st.caption("Freedom Wealth Platform | For Illustration Only")
