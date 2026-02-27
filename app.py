@@ -2,14 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-# =====================================================
-# PAGE CONFIG
-# =====================================================
 st.set_page_config(page_title="Freedom", layout="wide")
 
-# =====================================================
-# PREMIUM DARK THEME
-# =====================================================
+# ---------------- THEME ---------------- #
 st.markdown("""
 <style>
 .stApp { background-color: #0F172A; }
@@ -22,82 +17,45 @@ st.markdown("""
     color: white;
     font-size: 48px;
     font-weight: 800;
-    box-shadow: 0px 10px 25px rgba(0,0,0,0.4);
 }
 
 .subtitle {
     text-align:center;
     color:#93C5FD;
-    font-size:20px;
-    margin-top:10px;
-    margin-bottom:40px;
+    font-size:18px;
+    margin-bottom:30px;
 }
 
-.big-button button {
-    background: linear-gradient(135deg,#2563EB,#06B6D4);
+.stButton > button {
+    background: linear-gradient(90deg,#2563EB,#06B6D4);
     color: white;
-    border-radius: 14px;
-    height: 70px;
-    font-size: 20px;
-    font-weight: 700;
+    border-radius: 10px;
+    height: 55px;
+    font-weight: 600;
     border: none;
-    width: 100%;
-    transition: 0.3s ease-in-out;
 }
-
-.big-button button:hover {
-    transform: scale(1.05);
-    box-shadow: 0px 8px 20px rgba(0,0,0,0.5);
-}
-
-.section-card {
-    background-color:#111827;
-    padding:20px;
-    border-radius:16px;
-    box-shadow:0px 5px 15px rgba(0,0,0,0.3);
-}
-
-thead tr th {
-    background-color: #2563EB !important;
-    color: white !important;
-}
-
-tbody tr td { color: #E2E8F0 !important; }
-tbody tr:nth-child(even) { background-color: #111827 !important; }
-
-section[data-testid="stSidebar"] { background-color: #111827; }
-label { color: #CBD5E1 !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# =====================================================
-# SESSION NAVIGATION
-# =====================================================
+# ---------------- NAV ---------------- #
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-def go(page):
-    st.session_state.page = page
+def go(p):
+    st.session_state.page = p
 
-# =====================================================
-# HEADER
-# =====================================================
+# ---------------- HEADER ---------------- #
 st.markdown('<div class="header-box">Freedom</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">Integrated Wealth Planning Platform</div>', unsafe_allow_html=True)
-st.markdown("---")
+st.divider()
 
-# =====================================================
-# SIDEBAR CLIENT PROFILE
-# =====================================================
+# ---------------- SIDEBAR ---------------- #
 st.sidebar.header("Client Profile")
-
 current_age = st.sidebar.number_input("Current Age", 25, 70, 30)
 inflation = st.sidebar.number_input("Inflation (%)", 0.0, 15.0, 6.0) / 100
 expected_return = st.sidebar.number_input("Expected Return (%)", 0.0, 20.0, 12.0) / 100
 
-# =====================================================
-# COMMON FUNCTIONS
-# =====================================================
+# ---------------- COMMON FUNCTIONS ---------------- #
 def future_value(pv, rate, years):
     return pv * (1 + rate) ** years
 
@@ -106,39 +64,23 @@ def sip_required(target, rate, years):
         return 0
     return target / (((1 + rate) ** years - 1) / rate)
 
-# =====================================================
-# HOME
-# =====================================================
+# ---------------- HOME ---------------- #
 if st.session_state.page == "home":
 
-    col1, col2, col3 = st.columns(3, gap="large")
+    col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.markdown('<div class="big-button">', unsafe_allow_html=True)
         st.button("SIP Calculator", on_click=lambda: go("sip"))
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        st.markdown('<div class="big-button">', unsafe_allow_html=True)
         st.button("Children Planner", on_click=lambda: go("children"))
-        st.markdown('</div>', unsafe_allow_html=True)
 
     with col2:
-        st.markdown('<div class="big-button">', unsafe_allow_html=True)
         st.button("SWP Calculator", on_click=lambda: go("swp"))
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        st.markdown('<div class="big-button">', unsafe_allow_html=True)
         st.button("Retirement Planner", on_click=lambda: go("retirement"))
-        st.markdown('</div>', unsafe_allow_html=True)
 
     with col3:
-        st.markdown('<div class="big-button">', unsafe_allow_html=True)
         st.button("Term Insurance", on_click=lambda: go("term"))
-        st.markdown('</div>', unsafe_allow_html=True)
 
-# =====================================================
-# SIP CALCULATOR
-# =====================================================
+# ---------------- SIP ---------------- #
 if st.session_state.page == "sip":
     st.button("⬅ Back", on_click=lambda: go("home"))
     st.subheader("SIP Calculator")
@@ -156,12 +98,9 @@ if st.session_state.page == "sip":
 
     df = pd.DataFrame(table, columns=["Year", "Yearly SIP", "Year End Corpus"])
     st.dataframe(df, use_container_width=True)
-    st.line_chart(df.set_index("Year")["Year End Corpus"])
     st.success(f"Final Corpus: ₹ {corpus:,.0f}")
 
-# =====================================================
-# SWP CALCULATOR
-# =====================================================
+# ---------------- SWP ---------------- #
 if st.session_state.page == "swp":
     st.button("⬅ Back", on_click=lambda: go("home"))
     st.subheader("SWP Calculator")
@@ -182,39 +121,31 @@ if st.session_state.page == "swp":
 
     df = pd.DataFrame(table, columns=["Year", "Remaining Corpus"])
     st.dataframe(df, use_container_width=True)
-    st.line_chart(df.set_index("Year"))
 
-# =====================================================
-# RETIREMENT PLANNER
-# =====================================================
+# ---------------- RETIREMENT ---------------- #
 if st.session_state.page == "retirement":
     st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("Advanced Retirement Planner")
+    st.subheader("Retirement Planner")
 
     retirement_age = st.number_input("Retirement Age", 45, 75, 60)
-    life_expectancy = st.number_input("Plan Till Age", 70, 100, 90)
-
-    years_to_ret = retirement_age - current_age
-    retirement_years = life_expectancy - retirement_age
-
     annual_expense = st.number_input("Annual Expense Today (₹)", value=600000)
 
+    years_to_ret = retirement_age - current_age
     expense_at_ret = annual_expense * ((1 + inflation) ** years_to_ret)
 
-    required_corpus = expense_at_ret * retirement_years
-    gap = required_corpus
+    required_corpus = expense_at_ret * 25
 
-    st.table(pd.DataFrame({
+    summary = pd.DataFrame({
         "Metric": ["Expense at Retirement", "Required Corpus"],
         "Value": [f"₹ {expense_at_ret:,.0f}", f"₹ {required_corpus:,.0f}"]
-    }))
+    })
 
-    sip = sip_required(gap, expected_return, years_to_ret)
+    st.table(summary)
+
+    sip = sip_required(required_corpus, expected_return, years_to_ret)
     st.success(f"Required Monthly SIP: ₹ {sip/12:,.0f}")
 
-# =====================================================
-# CHILDREN PLANNER
-# =====================================================
+# ---------------- CHILDREN ---------------- #
 if st.session_state.page == "children":
     st.button("⬅ Back", on_click=lambda: go("home"))
     st.subheader("Children Planner")
@@ -224,24 +155,22 @@ if st.session_state.page == "children":
 
     for i in range(num_children):
         child_age = st.number_input(f"Child {i+1} Age", 0, 18, 2, key=f"child{i}")
-        goals = {"10th":14,"12th":16,"Graduation":18,"Masters":22,"Marriage":24}
+        goal_age = st.number_input(f"Goal Age Child {i+1}", 10, 30, 21, key=f"goal{i}")
+        cost = st.number_input(f"Goal Cost (₹) Child {i+1}", value=2000000, key=f"cost{i}")
 
-        for goal, age in goals.items():
-            cost = st.number_input(f"{goal} Cost (₹) Child {i+1}", value=2000000, key=f"{goal}{i}")
-            years = age - child_age
-            future_cost = future_value(cost, inflation, years)
-            sip = sip_required(future_cost, expected_return, years)
-            summary.append([f"Child {i+1}-{goal}", age, round(future_cost,0), round(sip/12,0)])
+        years = goal_age - child_age
+        future_cost = future_value(cost, inflation, years)
+        sip = sip_required(future_cost, expected_return, years)
 
-    df = pd.DataFrame(summary, columns=["Goal", "Goal Age", "Future Cost", "Monthly SIP Required"])
+        summary.append([f"Child {i+1}", goal_age, round(future_cost,0), round(sip/12,0)])
+
+    df = pd.DataFrame(summary, columns=["Child", "Goal Age", "Future Cost", "Monthly SIP Required"])
     st.dataframe(df, use_container_width=True)
 
-# =====================================================
-# TERM INSURANCE
-# =====================================================
+# ---------------- TERM ---------------- #
 if st.session_state.page == "term":
     st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("Term Insurance Calculator")
+    st.subheader("Term Insurance")
 
     annual_income = st.number_input("Annual Income (₹)", value=2400000)
     retirement_age = st.number_input("Retirement Age", 45, 75, 60)
@@ -251,5 +180,5 @@ if st.session_state.page == "term":
 
     st.success(f"Recommended Cover: ₹ {cover:,.0f}")
 
-st.markdown("---")
+st.divider()
 st.caption("Freedom Wealth Platform | For Illustration Only")
