@@ -1,269 +1,198 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.graph_objects as go
 
-# =====================================================
-# PAGE CONFIG
-# =====================================================
+# ---------------- PAGE CONFIG ---------------- #
 st.set_page_config(page_title="Freedom", layout="wide")
 
-# =====================================================
-# DARK THEME
-# =====================================================
+# ---------------- DARK STYLE ---------------- #
 st.markdown("""
 <style>
-.stApp { background-color: #0F172A; }
-
-.header-box {
-    background: linear-gradient(90deg, #1E3A8A, #0EA5E9);
-    padding: 24px;
-    border-radius: 14px;
+.stApp {
+    background-color: #0f172a;
+    color: white;
+}
+.big-title {
+    font-size: 50px;
+    font-weight: bold;
     text-align: center;
-    color: white;
-    font-size: 42px;
-    font-weight: 700;
+    color: #38bdf8;
 }
-
-.subtitle {
-    text-align:center;
-    color:#93C5FD;
-    font-size:18px;
-    margin-bottom:25px;
+.sub-title {
+    text-align: center;
+    color: #cbd5e1;
 }
-
-.stButton > button {
-    background: linear-gradient(90deg, #2563EB, #0EA5E9);
+.button-style button {
+    background: linear-gradient(90deg,#2563eb,#06b6d4);
     color: white;
-    border-radius: 8px;
-    height: 45px;
-    font-weight: 600;
-    border: none;
+    border-radius: 10px;
+    height: 60px;
+    width: 100%;
+    font-size: 18px;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# =====================================================
-# SESSION NAVIGATION
-# =====================================================
+# ---------------- HEADER ---------------- #
+st.markdown('<div class="big-title">Freedom</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">Interactive Wealth Planning Platform</div>', unsafe_allow_html=True)
+st.divider()
+
+# ---------------- SESSION NAV ---------------- #
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-def go(page):
-    st.session_state.page = page
+def go_home():
+    st.session_state.page = "home"
 
-# =====================================================
-# HEADER
-# =====================================================
-st.markdown('<div class="header-box">Freedom</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Interactive Wealth Planning Platform</div>', unsafe_allow_html=True)
-st.markdown("---")
-
-# =====================================================
-# SIDEBAR INPUTS
-# =====================================================
-st.sidebar.header("Client Profile")
-
-current_age = st.sidebar.number_input("Current Age", 25, 70, 30)
-inflation = st.sidebar.number_input("Inflation (%)", 0.0, 15.0, 6.0)/100
-expected_return = st.sidebar.number_input("Expected Return (%)", 0.0, 20.0, 12.0)/100
-
-# =====================================================
-# COMMON FUNCTIONS
-# =====================================================
-def future_value(pv, rate, years):
-    return pv * (1 + rate) ** years
-
-def sip_required(target, rate, years):
-    if years <= 0:
-        return 0
-    return target / (((1 + rate) ** years - 1) / rate)
-
-# =====================================================
-# HOME
-# =====================================================
+# ---------------- HOME PAGE ---------------- #
 if st.session_state.page == "home":
 
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.button("SIP Calculator", on_click=lambda: go("sip"))
-        st.button("Children Planner", on_click=lambda: go("children"))
+        if st.button("SIP Calculator"):
+            st.session_state.page = "sip"
+
+        if st.button("Children Planner"):
+            st.session_state.page = "children"
 
     with col2:
-        st.button("SWP Calculator", on_click=lambda: go("swp"))
-        st.button("Retirement Planner", on_click=lambda: go("retirement"))
+        if st.button("SWP Calculator"):
+            st.session_state.page = "swp"
+
+        if st.button("Retirement Planner"):
+            st.session_state.page = "retirement"
 
     with col3:
-        st.button("Term Insurance", on_click=lambda: go("term"))
+        if st.button("Term Insurance"):
+            st.session_state.page = "term"
 
-# =====================================================
-# SIP CALCULATOR
-# =====================================================
-if st.session_state.page == "sip":
+# ================= SIP CALCULATOR ================= #
+elif st.session_state.page == "sip":
 
-    st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("SIP Calculator")
+    st.button("⬅ Back", on_click=go_home)
+    st.header("SIP Calculator")
 
-    monthly_sip = st.number_input("Monthly SIP (₹)", value=5000)
+    sip = st.number_input("Monthly SIP (₹)", value=5000)
     years = st.number_input("Years", value=10)
+    return_rate = st.number_input("Expected Return (%)", value=12.0)
 
+    monthly_rate = return_rate / 100 / 12
+    months = years * 12
+
+    future_value = sip * (((1 + monthly_rate) ** months - 1) / monthly_rate) * (1 + monthly_rate)
+
+    st.success(f"Final Corpus: ₹ {int(future_value):,}")
+
+    # Yearly Wealth Table
+    data = []
     corpus = 0
-    ages = []
-    corpus_list = []
+    for year in range(1, int(years) + 1):
+        corpus = sip * 12 * year * (1 + return_rate/100)
+        data.append([year, sip*12, int(corpus)])
 
-    for y in range(years):
-        corpus = (corpus + monthly_sip*12) * (1 + expected_return)
-        ages.append(current_age+y)
-        corpus_list.append(corpus)
+    df = pd.DataFrame(data, columns=["Year", "Yearly Investment", "Corpus"])
+    st.dataframe(df, use_container_width=True)
+    st.line_chart(df.set_index("Year")["Corpus"])
 
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=ages, y=corpus_list,
-                             mode='lines+markers',
-                             name="Corpus Growth"))
-    fig.update_layout(title="SIP Wealth Growth",
-                      xaxis_title="Age",
-                      yaxis_title="Corpus (₹)",
-                      template="plotly_dark")
+# ================= SWP ================= #
+elif st.session_state.page == "swp":
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.button("⬅ Back", on_click=go_home)
+    st.header("SWP Calculator")
 
-# =====================================================
-# CHILDREN PLANNER
-# =====================================================
-if st.session_state.page == "children":
+    corpus = st.number_input("Current Corpus (₹)", value=1000000)
+    withdrawal = st.number_input("Monthly Withdrawal (₹)", value=20000)
+    return_rate = st.number_input("Expected Return (%)", value=8.0)
 
-    st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("Children Planner")
+    months = 0
+    monthly_rate = return_rate/100/12
 
-    child_age = st.number_input("Child Current Age", 0, 18, 2)
+    balance = corpus
+    data = []
 
-    goals = {
-        "10th": 14,
-        "12th": 16,
-        "Graduation": 18,
-        "Masters": 22,
-        "Marriage": 24
-    }
+    while balance > 0 and months < 600:
+        balance = balance * (1 + monthly_rate) - withdrawal
+        months += 1
+        data.append([months, max(balance,0)])
 
-    goal_names = []
-    future_costs = []
+    years = months // 12
 
-    for goal, age in goals.items():
-        cost = st.number_input(f"{goal} Cost Today (₹)", value=2000000, key=goal)
-        years = age - child_age
-        future_cost = future_value(cost, inflation, years)
+    st.success(f"Corpus lasts approx: {years} years")
 
-        goal_names.append(goal)
-        future_costs.append(future_cost)
+    df = pd.DataFrame(data, columns=["Month", "Balance"])
+    st.line_chart(df.set_index("Month"))
 
-    fig = go.Figure()
-    fig.add_trace(go.Bar(x=goal_names, y=future_costs,
-                         marker_color="#0EA5E9"))
+# ================= CHILDREN PLANNER ================= #
+elif st.session_state.page == "children":
 
-    fig.update_layout(title="Future Cost per Goal",
-                      yaxis_title="Future Cost (₹)",
-                      template="plotly_dark")
+    st.button("⬅ Back", on_click=go_home)
+    st.header("Children Planner")
 
-    st.plotly_chart(fig, use_container_width=True)
+    inflation = st.number_input("Education Inflation (%)", value=8.0)
 
-# =====================================================
-# SWP CALCULATOR
-# =====================================================
-if st.session_state.page == "swp":
+    total_sip = 0
+    results = []
 
-    st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("SWP Calculator")
+    for i in range(1,5):
+        st.subheader(f"Child {i}")
 
-    corpus = st.number_input("Initial Corpus (₹)", value=10000000)
-    monthly_withdrawal = st.number_input("Monthly Withdrawal (₹)", value=100000)
-    years = st.number_input("Withdrawal Years", value=20)
+        current_age = st.number_input(f"Current Age Child {i}", value=2, key=f"age{i}")
+        goal_age = st.number_input(f"Graduation Age Child {i}", value=21, key=f"goal{i}")
+        goal_amount = st.number_input(f"Graduation Cost Today (₹)", value=2000000, key=f"cost{i}")
 
-    ages = []
-    balances = []
+        years = goal_age - current_age
+        future_cost = goal_amount * (1 + inflation/100) ** years
+        sip_required = future_cost / (years * 12)
 
-    for y in range(years):
-        corpus = corpus*(1+expected_return)-(monthly_withdrawal*12)
-        ages.append(current_age+y)
-        balances.append(corpus)
-        if corpus <= 0:
-            break
+        total_sip += sip_required
+        results.append([f"Child {i}", int(future_cost), int(sip_required)])
 
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=ages, y=balances,
-                             mode='lines+markers',
-                             name="Corpus Depletion",
-                             line=dict(color="red")))
-    fig.update_layout(title="SWP Corpus Depletion",
-                      xaxis_title="Age",
-                      yaxis_title="Corpus (₹)",
-                      template="plotly_dark")
+    df = pd.DataFrame(results, columns=["Child", "Future Cost", "Monthly SIP Needed"])
+    st.dataframe(df, use_container_width=True)
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.success(f"Total SIP Required For All Children: ₹ {int(total_sip):,}")
 
-# =====================================================
-# RETIREMENT PLANNER
-# =====================================================
-if st.session_state.page == "retirement":
+# ================= RETIREMENT ================= #
+elif st.session_state.page == "retirement":
 
-    st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("Retirement Planner")
+    st.button("⬅ Back", on_click=go_home)
+    st.header("Retirement Planner")
 
-    retirement_age = st.number_input("Retirement Age", 45, 75, 60)
-    annual_expense = st.number_input("Annual Expense Today (₹)", value=900000)
+    current_age = st.number_input("Current Age", value=30)
+    retire_age = st.number_input("Retirement Age", value=60)
+    expense = st.number_input("Annual Expense Today (₹)", value=600000)
+    inflation = st.number_input("Inflation (%)", value=6.0)
+    return_rate = st.number_input("Return (%)", value=10.0)
 
-    years = retirement_age - current_age
-    expense_at_ret = future_value(annual_expense, inflation, years)
-    required_corpus = expense_at_ret * 25
+    years = retire_age - current_age
+    future_expense = expense * (1 + inflation/100) ** years
+    corpus_needed = future_expense / (return_rate/100)
 
-    ages = []
+    st.success(f"Required Retirement Corpus: ₹ {int(corpus_needed):,}")
+
+    ages = list(range(int(current_age), int(retire_age)+1))
     corpus_projection = []
+
     corpus = 0
+    for age in ages:
+        corpus = corpus * (1 + return_rate/100) + 500000
+        corpus_projection.append(int(corpus))
 
-    for y in range(years):
-        corpus = (corpus + 500000) * (1 + expected_return)
-        ages.append(current_age+y)
-        corpus_projection.append(corpus)
+    df = pd.DataFrame({"Age": ages, "Corpus": corpus_projection})
+    st.line_chart(df.set_index("Age"))
 
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=ages, y=corpus_projection,
-                             mode='lines',
-                             name="Pre-Retirement Growth"))
-    fig.add_hline(y=required_corpus, line_dash="dash",
-                  annotation_text="Required Corpus",
-                  annotation_position="top left")
+# ================= TERM INSURANCE ================= #
+elif st.session_state.page == "term":
 
-    fig.update_layout(title="Retirement Corpus Projection",
-                      xaxis_title="Age",
-                      yaxis_title="Corpus (₹)",
-                      template="plotly_dark")
+    st.button("⬅ Back", on_click=go_home)
+    st.header("Term Insurance Calculator")
 
-    st.plotly_chart(fig, use_container_width=True)
+    income = st.number_input("Annual Income (₹)", value=1000000)
+    expenses = st.number_input("Annual Expenses (₹)", value=500000)
+    years = st.number_input("Years Support Needed", value=20)
 
-# =====================================================
-# TERM INSURANCE
-# =====================================================
-if st.session_state.page == "term":
+    cover = (income - expenses) * years
 
-    st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("Term Insurance Calculator")
-
-    annual_income = st.number_input("Annual Income (₹)", value=2400000)
-    retirement_age = st.number_input("Retirement Age", 45, 75, 60)
-
-    years_left = retirement_age - current_age
-    cover = annual_income * years_left
-
-    fig = go.Figure()
-    fig.add_trace(go.Indicator(
-        mode="number",
-        value=cover,
-        title={"text": "Recommended Term Cover (₹)"},
-        number={'valueformat': ',.0f'}
-    ))
-
-    fig.update_layout(template="plotly_dark")
-    st.plotly_chart(fig, use_container_width=True)
-
-st.markdown("---")
-st.caption("Interactive Wealth Dashboard | For Illustration Only")
+    st.success(f"Recommended Term Cover: ₹ {int(cover):,}")
