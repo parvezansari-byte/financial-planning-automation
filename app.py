@@ -28,7 +28,6 @@ st.markdown("""
     text-align:center;
     color:#93C5FD;
     font-size:18px;
-    margin-top:10px;
     margin-bottom:25px;
 }
 
@@ -67,16 +66,17 @@ def go(page):
 # HEADER
 # =====================================================
 st.markdown('<div class="header-box">Freedom</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Investment & Insurance Planner</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Integrated Wealth Planning Platform</div>', unsafe_allow_html=True)
 st.markdown("---")
 
 # =====================================================
 # SIDEBAR GLOBAL INPUTS
 # =====================================================
 st.sidebar.header("Client Profile")
-entry_age = st.sidebar.number_input("Entry Age", 18, 65, 30)
-expected_return = st.sidebar.number_input("Expected Return (%)", 0.0, 20.0, 12.0)/100
+
+current_age = st.sidebar.number_input("Current Age", 25, 70, 30)
 inflation = st.sidebar.number_input("Inflation (%)", 0.0, 15.0, 6.0)/100
+expected_return = st.sidebar.number_input("Expected Return (%)", 0.0, 20.0, 12.0)/100
 
 # =====================================================
 # COMMON FUNCTIONS
@@ -108,6 +108,75 @@ if st.session_state.page == "home":
         st.button("Term Insurance", on_click=lambda: go("term"))
 
 # =====================================================
+# RETIREMENT PLANNER (FULL DETAIL)
+# =====================================================
+if st.session_state.page == "retirement":
+
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("Advanced Retirement Planner")
+
+    retirement_age = st.number_input("Retirement Age", 45, 75, 60)
+    life_expectancy = st.number_input("Plan Till Age", 70, 100, 90)
+
+    years_to_ret = retirement_age - current_age
+    retirement_years = life_expectancy - retirement_age
+
+    # Expense breakup
+    st.markdown("### Monthly Expense Breakdown")
+    rent = st.number_input("Rent", 0, 1000000, 0)
+    grocery = st.number_input("Groceries + Medicine", 0, 1000000, 30000)
+    utilities = st.number_input("Utilities", 0, 1000000, 5000)
+    discretionary = st.number_input("Discretionary", 0, 1000000, 10000)
+    vehicle = st.number_input("Vehicle", 0, 1000000, 10000)
+
+    monthly_expense = rent + grocery + utilities + discretionary + vehicle
+    annual_expense = monthly_expense * 12
+
+    # Current Corpus
+    st.markdown("### Current Investment Corpus")
+    equity = st.number_input("Equity (₹)", value=1000000)
+    debt = st.number_input("Debt (₹)", value=1000000)
+    total_corpus = equity + debt
+
+    blended_return = expected_return
+    future_existing = total_corpus * ((1 + blended_return) ** years_to_ret)
+
+    expense_at_ret = annual_expense * ((1 + inflation) ** years_to_ret)
+
+    if blended_return > inflation:
+        required_corpus = expense_at_ret * (
+            (1 - ((1 + inflation)/(1 + blended_return))**retirement_years)
+            / (blended_return - inflation)
+        )
+    else:
+        required_corpus = expense_at_ret * retirement_years
+
+    gap = required_corpus - future_existing
+
+    summary = pd.DataFrame({
+        "Metric":[
+            "Expense at Retirement",
+            "Future Value of Existing Corpus",
+            "Required Retirement Corpus",
+            "Retirement Gap"
+        ],
+        "Value":[
+            f"₹ {expense_at_ret:,.0f}",
+            f"₹ {future_existing:,.0f}",
+            f"₹ {required_corpus:,.0f}",
+            f"₹ {gap:,.0f}"
+        ]
+    })
+
+    st.table(summary)
+
+    if gap > 0:
+        required_sip = sip_required(gap, blended_return, years_to_ret)
+        st.success(f"Required Monthly SIP: ₹ {required_sip/12:,.0f}")
+    else:
+        st.success("Retirement Fully Funded")
+
+# =====================================================
 # SIP CALCULATOR
 # =====================================================
 if st.session_state.page == "sip":
@@ -117,29 +186,16 @@ if st.session_state.page == "sip":
 
     monthly_sip = st.number_input("Monthly SIP (₹)", value=5000)
     years = st.number_input("Investment Years", value=10)
-    stepup = st.number_input("Annual Step-Up (%)", value=10.0)/100
 
     corpus = 0
     table = []
 
     for y in range(years):
-        yearly_investment = monthly_sip * 12 * ((1 + stepup) ** y)
-        corpus = (corpus + yearly_investment) * (1 + expected_return)
+        yearly = monthly_sip * 12
+        corpus = (corpus + yearly) * (1 + expected_return)
+        table.append([y+1, round(corpus,0)])
 
-        table.append([
-            y+1,
-            entry_age+y,
-            round(yearly_investment,0),
-            round(corpus,0)
-        ])
-
-    df = pd.DataFrame(table, columns=[
-        "Year No.",
-        "Age",
-        "Yearly Investment (₹)",
-        "Year End Corpus (₹)"
-    ])
-
+    df = pd.DataFrame(table, columns=["Year", "Corpus"])
     st.dataframe(df, use_container_width=True)
     st.success(f"Final Corpus: ₹ {corpus:,.0f}")
 
@@ -149,7 +205,7 @@ if st.session_state.page == "sip":
 if st.session_state.page == "children":
 
     st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("Complete Education & Marriage Planning")
+    st.subheader("Children Planner")
 
     num_children = st.number_input("Number of Children", 1, 4, 1)
 
@@ -157,57 +213,27 @@ if st.session_state.page == "children":
 
     for i in range(num_children):
 
-        st.markdown(f"## Child {i+1}")
-
-        child_age = st.number_input(
-            f"Child {i+1} Current Age",
-            0, 18, 2,
-            key=f"child_age_{i}"
-        )
+        child_age = st.number_input(f"Child {i+1} Age", 0, 18, 2, key=f"child{i}")
 
         goals = {
-            "10th Standard": (14, 200000),
-            "12th Standard": (16, 300000),
-            "Graduation": (18, 2000000),
-            "Masters": (22, 3000000),
-            "Marriage": (24, 4000000)
+            "10th": 14,
+            "12th": 16,
+            "Graduation": 18,
+            "Masters": 22,
+            "Marriage": 24
         }
 
-        for goal_name, (default_age, default_cost) in goals.items():
+        for goal, age in goals.items():
 
-            goal_age = st.number_input(
-                f"{goal_name} Age",
-                10, 35,
-                default_age,
-                key=f"{goal_name}_age_{i}"
-            )
+            cost = st.number_input(f"{goal} Cost (₹)", value=2000000, key=f"{goal}{i}")
 
-            goal_cost_today = st.number_input(
-                f"{goal_name} Cost Today (₹)",
-                value=default_cost,
-                key=f"{goal_name}_cost_{i}"
-            )
+            years = age - child_age
+            future_cost = future_value(cost, inflation, years)
+            sip = sip_required(future_cost, expected_return, years)
 
-            years_to_goal = goal_age - child_age
+            summary.append([f"Child {i+1}-{goal}", age, round(future_cost,0), round(sip/12,0)])
 
-            future_cost = future_value(goal_cost_today, inflation, years_to_goal)
-            required_sip = sip_required(future_cost, expected_return, years_to_goal)
-
-            summary.append([
-                f"Child {i+1} - {goal_name}",
-                goal_age,
-                round(future_cost,0),
-                round(required_sip/12,0)
-            ])
-
-    df = pd.DataFrame(summary, columns=[
-        "Goal",
-        "Goal Age",
-        "Future Cost (₹)",
-        "Required Monthly SIP (₹)"
-    ])
-
-    st.markdown("## Goal Summary")
+    df = pd.DataFrame(summary, columns=["Goal", "Age", "Future Cost", "Required SIP"])
     st.dataframe(df, use_container_width=True)
 
 # =====================================================
@@ -218,57 +244,23 @@ if st.session_state.page == "swp":
     st.button("⬅ Back", on_click=lambda: go("home"))
     st.subheader("SWP Calculator")
 
-    corpus = st.number_input("Initial Corpus (₹)", value=10000000)
-    start_age = st.number_input("Withdrawal Start Age", 30, 80, 60)
-    end_age = st.number_input("Withdrawal End Age", 40, 95, 80)
-    monthly_withdrawal = st.number_input("Monthly Withdrawal (₹)", value=100000)
+    corpus = st.number_input("Initial Corpus", value=10000000)
+    monthly_withdrawal = st.number_input("Monthly Withdrawal", value=100000)
+    years = st.number_input("Withdrawal Years", value=20)
 
     balance = corpus
     table = []
 
-    for age in range(entry_age, end_age + 1):
-
-        if age < start_age:
-            withdrawal = 0
-            balance = balance * (1 + expected_return)
-        else:
-            withdrawal = monthly_withdrawal * 12
-            balance = balance * (1 + expected_return) - withdrawal
-
-        table.append([age, withdrawal, round(balance,0)])
+    for y in range(years):
+        withdrawal = monthly_withdrawal * 12
+        balance = balance * (1 + expected_return) - withdrawal
+        table.append([y+1, round(balance,0)])
 
         if balance <= 0:
             break
 
-    df = pd.DataFrame(table, columns=[
-        "Age",
-        "Yearly Withdrawal (₹)",
-        "Year End Corpus (₹)"
-    ])
-
+    df = pd.DataFrame(table, columns=["Year", "Remaining Corpus"])
     st.dataframe(df, use_container_width=True)
-
-    if balance > 0:
-        st.success(f"Corpus Remaining at Age {end_age}: ₹ {balance:,.0f}")
-    else:
-        st.error("⚠ Corpus depleted before end age")
-
-# =====================================================
-# RETIREMENT PLANNER
-# =====================================================
-if st.session_state.page == "retirement":
-
-    st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("Retirement Planner")
-
-    retirement_age = st.number_input("Retirement Age", 45, 75, 60)
-    annual_expense = st.number_input("Annual Expense Today (₹)", value=900000)
-
-    years = retirement_age - entry_age
-    expense_at_ret = future_value(annual_expense, inflation, years)
-    corpus_required = expense_at_ret * 25
-
-    st.success(f"Required Retirement Corpus: ₹ {corpus_required:,.0f}")
 
 # =====================================================
 # TERM INSURANCE
@@ -278,13 +270,13 @@ if st.session_state.page == "term":
     st.button("⬅ Back", on_click=lambda: go("home"))
     st.subheader("Term Insurance Calculator")
 
-    annual_income = st.number_input("Annual Income (₹)", value=2400000)
+    annual_income = st.number_input("Annual Income", value=2400000)
     retirement_age = st.number_input("Retirement Age", 45, 75, 60)
 
-    years_left = retirement_age - entry_age
+    years_left = retirement_age - current_age
     cover = annual_income * years_left
 
-    st.success(f"Recommended Term Cover: ₹ {cover:,.0f}")
+    st.success(f"Recommended Cover: ₹ {cover:,.0f}")
 
 st.markdown("---")
-st.caption("For illustration purposes only.")
+st.caption("Integrated Wealth Platform | For Illustration Only")
