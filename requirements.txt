@@ -4,3 +4,4 @@ pandas
 matplotlib
 reportlab
 python-dateutil
+plotly
