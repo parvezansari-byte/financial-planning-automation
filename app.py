@@ -188,15 +188,34 @@ if st.session_state.page == "sip":
     years = st.number_input("Investment Years", value=10)
 
     corpus = 0
+    total_invested = 0
     table = []
 
-    for y in range(years):
-        yearly = monthly_sip * 12
-        corpus = (corpus + yearly) * (1 + expected_return)
-        table.append([y+1, round(corpus,0)])
+    for y in range(1, years + 1):
+        yearly_investment = monthly_sip * 12
+        total_invested += yearly_investment
+        corpus = (corpus + yearly_investment) * (1 + expected_return)
 
-    df = pd.DataFrame(table, columns=["Year", "Corpus"])
+        table.append([
+            y,
+            yearly_investment,
+            total_invested,
+            round(corpus, 0)
+        ])
+
+    df = pd.DataFrame(
+        table,
+        columns=[
+            "Year",
+            "Yearly Investment",
+            "Total Invested",
+            "Year End Corpus"
+        ]
+    )
+
     st.dataframe(df, use_container_width=True)
+
+    st.success(f"Total Invested: ₹ {total_invested:,.0f}")
     st.success(f"Final Corpus: ₹ {corpus:,.0f}")
 
 # =====================================================
@@ -244,23 +263,44 @@ if st.session_state.page == "swp":
     st.button("⬅ Back", on_click=lambda: go("home"))
     st.subheader("SWP Calculator")
 
-    corpus = st.number_input("Initial Corpus", value=10000000)
-    monthly_withdrawal = st.number_input("Monthly Withdrawal", value=100000)
-    years = st.number_input("Withdrawal Years", value=20)
+    corpus = st.number_input("Initial Corpus (₹)", value=10000000)
+
+    withdrawal_start_age = st.number_input("Withdrawal Start Age", 40, 80, 60)
+    withdrawal_end_age = st.number_input("Withdrawal End Age", 50, 100, 80)
+
+    withdrawal_per_year = st.number_input("Withdrawal Per Year (₹)", value=1200000)
 
     balance = corpus
     table = []
 
-    for y in range(years):
-        withdrawal = monthly_withdrawal * 12
-        balance = balance * (1 + expected_return) - withdrawal
-        table.append([y+1, round(balance,0)])
+    for age in range(withdrawal_start_age, withdrawal_end_age + 1):
+
+        balance = balance * (1 + expected_return) - withdrawal_per_year
+
+        table.append([
+            age,
+            withdrawal_per_year,
+            round(balance, 0)
+        ])
 
         if balance <= 0:
             break
 
-    df = pd.DataFrame(table, columns=["Year", "Remaining Corpus"])
+    df = pd.DataFrame(
+        table,
+        columns=[
+            "Age",
+            "Withdrawal Per Year",
+            "Year End Corpus"
+        ]
+    )
+
     st.dataframe(df, use_container_width=True)
+
+    if balance > 0:
+        st.success(f"Corpus Survives Till Age {age}")
+    else:
+        st.error(f"Corpus Exhausted at Age {age}")
 
 # =====================================================
 # TERM INSURANCE
