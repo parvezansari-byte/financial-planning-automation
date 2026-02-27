@@ -256,13 +256,14 @@ if st.session_state.page == "children":
     st.dataframe(df, use_container_width=True)
 
 # =====================================================
-# SWP CALCULATOR (Corrected Version)
+# ADVANCED SWP CALCULATOR
 # =====================================================
 if st.session_state.page == "swp":
 
     st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("SWP Calculator")
+    st.subheader("Advanced SWP Retirement Engine")
 
+    # Inputs
     corpus = st.number_input("Initial Corpus (₹)", value=10000000)
 
     withdrawal_start_age = st.number_input(
@@ -276,45 +277,102 @@ if st.session_state.page == "swp":
         "Withdrawal End Age",
         min_value=withdrawal_start_age + 1,
         max_value=100,
-        value=80
+        value=85
     )
 
     withdrawal_per_year = st.number_input(
-        "Withdrawal Per Year (₹)",
+        "Initial Withdrawal Per Year (₹)",
         value=1200000
     )
 
+    withdrawal_inflation = st.number_input(
+        "Withdrawal Inflation (%)",
+        value=6.0
+    ) / 100
+
+    # -------------------------
+    # SWP Projection
+    # -------------------------
     balance = corpus
+    withdrawal = withdrawal_per_year
     table = []
 
     for age in range(withdrawal_start_age, withdrawal_end_age + 1):
 
-        # First grow corpus
+        # Grow corpus
         balance = balance * (1 + expected_return)
 
-        # Then withdraw
-        balance = balance - withdrawal_per_year
+        # Withdraw
+        balance = balance - withdrawal
 
         table.append([
             age,
-            withdrawal_per_year,
+            round(withdrawal, 0),
             round(balance, 0)
         ])
+
+        # Increase withdrawal by inflation
+        withdrawal = withdrawal * (1 + withdrawal_inflation)
 
         if balance <= 0:
             break
 
     df = pd.DataFrame(
         table,
-        columns=["Age", "Withdrawal Per Year", "Year End Corpus"]
+        columns=["Age", "Withdrawal (Inflation Adjusted)", "Year End Corpus"]
     )
 
     st.dataframe(df, use_container_width=True)
 
-    if balance > 0:
-        st.success(f"Corpus Survives Till Age {age}")
+    # -------------------------
+    # Safe Withdrawal Rate
+    # -------------------------
+    swr = (withdrawal_per_year / corpus) * 100
+
+    st.markdown("### Safe Withdrawal Rate Analysis")
+
+    if swr <= 4:
+        st.success(f"SWR = {swr:.2f}% → Conservative & Safe")
+    elif swr <= 6:
+        st.warning(f"SWR = {swr:.2f}% → Moderate Risk")
     else:
-        st.error(f"Corpus Exhausted at Age {age}")
+        st.error(f"SWR = {swr:.2f}% → High Risk of Corpus Depletion")
+
+    # -------------------------
+    # Monte Carlo Simulation
+    # -------------------------
+    st.markdown("### Monte Carlo Survival Probability")
+
+    simulations = 500
+    success = 0
+    years = withdrawal_end_age - withdrawal_start_age
+
+    for i in range(simulations):
+
+        mc_balance = corpus
+        mc_withdraw = withdrawal_per_year
+
+        for y in range(years):
+
+            random_return = np.random.normal(expected_return, 0.15)
+            mc_balance = mc_balance * (1 + random_return)
+            mc_balance = mc_balance - mc_withdraw
+            mc_withdraw = mc_withdraw * (1 + withdrawal_inflation)
+
+            if mc_balance <= 0:
+                break
+
+        if mc_balance > 0:
+            success += 1
+
+    probability = (success / simulations) * 100
+
+    if probability >= 85:
+        st.success(f"Survival Probability: {probability:.1f}% (Strong Plan)")
+    elif probability >= 65:
+        st.warning(f"Survival Probability: {probability:.1f}% (Moderate)")
+    else:
+        st.error(f"Survival Probability: {probability:.1f}% (High Risk)")
 # =====================================================
 # TERM INSURANCE
 # =====================================================
