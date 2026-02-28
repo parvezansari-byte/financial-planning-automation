@@ -8,7 +8,7 @@ import numpy as np
 st.set_page_config(page_title="Freedom", layout="wide")
 
 # =====================================================
-# DARK FINTECH THEME
+# DARK THEME
 # =====================================================
 st.markdown("""
 <style>
@@ -32,7 +32,7 @@ st.markdown("""
 }
 
 .stButton > button {
-    background: linear-gradient(90deg, #2563EB, #0EA5E9);
+    background: linear-gradient(90deg,#2563EB,#06B6D4);
     color: white;
     border-radius: 8px;
     height: 45px;
@@ -46,7 +46,7 @@ label { color: #CBD5E1 !important; }
 """, unsafe_allow_html=True)
 
 # =====================================================
-# SESSION NAV
+# SESSION NAVIGATION
 # =====================================================
 if "page" not in st.session_state:
     st.session_state.page = "home"
@@ -62,10 +62,9 @@ st.markdown('<div class="subtitle">Integrated Wealth Planning Platform</div>', u
 st.markdown("---")
 
 # =====================================================
-# SIDEBAR
+# SIDEBAR INPUTS
 # =====================================================
 st.sidebar.header("Client Profile")
-
 current_age = st.sidebar.number_input("Current Age", 25, 70, 30)
 inflation = st.sidebar.number_input("Inflation (%)", 0.0, 15.0, 6.0)/100
 expected_return = st.sidebar.number_input("Expected Return (%)", 0.0, 20.0, 12.0)/100
@@ -82,7 +81,7 @@ def sip_required(target, rate, years):
     return target / (((1 + rate) ** years - 1) / rate)
 
 # =====================================================
-# HOME
+# HOME PAGE
 # =====================================================
 if st.session_state.page == "home":
 
@@ -99,6 +98,7 @@ if st.session_state.page == "home":
     with col3:
         st.button("Term Insurance", on_click=lambda: go("term"))
         st.button("House Planning", on_click=lambda: go("house"))
+        st.button("Cashflow Planner", on_click=lambda: go("cashflow"))
 
 # =====================================================
 # SIP CALCULATOR
@@ -119,11 +119,9 @@ if st.session_state.page == "sip":
         yearly = monthly_sip * 12
         total_invested += yearly
         corpus = (corpus + yearly) * (1 + expected_return)
-
         table.append([y, yearly, total_invested, round(corpus, 0)])
 
-    df = pd.DataFrame(
-        table,
+    df = pd.DataFrame(table,
         columns=["Year", "Yearly Investment", "Total Invested", "Year End Corpus"]
     )
 
@@ -140,10 +138,8 @@ if st.session_state.page == "swp":
     st.subheader("Advanced SWP Retirement Engine")
 
     corpus = st.number_input("Initial Corpus (₹)", value=10000000)
-
     withdrawal_start_age = st.number_input("Withdrawal Start Age", min_value=current_age, max_value=100, value=60)
     withdrawal_end_age = st.number_input("Withdrawal End Age", min_value=withdrawal_start_age+1, max_value=100, value=85)
-
     withdrawal_per_year = st.number_input("Initial Withdrawal Per Year (₹)", value=1200000)
     withdrawal_inflation = st.number_input("Withdrawal Inflation (%)", value=6.0)/100
 
@@ -154,22 +150,20 @@ if st.session_state.page == "swp":
     for age in range(withdrawal_start_age, withdrawal_end_age+1):
 
         balance = balance * (1 + expected_return)
-        balance = balance - withdrawal
+        balance -= withdrawal
 
         table.append([age, round(withdrawal,0), round(balance,0)])
-
-        withdrawal = withdrawal * (1 + withdrawal_inflation)
+        withdrawal *= (1 + withdrawal_inflation)
 
         if balance <= 0:
             break
 
-    df = pd.DataFrame(table, columns=["Age", "Withdrawal", "Year End Corpus"])
+    df = pd.DataFrame(table, columns=["Age","Withdrawal","Year End Corpus"])
     st.dataframe(df, use_container_width=True)
 
-    # Safe Withdrawal Rate
+    # SWR
     swr = (withdrawal_per_year / corpus) * 100
-    st.markdown("### Safe Withdrawal Rate")
-    st.write(f"SWR: {swr:.2f}%")
+    st.write(f"Safe Withdrawal Rate: {swr:.2f}%")
 
     # Monte Carlo
     simulations = 300
@@ -183,15 +177,15 @@ if st.session_state.page == "swp":
         for _ in range(years):
             random_return = np.random.normal(expected_return, 0.15)
             mc_balance = mc_balance * (1 + random_return)
-            mc_balance = mc_balance - mc_withdraw
-            mc_withdraw = mc_withdraw * (1 + withdrawal_inflation)
+            mc_balance -= mc_withdraw
+            mc_withdraw *= (1 + withdrawal_inflation)
             if mc_balance <= 0:
                 break
 
         if mc_balance > 0:
             success += 1
 
-    probability = (success/simulations)*100
+    probability = (success / simulations) * 100
     st.write(f"Survival Probability: {probability:.1f}%")
 
 # =====================================================
@@ -230,17 +224,16 @@ if st.session_state.page == "children":
 
     for i in range(num_children):
         child_age = st.number_input(f"Child {i+1} Age", 0, 18, 2, key=f"child{i}")
+        goal_age = st.number_input(f"Goal Age Child {i+1}", 10, 30, 21, key=f"goal{i}")
+        cost = st.number_input(f"Goal Cost (₹) Child {i+1}", value=2000000, key=f"cost{i}")
 
-        goals = {"10th":14,"12th":16,"Graduation":18,"Masters":22,"Marriage":24}
+        years = goal_age - child_age
+        future_cost = future_value(cost, inflation, years)
+        sip = sip_required(future_cost, expected_return, years)
 
-        for goal, age in goals.items():
-            cost = st.number_input(f"{goal} Cost (₹) Child {i+1}", value=2000000, key=f"{goal}{i}")
-            years = age - child_age
-            future_cost = future_value(cost, inflation, years)
-            sip = sip_required(future_cost, expected_return, years)
-            summary.append([f"Child {i+1}-{goal}",age,round(future_cost,0),round(sip/12,0)])
+        summary.append([f"Child {i+1}",goal_age,round(future_cost,0),round(sip/12,0)])
 
-    df = pd.DataFrame(summary, columns=["Goal","Goal Age","Future Cost","Monthly SIP Required"])
+    df = pd.DataFrame(summary, columns=["Child","Goal Age","Future Cost","Monthly SIP Required"])
     st.dataframe(df, use_container_width=True)
 
 # =====================================================
@@ -269,7 +262,6 @@ if st.session_state.page == "house":
 
     house_cost_today = st.number_input("House Cost Today (₹)", value=10000000)
     years_to_buy = st.number_input("Years to Purchase", value=5)
-
     down_payment_percent = st.number_input("Down Payment (%)", value=20.0)/100
     home_loan_rate = st.number_input("Home Loan Interest Rate (%)", value=8.5)/100
     loan_tenure_years = st.number_input("Loan Tenure (Years)", value=20)
@@ -301,6 +293,45 @@ if st.session_state.page == "house":
     }))
 
     st.success(f"Required Monthly SIP for Down Payment: ₹ {sip_needed/12:,.0f}")
+
+# =====================================================
+# CASHFLOW PLANNER
+# =====================================================
+if st.session_state.page == "cashflow":
+
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("Cashflow Planner")
+
+    plan_till_age = st.number_input("Plan Till Age", 50, 100, 85)
+    annual_income = st.number_input("Annual Income (₹)", value=1800000)
+    annual_expense = st.number_input("Annual Expense (₹)", value=900000)
+    annual_investment = st.number_input("Annual Investment (₹)", value=300000)
+    current_corpus = st.number_input("Current Corpus (₹)", value=1000000)
+
+    years = plan_till_age - current_age
+    corpus = current_corpus
+    table = []
+
+    for year in range(1, years+1):
+        surplus = annual_income - annual_expense - annual_investment
+        corpus = corpus * (1 + expected_return)
+        corpus += annual_investment
+
+        table.append([
+            current_age + year,
+            annual_income,
+            annual_expense,
+            annual_investment,
+            surplus,
+            round(corpus,0)
+        ])
+
+    df = pd.DataFrame(table,
+        columns=["Age","Income","Expense","Investment","Net Surplus","Year End Corpus"]
+    )
+
+    st.dataframe(df, use_container_width=True)
+    st.success(f"Projected Corpus at Age {plan_till_age}: ₹ {corpus:,.0f}")
 
 st.markdown("---")
 st.caption("Freedom Wealth Platform | For Illustration Only")
