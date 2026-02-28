@@ -8,7 +8,7 @@ import numpy as np
 st.set_page_config(page_title="Freedom", layout="wide")
 
 # =====================================================
-# DARK THEME
+# DARK FINTECH THEME
 # =====================================================
 st.markdown("""
 <style>
@@ -62,10 +62,24 @@ st.markdown('<div class="subtitle">Integrated Wealth Planning Platform</div>', u
 st.markdown("---")
 
 # =====================================================
-# SIDEBAR
+# SIDEBAR GLOBAL SETTINGS
 # =====================================================
 st.sidebar.header("Client Profile")
+
 current_age = st.sidebar.number_input("Current Age", 25, 70, 30)
+inflation = st.sidebar.number_input("Inflation (%)", 0.0, 15.0, 6.0)/100
+expected_return = st.sidebar.number_input("Expected Return (%)", 0.0, 20.0, 12.0)/100
+
+# =====================================================
+# COMMON FUNCTIONS
+# =====================================================
+def future_value(pv, rate, years):
+    return pv * (1 + rate) ** years
+
+def sip_required(target, rate, years):
+    if years <= 0 or rate == 0:
+        return 0
+    return target / (((1 + rate) ** years - 1) / rate)
 
 # =====================================================
 # HOME PAGE
@@ -88,123 +102,204 @@ if st.session_state.page == "home":
         st.button("Cashflow Planner", on_click=lambda: go("cashflow"))
 
 # =====================================================
-# CASHFLOW PLANNER (DETAILED STRUCTURE)
+# SIP CALCULATOR
+# =====================================================
+if st.session_state.page == "sip":
+
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("SIP Calculator")
+
+    monthly_sip = st.number_input("Monthly SIP (₹)", value=5000)
+    years = st.number_input("Investment Years", value=10)
+
+    corpus = 0
+    invested = 0
+    table = []
+
+    for y in range(1, years+1):
+        yearly = monthly_sip * 12
+        invested += yearly
+        corpus = (corpus + yearly) * (1 + expected_return)
+        table.append([y, yearly, invested, round(corpus,0)])
+
+    df = pd.DataFrame(table,
+        columns=["Year","Yearly Investment","Total Invested","Year End Corpus"]
+    )
+
+    st.dataframe(df, use_container_width=True)
+    st.success(f"Final Corpus: ₹ {corpus:,.0f}")
+
+# =====================================================
+# SWP CALCULATOR
+# =====================================================
+if st.session_state.page == "swp":
+
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("Advanced SWP")
+
+    corpus = st.number_input("Initial Corpus (₹)", value=10000000)
+    start_age = st.number_input("Withdrawal Start Age", min_value=current_age, value=60)
+    end_age = st.number_input("Withdrawal End Age", min_value=start_age+1, value=85)
+    withdrawal = st.number_input("Initial Withdrawal Per Year (₹)", value=1200000)
+    withdrawal_inflation = st.number_input("Withdrawal Inflation (%)", value=6.0)/100
+
+    balance = corpus
+    table = []
+
+    for age in range(start_age, end_age+1):
+        balance = balance * (1 + expected_return)
+        balance -= withdrawal
+        table.append([age, round(withdrawal,0), round(balance,0)])
+        withdrawal *= (1 + withdrawal_inflation)
+        if balance <= 0:
+            break
+
+    df = pd.DataFrame(table,
+        columns=["Age","Withdrawal","Year End Corpus"]
+    )
+
+    st.dataframe(df, use_container_width=True)
+
+# =====================================================
+# RETIREMENT PLANNER
+# =====================================================
+if st.session_state.page == "retirement":
+
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("Retirement Planner")
+
+    retirement_age = st.number_input("Retirement Age", 45, 75, 60)
+    annual_expense = st.number_input("Annual Expense Today (₹)", value=600000)
+
+    years_to_ret = retirement_age - current_age
+    expense_at_ret = annual_expense * ((1 + inflation) ** years_to_ret)
+    required_corpus = expense_at_ret * 25
+
+    st.table(pd.DataFrame({
+        "Metric":["Expense at Retirement","Required Corpus"],
+        "Value":[f"₹ {expense_at_ret:,.0f}",f"₹ {required_corpus:,.0f}"]
+    }))
+
+# =====================================================
+# CHILDREN PLANNER
+# =====================================================
+if st.session_state.page == "children":
+
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("Children Planner")
+
+    num_children = st.number_input("Number of Children", 1, 4, 1)
+    summary = []
+
+    for i in range(num_children):
+        child_age = st.number_input(f"Child {i+1} Age", 0, 18, 2, key=f"child{i}")
+        goal_age = st.number_input(f"Goal Age Child {i+1}", 10, 30, 21, key=f"goal{i}")
+        cost = st.number_input(f"Goal Cost (₹) Child {i+1}", value=2000000, key=f"cost{i}")
+
+        years = goal_age - child_age
+        future_cost = future_value(cost, inflation, years)
+        sip = sip_required(future_cost, expected_return, years)
+
+        summary.append([f"Child {i+1}",goal_age,round(future_cost,0),round(sip/12,0)])
+
+    df = pd.DataFrame(summary,
+        columns=["Child","Goal Age","Future Cost","Monthly SIP Required"]
+    )
+
+    st.dataframe(df, use_container_width=True)
+
+# =====================================================
+# TERM INSURANCE
+# =====================================================
+if st.session_state.page == "term":
+
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("Term Insurance")
+
+    income = st.number_input("Annual Income (₹)", value=2400000)
+    retirement_age = st.number_input("Retirement Age", 45, 75, 60)
+
+    years_left = retirement_age - current_age
+    cover = income * years_left
+
+    st.success(f"Recommended Cover: ₹ {cover:,.0f}")
+
+# =====================================================
+# HOUSE PLANNING
+# =====================================================
+if st.session_state.page == "house":
+
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("House Planning")
+
+    house_cost = st.number_input("House Cost Today (₹)", value=10000000)
+    years = st.number_input("Years to Buy", value=5)
+
+    future_house_cost = house_cost * ((1 + inflation) ** years)
+    st.success(f"Future House Cost: ₹ {future_house_cost:,.0f}")
+
+# =====================================================
+# CASHFLOW PLANNER (STRUCTURED + PROJECTION)
 # =====================================================
 if st.session_state.page == "cashflow":
 
     st.button("⬅ Back", on_click=lambda: go("home"))
     st.subheader("Detailed Cashflow Planner")
 
-    # ---------------------------
-    # CASH INFLOWS
-    # ---------------------------
-    st.markdown("## CASH INFLOWS")
+    plan_till_age = st.number_input("Plan Till Age", 50, 100, 85)
 
-    salary = st.number_input("Salary / Wages (After-Tax)", value=0)
-    side_income = st.number_input("Side Hustle / Freelance", value=0)
+    # INFLOWS
+    salary = st.number_input("Salary / Wages", value=0)
+    side_income = st.number_input("Side Income", value=0)
     investment_income = st.number_input("Investment Income", value=0)
     other_income = st.number_input("Other Income", value=0)
 
     total_inflow = salary + side_income + investment_income + other_income
 
-    # ---------------------------
-    # CASH OUTFLOWS
-    # ---------------------------
-    st.markdown("## FIXED EXPENSES (Needs)")
-
+    # OUTFLOWS
     rent = st.number_input("Rent / Mortgage", value=0)
     utilities = st.number_input("Utilities", value=0)
     debt = st.number_input("Debt Payments", value=0)
     insurance = st.number_input("Insurance", value=0)
-    childcare = st.number_input("Childcare / Alimony", value=0)
-
-    fixed_total = rent + utilities + debt + insurance + childcare
-
-    st.markdown("## VARIABLE EXPENSES (Wants)")
-
     groceries = st.number_input("Groceries", value=0)
     dining = st.number_input("Dining / Entertainment", value=0)
-    transport = st.number_input("Transportation / Fuel", value=0)
-    shopping = st.number_input("Shopping / Subscriptions", value=0)
+    savings = st.number_input("Savings & Investments", value=0)
 
-    variable_total = groceries + dining + transport + shopping
-
-    st.markdown("## SAVINGS & INVESTMENTS")
-
-    emergency = st.number_input("Emergency Fund Savings", value=0)
-    retirement = st.number_input("Retirement Contributions", value=0)
-    investments = st.number_input("Investments (Stocks / MF / Crypto)", value=0)
-
-    savings_total = emergency + retirement + investments
-
-    total_outflow = fixed_total + variable_total + savings_total
+    total_outflow = rent + utilities + debt + insurance + groceries + dining + savings
 
     net_cashflow = total_inflow - total_outflow
 
-    # ---------------------------
-    # SUMMARY TABLE
-    # ---------------------------
     summary = pd.DataFrame({
-        "Category": [
-            "Total Inflow (A)",
-            "Total Fixed Expenses",
-            "Total Variable Expenses",
-            "Total Savings & Investments",
-            "Total Outflow (B)",
-            "Net Cash Flow (A - B)"
-        ],
-        "Amount": [
-            total_inflow,
-            fixed_total,
-            variable_total,
-            savings_total,
-            total_outflow,
-            net_cashflow
-        ]
+        "Category":["Total Inflow","Total Outflow","Net Cashflow"],
+        "Amount":[total_inflow,total_outflow,net_cashflow]
     })
 
-    st.markdown("## CASHFLOW SUMMARY")
     st.dataframe(summary, use_container_width=True)
 
-    if net_cashflow > 0:
-        st.success(f"Positive Cashflow: ₹ {net_cashflow:,.0f}")
-    elif net_cashflow == 0:
-        st.warning("Break-even Cashflow")
-    else:
-        st.error(f"Cashflow Deficit: ₹ {abs(net_cashflow):,.0f}")
+    years = plan_till_age - current_age
+    corpus = 0
+    projection = []
 
-# =====================================================
-# PLACEHOLDER MODULES (Simplified)
-# =====================================================
-if st.session_state.page == "sip":
-    st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("SIP Calculator")
-    st.write("SIP module here...")
+    for i in range(1, years+1):
+        inflow_adj = total_inflow * ((1 + inflation) ** i)
+        outflow_adj = total_outflow * ((1 + inflation) ** i)
+        surplus = inflow_adj - outflow_adj
+        corpus = corpus * (1 + expected_return)
+        corpus += surplus
 
-if st.session_state.page == "swp":
-    st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("SWP Calculator")
-    st.write("SWP module here...")
+        projection.append([
+            current_age+i,
+            round(surplus,0),
+            round(corpus,0)
+        ])
 
-if st.session_state.page == "retirement":
-    st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("Retirement Planner")
-    st.write("Retirement module here...")
+    df_projection = pd.DataFrame(projection,
+        columns=["Age","Net Surplus","Projected Corpus"]
+    )
 
-if st.session_state.page == "children":
-    st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("Children Planner")
-    st.write("Children module here...")
+    st.dataframe(df_projection, use_container_width=True)
 
-if st.session_state.page == "term":
-    st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("Term Insurance")
-    st.write("Term module here...")
-
-if st.session_state.page == "house":
-    st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("House Planning")
-    st.write("House module here...")
+    st.success(f"Projected Corpus at Age {plan_till_age}: ₹ {corpus:,.0f}")
 
 st.markdown("---")
 st.caption("Freedom Wealth Platform | For Illustration Only")
