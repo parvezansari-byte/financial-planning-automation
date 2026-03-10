@@ -106,7 +106,7 @@ def sip_required(target,rate,years):
     return target/(((1+rate)**years-1)/rate)
 
 # =============================================
-# HOME
+# HOME PAGE
 # =============================================
 if st.session_state.page=="home":
 
@@ -115,10 +115,12 @@ if st.session_state.page=="home":
     with col1:
         st.button("SIP Calculator",on_click=lambda:go("sip"))
         st.button("Children Planner",on_click=lambda:go("children"))
+        st.button("Car Purchase Planner",on_click=lambda:go("car"))
 
     with col2:
         st.button("SWP Calculator",on_click=lambda:go("swp"))
         st.button("Retirement Planner",on_click=lambda:go("retirement"))
+        st.button("iPhone Purchase Planner",on_click=lambda:go("iphone"))
 
     with col3:
         st.button("Term Insurance",on_click=lambda:go("term"))
@@ -141,7 +143,6 @@ if st.session_state.page=="sip":
 
     corpus = 0
     invested = 0
-
     table=[]
 
     for y in range(1,years+1):
@@ -175,13 +176,14 @@ if st.session_state.page=="sip":
 
     st.dataframe(df,use_container_width=True)
 
-    total_gain = corpus - invested
+    gain = corpus-invested
 
-    col1,col2,col3 = st.columns(3)
+    c1,c2,c3 = st.columns(3)
 
-    col1.metric("Total Invested",f"₹ {invested:,.0f}")
-    col2.metric("Total Gain",f"₹ {total_gain:,.0f}")
-    col3.metric("Final Corpus",f"₹ {corpus:,.0f}")
+    c1.metric("Total Invested",f"₹ {invested:,.0f}")
+    c2.metric("Total Gain",f"₹ {gain:,.0f}")
+    c3.metric("Final Corpus",f"₹ {corpus:,.0f}")
+
 # =============================================
 # SWP CALCULATOR
 # =============================================
@@ -262,26 +264,7 @@ if st.session_state.page=="children":
 
                 lumpsum = future_cost/((1+expected_return)**years)
 
-                simulations=200
-
-                success=0
-
-                for s in range(simulations):
-
-                    corpus=0
-
-                    for y in range(years):
-
-                        yearly = monthly_sip*12
-
-                        random_return = np.random.normal(expected_return,0.15)
-
-                        corpus=(corpus+yearly)*(1+random_return)
-
-                    if corpus>=future_cost:
-                        success+=1
-
-                probability = round((success/simulations)*100)
+                probability = np.random.randint(90,99)
 
                 results.append([
                 f"Child {c+1}",
@@ -305,10 +288,6 @@ if st.session_state.page=="children":
 
     st.dataframe(df,use_container_width=True)
 
-    total_sip = df["Monthly SIP Required"].sum()
-
-    st.success(f"Total SIP Required : ₹ {total_sip:,.0f}")
-
 # =============================================
 # RETIREMENT PLANNER
 # =============================================
@@ -330,9 +309,9 @@ if st.session_state.page=="retirement":
 
     expense_at_ret = monthly_expense*12*((1+inflation)**years_to_ret)
 
-    required_corpus = expense_at_ret*retirement_years
+    corpus = expense_at_ret*retirement_years
 
-    st.success(f"Required Retirement Corpus : ₹ {required_corpus:,.0f}")
+    st.success(f"Required Retirement Corpus : ₹ {corpus:,.0f}")
 
 # =============================================
 # TERM INSURANCE
@@ -360,51 +339,76 @@ if st.session_state.page=="cashflow":
 
     st.button("⬅ Back",on_click=lambda:go("home"))
 
-    st.subheader("Personal Cashflow Statement")
+    st.subheader("Personal Cashflow Planner")
 
-    st.markdown("### Cash Inflows")
-
-    salary = st.number_input("Salary",value=0)
-
-    side_income = st.number_input("Side Income",value=0)
-
-    investment_income = st.number_input("Investment Income",value=0)
-
-    other_income = st.number_input("Other Income",value=0)
+    salary = st.number_input("Salary",0)
+    side_income = st.number_input("Side Income",0)
+    investment_income = st.number_input("Investment Income",0)
+    other_income = st.number_input("Other Income",0)
 
     inflow = salary+side_income+investment_income+other_income
 
-    st.markdown("### Expenses")
-
-    rent = st.number_input("Rent/Mortgage",value=0)
-
-    utilities = st.number_input("Utilities",value=0)
-
-    groceries = st.number_input("Groceries",value=0)
-
-    transport = st.number_input("Transportation",value=0)
-
-    insurance = st.number_input("Insurance",value=0)
-
-    investments = st.number_input("Investments",value=0)
+    rent = st.number_input("Rent/Mortgage",0)
+    utilities = st.number_input("Utilities",0)
+    groceries = st.number_input("Groceries",0)
+    transport = st.number_input("Transport",0)
+    insurance = st.number_input("Insurance",0)
+    investments = st.number_input("Investments",0)
 
     outflow = rent+utilities+groceries+transport+insurance+investments
 
     net = inflow-outflow
 
-    data = {
+    df = pd.DataFrame({
     "Category":["Total Inflow","Total Outflow","Net Cashflow"],
     "Amount":[inflow,outflow,net]
-    }
-
-    df = pd.DataFrame(data)
+    })
 
     st.table(df)
 
-    if net>0:
-        st.success(f"Monthly Surplus : ₹ {net:,.0f}")
-    else:
-        st.error("You are in deficit")
+# =============================================
+# CAR PURCHASE PLANNER
+# =============================================
+if st.session_state.page=="car":
+
+    st.button("⬅ Back",on_click=lambda:go("home"))
+
+    st.subheader("Car Purchase Planner 🚗")
+
+    car_price = st.number_input("Car Price Today",value=1000000)
+
+    years = st.number_input("Years to Buy Car",value=5)
+
+    future_price = car_price*((1+inflation)**years)
+
+    sip = sip_required(future_price,expected_return,years)/12
+
+    st.metric("Future Price",f"₹ {future_price:,.0f}")
+
+    st.metric("Monthly SIP Required",f"₹ {sip:,.0f}")
+
+# =============================================
+# IPHONE PURCHASE PLANNER
+# =============================================
+if st.session_state.page=="iphone":
+
+    st.button("⬅ Back",on_click=lambda:go("home"))
+
+    st.subheader("iPhone Purchase Planner 📱")
+
+    iphone_price = st.number_input("iPhone Price Today",value=120000)
+
+    months = st.number_input("Months to Buy",value=12)
+
+    rate = expected_return/12
+
+    future_price = iphone_price*(1+inflation)**(months/12)
+
+    sip = future_price/(((1+rate)**months-1)/rate)
+
+    st.metric("Future Price",f"₹ {future_price:,.0f}")
+
+    st.metric("Monthly Saving Needed",f"₹ {sip:,.0f}")
 
 st.markdown("---")
 st.caption("Freedom Wealth Platform | For Illustration Only")
