@@ -123,8 +123,9 @@ if st.session_state.page=="home":
         st.button("iPhone Purchase Planner",on_click=lambda:go("iphone"))
 
     with col3:
-        st.button("Term Insurance",on_click=lambda:go("term"))
-        st.button("Cashflow Planner",on_click=lambda:go("cashflow"))
+    st.button("Term Insurance",on_click=lambda:go("term"))
+    st.button("Cashflow Planner",on_click=lambda:go("cashflow"))
+    st.button("Portfolio Allocation",on_click=lambda:go("portfolio"))
 
 # =============================================
 # SIP CALCULATOR
@@ -412,3 +413,62 @@ if st.session_state.page=="iphone":
 
 st.markdown("---")
 st.caption("Freedom Wealth Platform | For Illustration Only")
+# =============================================
+# PORTFOLIO ALLOCATION
+# =============================================
+if st.session_state.page=="portfolio":
+
+    st.button("⬅ Back",on_click=lambda:go("home"))
+
+    st.subheader("Portfolio Allocation")
+
+    total_investment = st.number_input("Total Investment Amount (₹)",value=1000000)
+
+    st.markdown("### Asset Allocation (%)")
+
+    equity_pct = st.slider("Equity %",0,100,50)
+    debt_pct = st.slider("Debt %",0,100,30)
+    gold_pct = st.slider("Gold %",0,100,10)
+    realestate_pct = st.slider("Real Estate %",0,100,5)
+    cash_pct = st.slider("Cash / Liquid %",0,100,5)
+
+    total_pct = equity_pct+debt_pct+gold_pct+realestate_pct+cash_pct
+
+    if total_pct != 100:
+        st.warning(f"Allocation Total = {total_pct}% (should be 100%)")
+
+    equity_amt = total_investment*(equity_pct/100)
+    debt_amt = total_investment*(debt_pct/100)
+    gold_amt = total_investment*(gold_pct/100)
+    realestate_amt = total_investment*(realestate_pct/100)
+    cash_amt = total_investment*(cash_pct/100)
+
+    data = {
+    "Asset Class":[
+    "Equity",
+    "Debt",
+    "Gold",
+    "Real Estate",
+    "Cash / Liquid"
+    ],
+
+    "Allocation %":[
+    equity_pct,
+    debt_pct,
+    gold_pct,
+    realestate_pct,
+    cash_pct
+    ],
+
+    "Amount (₹)":[
+    equity_amt,
+    debt_amt,
+    gold_amt,
+    realestate_amt,
+    cash_amt
+    ]
+    }
+
+    df = pd.DataFrame(data)
+
+    st.dataframe(df,use_container_width=True)
