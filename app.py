@@ -94,7 +94,7 @@ if st.session_state.page=="home":
         st.button("Term Insurance",on_click=lambda:go("term"))
         st.button("Cashflow Planner",on_click=lambda:go("cashflow"))
         st.button("Portfolio Allocation",on_click=lambda:go("portfolio"))
-
+        st.button("Net Worth Dashboard", on_click=lambda: go("networth"))
 # =====================================================
 # SIP CALCULATOR
 # =====================================================
@@ -340,3 +340,48 @@ if st.session_state.page=="portfolio":
 
 st.markdown("---")
 st.caption("Freedom Wealth Platform | For Illustration Only")
+# =============================================
+# NET WORTH DASHBOARD
+# =============================================
+if st.session_state.page=="networth":
+
+    st.button("⬅ Back",on_click=lambda:go("home"))
+
+    st.subheader("Net Worth Dashboard")
+
+    st.markdown("### Assets")
+
+    mf = st.number_input("Mutual Funds (₹)",value=0)
+    stocks = st.number_input("Stocks (₹)",value=0)
+    realestate = st.number_input("Real Estate (₹)",value=0)
+    gold = st.number_input("Gold (₹)",value=0)
+    cash = st.number_input("Cash / Bank Balance (₹)",value=0)
+    other_assets = st.number_input("Other Assets (₹)",value=0)
+
+    total_assets = mf + stocks + realestate + gold + cash + other_assets
+
+    st.markdown("### Liabilities")
+
+    home_loan = st.number_input("Home Loan (₹)",value=0)
+    personal_loan = st.number_input("Personal Loan (₹)",value=0)
+    car_loan = st.number_input("Car Loan (₹)",value=0)
+    credit_card = st.number_input("Credit Card Outstanding (₹)",value=0)
+    other_liabilities = st.number_input("Other Liabilities (₹)",value=0)
+
+    total_liabilities = home_loan + personal_loan + car_loan + credit_card + other_liabilities
+
+    networth = total_assets - total_liabilities
+
+    st.markdown("### Net Worth Summary")
+
+    df = pd.DataFrame({
+        "Category":["Total Assets","Total Liabilities","Net Worth"],
+        "Amount":[total_assets,total_liabilities,networth]
+    })
+
+    st.table(df)
+
+    if networth > 0:
+        st.success(f"Net Worth : ₹ {networth:,.0f}")
+    else:
+        st.error("Net Worth Negative – Review liabilities")
