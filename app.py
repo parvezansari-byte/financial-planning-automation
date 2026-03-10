@@ -137,26 +137,51 @@ if st.session_state.page=="sip":
 
     years = st.number_input("Investment Years",value=10)
 
-    corpus=0
+    step_up = st.number_input("Annual Step-Up (%)",0.0,50.0,10.0)/100
+
+    corpus = 0
+    invested = 0
 
     table=[]
 
-    for y in range(years):
+    for y in range(1,years+1):
 
-        yearly = monthly_sip*12
+        yearly_sip = monthly_sip*12
 
-        corpus = (corpus+yearly)*(1+expected_return)
+        invested += yearly_sip
 
-        invested = yearly*(y+1)
+        corpus = (corpus + yearly_sip)*(1+expected_return)
 
-        table.append([y+1,invested,round(corpus,0)])
+        table.append([
+            y,
+            round(monthly_sip,0),
+            round(yearly_sip,0),
+            round(invested,0),
+            round(corpus,0)
+        ])
 
-    df = pd.DataFrame(table,columns=["Year","Total Invested","Corpus Value"])
+        monthly_sip = monthly_sip*(1+step_up)
+
+    df = pd.DataFrame(
+        table,
+        columns=[
+            "Year",
+            "Monthly SIP",
+            "Yearly Investment",
+            "Total Invested",
+            "Year End Corpus"
+        ]
+    )
 
     st.dataframe(df,use_container_width=True)
 
-    st.success(f"Final Corpus : ₹ {corpus:,.0f}")
+    total_gain = corpus - invested
 
+    col1,col2,col3 = st.columns(3)
+
+    col1.metric("Total Invested",f"₹ {invested:,.0f}")
+    col2.metric("Total Gain",f"₹ {total_gain:,.0f}")
+    col3.metric("Final Corpus",f"₹ {corpus:,.0f}")
 # =============================================
 # SWP CALCULATOR
 # =============================================
