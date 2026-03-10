@@ -181,32 +181,119 @@ if st.session_state.page == "retirement":
     }))
 
 # =====================================================
-# CHILDREN PLANNER
+# PRO CHILDREN PLANNER
 # =====================================================
 if st.session_state.page == "children":
 
     st.button("⬅ Back", on_click=lambda: go("home"))
-    st.subheader("Children Planner")
+    st.subheader("Children Financial Planning (Pro)")
 
     num_children = st.number_input("Number of Children", 1, 4, 1)
-    summary = []
 
-    for i in range(num_children):
-        child_age = st.number_input(f"Child {i+1} Age", 0, 18, 2, key=f"child{i}")
-        goal_age = st.number_input(f"Goal Age Child {i+1}", 10, 30, 21, key=f"goal{i}")
-        cost = st.number_input(f"Goal Cost (₹) Child {i+1}", value=2000000, key=f"cost{i}")
+    education_inflation = st.number_input(
+        "Education Inflation (%)", 0.0, 20.0, 10.0
+    ) / 100
 
-        years = goal_age - child_age
-        future_cost = future_value(cost, inflation, years)
-        sip = sip_required(future_cost, expected_return, years)
+    marriage_inflation = st.number_input(
+        "Marriage Inflation (%)", 0.0, 20.0, 8.0
+    ) / 100
 
-        summary.append([f"Child {i+1}",goal_age,round(future_cost,0),round(sip/12,0)])
+    step_up = st.number_input(
+        "Annual SIP Step Up (%)", 0.0, 20.0, 10.0
+    ) / 100
 
-    df = pd.DataFrame(summary,
-        columns=["Child","Goal Age","Future Cost","Monthly SIP Required"]
+    results = []
+
+    for c in range(num_children):
+
+        st.markdown(f"### Child {c+1}")
+
+        child_age = st.number_input(
+            f"Child {c+1} Current Age",
+            0, 18, 2,
+            key=f"childage{c}"
+        )
+
+        goals = {
+            "10th Board": (15, education_inflation),
+            "12th Board": (17, education_inflation),
+            "Graduation": (21, education_inflation),
+            "Masters": (24, education_inflation),
+            "Marriage": (28, marriage_inflation)
+        }
+
+        for goal, (goal_age, infl) in goals.items():
+
+            cost_today = st.number_input(
+                f"{goal} Cost Today (₹) Child {c+1}",
+                value=2000000,
+                key=f"{goal}_{c}"
+            )
+
+            years = goal_age - child_age
+
+            if years > 0:
+
+                future_cost = cost_today * ((1 + infl) ** years)
+
+                sip = sip_required(
+                    future_cost,
+                    expected_return,
+                    years
+                )
+
+                monthly_sip = sip / 12
+
+                # Monte Carlo Probability
+                simulations = 500
+                success = 0
+
+                for _ in range(simulations):
+
+                    corpus = 0
+
+                    for y in range(years):
+
+                        yearly_sip = monthly_sip * 12 * ((1+step_up)**y)
+
+                        random_return = np.random.normal(
+                            expected_return,
+                            0.15
+                        )
+
+                        corpus = (corpus + yearly_sip) * (1 + random_return)
+
+                    if corpus >= future_cost:
+                        success += 1
+
+                probability = round((success/simulations)*100)
+
+                results.append([
+                    f"Child {c+1}",
+                    goal,
+                    goal_age,
+                    round(future_cost),
+                    round(monthly_sip),
+                    probability
+                ])
+
+    df = pd.DataFrame(
+        results,
+        columns=[
+            "Child",
+            "Goal",
+            "Goal Age",
+            "Future Cost (₹)",
+            "Monthly SIP Required (₹)",
+            "Success Probability %"
+        ]
     )
 
     st.dataframe(df, use_container_width=True)
+
+    total_sip = df["Monthly SIP Required (₹)"].sum()
+
+    st.success(f"Total Monthly SIP Needed: ₹ {total_sip:,.0f}")
 
 # =====================================================
 # TERM INSURANCE
