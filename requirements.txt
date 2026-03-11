@@ -4,3 +4,5 @@ pandas
 matplotlib
 reportlab
 python-dateutil
+pdfplumber
+openpyxl
