@@ -138,6 +138,7 @@ if st.session_state.page == "home":
         st.button("Portfolio Allocation", on_click=lambda: go("portfolio"))
         st.button("Net Worth Dashboard", on_click=lambda: go("networth"))
         st.button("Retirement Monte Carlo", on_click=lambda: go("mc_retirement"))
+        st.button("MF Portfolio + XIRR", on_click=lambda: go("mf_xirr"))
 
 # =====================================================
 # SIP CALCULATOR
@@ -851,6 +852,317 @@ if st.session_state.page == "rebalance":
     ])
 
     st.dataframe(df, use_container_width=True)
+    # =====================================================
+# MUTUAL FUND PORTFOLIO UPLOAD + XIRR (AUTO-DETECT CAS)
+# =====================================================
+if st.session_state.page == "mf_xirr":
+
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("Mutual Fund Portfolio Upload + XIRR (Auto-Detect CAS)")
+
+    st.markdown("""
+    ### Supported File Types
+    - CSV
+    - Excel (.xlsx)
+
+    ### Auto-Detects Common CAS / Portfolio Formats
+    It will try to identify:
+    - Date column
+    - Fund / Scheme name
+    - Transaction type
+    - Amount / Value
+    """)
+
+    uploaded_file = st.file_uploader(
+        "Upload CAS / Portfolio File",
+        type=["csv", "xlsx"],
+        key="mf_portfolio_upload"
+    )
+
+    # -----------------------------
+    # XIRR FUNCTIONS
+    # -----------------------------
+    def xnpv(rate, cashflows):
+        t0 = cashflows[0][0]
+        return sum(cf / ((1 + rate) ** ((dt - t0).days / 365.0)) for dt, cf in cashflows)
+
+    def xirr(cashflows):
+        low = -0.9999
+        high = 10.0
+
+        for _ in range(200):
+            mid = (low + high) / 2
+            val = xnpv(mid, cashflows)
+
+            if abs(val) < 1e-6:
+                return mid
+
+            if val > 0:
+                low = mid
+            else:
+                high = mid
+
+        return mid
+
+    # -----------------------------
+    # COLUMN DETECTION
+    # -----------------------------
+    def normalize_col(col):
+        return str(col).strip().lower().replace("_", " ").replace("-", " ")
+
+    def detect_columns(df):
+        original_cols = list(df.columns)
+        norm_map = {col: normalize_col(col) for col in original_cols}
+
+        date_col = None
+        fund_col = None
+        txn_col = None
+        amount_col = None
+
+        # Possible aliases
+        date_aliases = [
+            "date", "transaction date", "txn date", "trade date", "posting date"
+        ]
+
+        fund_aliases = [
+            "fund name", "scheme name", "scheme", "fund", "scheme/fund name", "scheme/fund"
+        ]
+
+        txn_aliases = [
+            "transaction type", "txn type", "nature", "transaction nature", "type", "txn"
+        ]
+
+        amount_aliases = [
+            "amount", "transaction amount", "value", "txn amount", "gross amount", "net amount"
+        ]
+
+        for col, norm in norm_map.items():
+            if any(alias == norm for alias in date_aliases):
+                date_col = col
+            if any(alias == norm for alias in fund_aliases):
+                fund_col = col
+            if any(alias == norm for alias in txn_aliases):
+                txn_col = col
+            if any(alias == norm for alias in amount_aliases):
+                amount_col = col
+
+        # fallback partial matching
+        if date_col is None:
+            for col, norm in norm_map.items():
+                if "date" in norm:
+                    date_col = col
+                    break
+
+        if fund_col is None:
+            for col, norm in norm_map.items():
+                if "scheme" in norm or "fund" in norm:
+                    fund_col = col
+                    break
+
+        if txn_col is None:
+            for col, norm in norm_map.items():
+                if "type" in norm or "nature" in norm or "txn" in norm:
+                    txn_col = col
+                    break
+
+        if amount_col is None:
+            for col, norm in norm_map.items():
+                if "amount" in norm or "value" in norm:
+                    amount_col = col
+                    break
+
+        return date_col, fund_col, txn_col, amount_col
+
+    # -----------------------------
+    # TRANSACTION TYPE NORMALIZER
+    # -----------------------------
+    def normalize_txn_type(x):
+        x = str(x).strip().lower()
+
+        purchase_keywords = [
+            "purchase", "sip", "purchase sip", "systematic investment",
+            "systematic investment plan", "switch in", "allotment", "buy", "investment"
+        ]
+
+        redemption_keywords = [
+            "redemption", "sell", "switch out", "withdrawal", "redeem"
+        ]
+
+        current_value_keywords = [
+            "current value", "market value", "current market value", "nav value", "valuation"
+        ]
+
+        for kw in purchase_keywords:
+            if kw in x:
+                return "Purchase"
+
+        for kw in redemption_keywords:
+            if kw in x:
+                return "Redemption"
+
+        for kw in current_value_keywords:
+            if kw in x:
+                return "Current Value"
+
+        return "Unknown"
+
+    # -----------------------------
+    # PROCESS FILE
+    # -----------------------------
+    if uploaded_file is not None:
+
+        try:
+            # Read file
+            if uploaded_file.name.endswith(".csv"):
+                raw_df = pd.read_csv(uploaded_file)
+            else:
+                raw_df = pd.read_excel(uploaded_file)
+
+            st.markdown("### Raw Uploaded Data")
+            st.dataframe(raw_df, use_container_width=True)
+
+            # Detect columns
+            date_col, fund_col, txn_col, amount_col = detect_columns(raw_df)
+
+            st.markdown("### Auto-Detected Columns")
+            detect_df = pd.DataFrame({
+                "Field": ["Date", "Fund Name", "Transaction Type", "Amount"],
+                "Detected Column": [date_col, fund_col, txn_col, amount_col]
+            })
+            st.table(detect_df)
+
+            if not all([date_col, fund_col, txn_col, amount_col]):
+                st.error("Unable to auto-detect all required columns. Please ensure your file has Date, Fund/Scheme Name, Transaction Type, and Amount/Value.")
+            else:
+                # Create standardized dataframe
+                df = pd.DataFrame()
+                df["Date"] = pd.to_datetime(raw_df[date_col], errors="coerce")
+                df["Fund Name"] = raw_df[fund_col].astype(str).str.strip()
+                df["Transaction Type Raw"] = raw_df[txn_col].astype(str).str.strip()
+                df["Transaction Type"] = df["Transaction Type Raw"].apply(normalize_txn_type)
+                df["Amount"] = pd.to_numeric(raw_df[amount_col], errors="coerce")
+
+                # Drop invalid rows
+                df = df.dropna(subset=["Date", "Fund Name", "Amount"])
+
+                st.markdown("### Standardized Cleaned Data")
+                st.dataframe(df, use_container_width=True)
+
+                # Filter unknown separately
+                unknown_df = df[df["Transaction Type"] == "Unknown"]
+
+                if not unknown_df.empty:
+                    st.warning("Some rows could not be classified and were ignored in XIRR calculations.")
+                    st.dataframe(unknown_df, use_container_width=True)
+
+                valid_df = df[df["Transaction Type"] != "Unknown"].copy()
+
+                if valid_df.empty:
+                    st.error("No valid transaction rows found after cleaning.")
+                else:
+                    # -----------------------------
+                    # FUND-WISE SUMMARY
+                    # -----------------------------
+                    fund_summary = []
+
+                    for fund in valid_df["Fund Name"].unique():
+
+                        fund_df = valid_df[valid_df["Fund Name"] == fund].copy()
+
+                        purchases = fund_df[fund_df["Transaction Type"] == "Purchase"]["Amount"].sum()
+                        redemptions = fund_df[fund_df["Transaction Type"] == "Redemption"]["Amount"].sum()
+                        current_value = fund_df[fund_df["Transaction Type"] == "Current Value"]["Amount"].sum()
+
+                        profit_loss = current_value + redemptions - purchases
+
+                        # Build cashflows
+                        cashflows = []
+
+                        for _, row in fund_df.iterrows():
+                            txn_type = row["Transaction Type"]
+
+                            if txn_type == "Purchase":
+                                cashflows.append((row["Date"], -row["Amount"]))
+
+                            elif txn_type == "Redemption":
+                                cashflows.append((row["Date"], row["Amount"]))
+
+                        # Add current value as terminal cashflow
+                        if current_value > 0:
+                            cashflows.append((pd.Timestamp.today().normalize(), current_value))
+
+                        fund_xirr = None
+
+                        if len(cashflows) >= 2:
+                            try:
+                                fund_xirr = xirr(cashflows) * 100
+                            except:
+                                fund_xirr = None
+
+                        fund_summary.append([
+                            fund,
+                            round(purchases, 0),
+                            round(redemptions, 0),
+                            round(current_value, 0),
+                            round(profit_loss, 0),
+                            round(fund_xirr, 2) if fund_xirr is not None else "N/A"
+                        ])
+
+                    summary_df = pd.DataFrame(
+                        fund_summary,
+                        columns=[
+                            "Fund Name",
+                            "Fund-wise Purchase",
+                            "Fund-wise Redemption",
+                            "Current Value",
+                            "Profit / Loss",
+                            "XIRR %"
+                        ]
+                    )
+
+                    st.markdown("### Fund-wise Portfolio Summary")
+                    st.dataframe(summary_df, use_container_width=True)
+
+                    # -----------------------------
+                    # PORTFOLIO LEVEL SUMMARY
+                    # -----------------------------
+                    total_purchase = summary_df["Fund-wise Purchase"].sum()
+                    total_redemption = summary_df["Fund-wise Redemption"].sum()
+                    total_current = summary_df["Current Value"].sum()
+                    total_pl = summary_df["Profit / Loss"].sum()
+
+                    portfolio_cashflows = []
+
+                    for _, row in valid_df.iterrows():
+                        txn_type = row["Transaction Type"]
+
+                        if txn_type == "Purchase":
+                            portfolio_cashflows.append((row["Date"], -row["Amount"]))
+
+                        elif txn_type == "Redemption":
+                            portfolio_cashflows.append((row["Date"], row["Amount"]))
+
+                    if total_current > 0:
+                        portfolio_cashflows.append((pd.Timestamp.today().normalize(), total_current))
+
+                    portfolio_xirr = None
+
+                    if len(portfolio_cashflows) >= 2:
+                        try:
+                            portfolio_xirr = xirr(portfolio_cashflows) * 100
+                        except:
+                            portfolio_xirr = None
+
+                    c1, c2, c3, c4, c5 = st.columns(5)
+
+                    c1.metric("Total Purchase", f"₹ {total_purchase:,.0f}")
+                    c2.metric("Total Redemption", f"₹ {total_redemption:,.0f}")
+                    c3.metric("Current Value", f"₹ {total_current:,.0f}")
+                    c4.metric("Profit / Loss", f"₹ {total_pl:,.0f}")
+                    c5.metric("Portfolio XIRR", f"{portfolio_xirr:.2f}%" if portfolio_xirr is not None else "N/A")
+
+        except Exception as e:
+            st.error(f"Error reading or processing file: {e}")
 
 # =====================================================
 # RETIREMENT MONTE CARLO SURVIVAL SIMULATOR
