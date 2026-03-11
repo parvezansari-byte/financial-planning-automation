@@ -97,6 +97,7 @@ if st.session_state.page=="home":
         st.button("Net Worth Dashboard", on_click=lambda: go("networth"))
         st.button("Goal Feasibility", on_click=lambda: go("goal"))
         st.button("Portfolio Rebalancing", on_click=lambda: go("rebalance"))
+        st.button("Retirement Monte Carlo", on_click=lambda: go("mc_retirement"))
 # =====================================================
 # SIP CALCULATOR
 # =====================================================
