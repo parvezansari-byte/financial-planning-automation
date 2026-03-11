@@ -8,37 +8,62 @@ import numpy as np
 st.set_page_config(page_title="Freedom", layout="wide")
 
 # =====================================================
-# DARK THEME
+# DARK FINTECH THEME
 # =====================================================
 st.markdown("""
 <style>
-.stApp{background-color:#0F172A;}
+.stApp { background-color: #0F172A; }
 
-.header-box{
-background:linear-gradient(90deg,#1E3A8A,#0EA5E9);
-padding:25px;border-radius:14px;text-align:center;
-color:white;font-size:42px;font-weight:700;}
+.header-box {
+    background: linear-gradient(90deg, #1E3A8A, #0EA5E9);
+    padding: 24px;
+    border-radius: 14px;
+    text-align: center;
+    color: white;
+    font-size: 42px;
+    font-weight: 700;
+}
 
-.subtitle{text-align:center;color:#93C5FD;font-size:18px;margin-bottom:25px;}
+.subtitle {
+    text-align:center;
+    color:#93C5FD;
+    font-size:18px;
+    margin-bottom:25px;
+}
 
-.stButton > button{
-background:linear-gradient(90deg,#2563EB,#0EA5E9);
-color:white;border-radius:8px;height:45px;font-weight:600;border:none;}
+.stButton > button {
+    background: linear-gradient(90deg, #2563EB, #0EA5E9);
+    color: white;
+    border-radius: 8px;
+    height: 45px;
+    font-weight: 600;
+    border: none;
+    width: 100%;
+    margin-bottom: 8px;
+}
 
-thead tr th{background-color:#2563EB !important;color:white !important;}
+thead tr th {
+    background-color: #2563EB !important;
+    color: white !important;
+}
 
-tbody tr td{color:#E2E8F0 !important;}
+tbody tr td { color: #E2E8F0 !important; }
+tbody tr:nth-child(even) { background-color: #111827 !important; }
 
-tbody tr:nth-child(even){background-color:#111827 !important;}
+section[data-testid="stSidebar"] { background-color: #111827; }
+label { color: #CBD5E1 !important; }
 
-section[data-testid="stSidebar"]{background-color:#111827;}
-
-label{color:#CBD5E1 !important;}
+[data-testid="metric-container"] {
+    background: #111827;
+    border: 1px solid #1F2937;
+    padding: 10px;
+    border-radius: 12px;
+}
 </style>
 """, unsafe_allow_html=True)
 
 # =====================================================
-# NAVIGATION
+# SESSION NAVIGATION
 # =====================================================
 if "page" not in st.session_state:
     st.session_state.page = "home"
@@ -54,361 +79,644 @@ st.markdown('<div class="subtitle">Integrated Wealth Planning Platform</div>', u
 st.markdown("---")
 
 # =====================================================
-# SIDEBAR
+# SIDEBAR GLOBAL INPUTS
 # =====================================================
 st.sidebar.header("Client Profile")
 
-current_age = st.sidebar.number_input("Current Age",25,70,30)
-inflation = st.sidebar.number_input("Inflation (%)",0.0,15.0,6.0)/100
-expected_return = st.sidebar.number_input("Expected Return (%)",0.0,20.0,12.0)/100
+current_age = st.sidebar.number_input("Current Age", 18, 80, 30)
+inflation = st.sidebar.number_input("General Inflation (%)", 0.0, 15.0, 6.0) / 100
+expected_return = st.sidebar.number_input("Expected Return (%)", 0.0, 25.0, 12.0) / 100
 
 # =====================================================
-# FUNCTIONS
+# COMMON FUNCTIONS
 # =====================================================
-def future_value(pv,rate,years):
-    return pv*(1+rate)**years
+def future_value(pv, rate, years):
+    return pv * ((1 + rate) ** years)
 
-def sip_required(target,rate,years):
-    if years<=0:
+def sip_required(target, rate, years):
+    if years <= 0 or rate <= 0:
         return 0
-    return target/(((1+rate)**years-1)/rate)
+    return target / (((1 + rate) ** years - 1) / rate)
+
+def monthly_sip_required(target, annual_rate, years):
+    months = int(years * 12)
+    if months <= 0:
+        return 0
+    monthly_rate = annual_rate / 12
+    if monthly_rate <= 0:
+        return target / months
+    factor = ((1 + monthly_rate) ** months - 1) / monthly_rate
+    return target / factor
+
+def format_inr(x):
+    return f"₹ {x:,.0f}"
 
 # =====================================================
-# HOME
+# HOME PAGE
 # =====================================================
-if st.session_state.page=="home":
+if st.session_state.page == "home":
 
-    col1,col2,col3 = st.columns(3)
+    st.subheader("Financial Planning Dashboard")
+
+    col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.button("SIP Calculator",on_click=lambda:go("sip"))
-        st.button("Children Planner",on_click=lambda:go("children"))
-        st.button("Car Purchase Planner",on_click=lambda:go("car"))
+        st.button("SIP Calculator", on_click=lambda: go("sip"))
+        st.button("Children Planner", on_click=lambda: go("children"))
+        st.button("Car Purchase Planner", on_click=lambda: go("car"))
+        st.button("Goal Feasibility", on_click=lambda: go("goal"))
 
     with col2:
-        st.button("SWP Calculator",on_click=lambda:go("swp"))
-        st.button("Retirement Planner",on_click=lambda:go("retirement"))
-        st.button("iPhone Purchase Planner",on_click=lambda:go("iphone"))
+        st.button("SWP Calculator", on_click=lambda: go("swp"))
+        st.button("Retirement Planner", on_click=lambda: go("retirement"))
+        st.button("iPhone Purchase Planner", on_click=lambda: go("iphone"))
+        st.button("Portfolio Rebalancing", on_click=lambda: go("rebalance"))
 
     with col3:
-        st.button("Term Insurance",on_click=lambda:go("term"))
-        st.button("Cashflow Planner",on_click=lambda:go("cashflow"))
-        st.button("Portfolio Allocation",on_click=lambda:go("portfolio"))
+        st.button("Term Insurance", on_click=lambda: go("term"))
+        st.button("Cashflow Planner", on_click=lambda: go("cashflow"))
+        st.button("Portfolio Allocation", on_click=lambda: go("portfolio"))
         st.button("Net Worth Dashboard", on_click=lambda: go("networth"))
-        st.button("Goal Feasibility", on_click=lambda: go("goal"))
-        st.button("Portfolio Rebalancing", on_click=lambda: go("rebalance"))
         st.button("Retirement Monte Carlo", on_click=lambda: go("mc_retirement"))
+
 # =====================================================
 # SIP CALCULATOR
 # =====================================================
-if st.session_state.page=="sip":
+if st.session_state.page == "sip":
 
-    st.button("⬅ Back",on_click=lambda:go("home"))
+    st.button("⬅ Back", on_click=lambda: go("home"))
     st.subheader("SIP Calculator")
 
-    monthly_sip = st.number_input("Monthly SIP (₹)",value=5000)
-    years = st.number_input("Investment Years",value=10)
-    step_up = st.number_input("Annual Step-Up (%)",0.0,50.0,10.0)/100
+    monthly_sip = st.number_input("Starting Monthly SIP (₹)", min_value=0, value=5000)
+    years = st.number_input("Investment Years", min_value=1, max_value=50, value=10)
+    step_up = st.number_input("Annual Step-Up (%)", 0.0, 50.0, 10.0) / 100
 
-    corpus=0
-    invested=0
-    rows=[]
+    corpus = 0
+    invested = 0
+    table = []
 
-    for y in range(1,years+1):
+    current_monthly_sip = monthly_sip
 
-        yearly=monthly_sip*12
-        invested+=yearly
-        corpus=(corpus+yearly)*(1+expected_return)
+    for y in range(1, years + 1):
+        yearly_sip = current_monthly_sip * 12
+        invested += yearly_sip
+        corpus = (corpus + yearly_sip) * (1 + expected_return)
 
-        rows.append([y,round(monthly_sip),round(yearly),round(invested),round(corpus)])
+        table.append([
+            y,
+            round(current_monthly_sip, 0),
+            round(yearly_sip, 0),
+            round(invested, 0),
+            round(corpus, 0)
+        ])
 
-        monthly_sip=monthly_sip*(1+step_up)
+        current_monthly_sip = current_monthly_sip * (1 + step_up)
 
-    df=pd.DataFrame(rows,columns=[
-    "Year","Monthly SIP","Yearly Investment","Total Invested","Corpus"])
+    df = pd.DataFrame(
+        table,
+        columns=[
+            "Year",
+            "Monthly SIP",
+            "Yearly Investment",
+            "Total Invested",
+            "Year End Corpus"
+        ]
+    )
 
-    st.dataframe(df,use_container_width=True)
+    st.dataframe(df, use_container_width=True)
 
-    gain=corpus-invested
+    total_gain = corpus - invested
 
-    c1,c2,c3=st.columns(3)
-    c1.metric("Total Invested",f"₹ {invested:,.0f}")
-    c2.metric("Total Gain",f"₹ {gain:,.0f}")
-    c3.metric("Final Corpus",f"₹ {corpus:,.0f}")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Total Invested", format_inr(invested))
+    c2.metric("Total Gain", format_inr(total_gain))
+    c3.metric("Final Corpus", format_inr(corpus))
 
 # =====================================================
-# SWP CALCULATOR
+# SWP CALCULATOR (ADVANCED)
 # =====================================================
-if st.session_state.page=="swp":
+if st.session_state.page == "swp":
 
-    st.button("⬅ Back",on_click=lambda:go("home"))
+    st.button("⬅ Back", on_click=lambda: go("home"))
     st.subheader("SWP Calculator")
 
-    corpus=st.number_input("Initial Corpus (₹)",value=10000000)
-    start_age=st.number_input("Withdrawal Start Age",30,90,60)
-    end_age=st.number_input("Withdrawal End Age",40,100,80)
-    withdrawal=st.number_input("Withdrawal Per Year (₹)",value=1200000)
+    initial_corpus = st.number_input("Initial Corpus (₹)", min_value=0, value=10000000)
+    entry_age = st.number_input("Entry Age", min_value=18, max_value=90, value=max(current_age, 30))
+    start_age = st.number_input("Withdrawal Start Age", min_value=entry_age, max_value=95, value=max(entry_age, 60))
+    end_age = st.number_input("Withdrawal End Age", min_value=start_age + 1, max_value=100, value=min(start_age + 20, 90))
 
-    balance=corpus
-    rows=[]
+    annual_withdrawal = st.number_input("Withdrawal Per Year (₹)", min_value=0, value=1200000)
+    withdrawal_inflation = st.number_input("Withdrawal Increase / Inflation (%)", 0.0, 15.0, 6.0) / 100
+    swp_return = st.number_input("Expected Return During SWP (%)", 0.0, 20.0, 8.0) / 100
 
-    for age in range(start_age,end_age):
+    # Accumulation phase before withdrawal
+    years_before_swp = max(0, start_age - entry_age)
+    corpus_at_start = initial_corpus * ((1 + swp_return) ** years_before_swp)
 
-        balance=balance*(1+expected_return)-withdrawal
-        rows.append([age,withdrawal,round(balance)])
+    balance = corpus_at_start
+    current_withdrawal = annual_withdrawal
+    rows = []
 
-        if balance<=0:
+    for age in range(start_age, end_age + 1):
+        opening = balance
+        growth = opening * swp_return
+        closing = opening + growth - current_withdrawal
+
+        if closing < 0:
+            closing = 0
+
+        rows.append([
+            age,
+            round(opening, 0),
+            round(growth, 0),
+            round(current_withdrawal, 0),
+            round(closing, 0)
+        ])
+
+        balance = closing
+        current_withdrawal = current_withdrawal * (1 + withdrawal_inflation)
+
+        if balance <= 0:
             break
 
-    df=pd.DataFrame(rows,columns=["Age","Withdrawal","Year End Corpus"])
-    st.dataframe(df,use_container_width=True)
+    df = pd.DataFrame(
+        rows,
+        columns=[
+            "Age",
+            "Opening Corpus",
+            "Growth",
+            "Withdrawal",
+            "Closing Corpus"
+        ]
+    )
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Corpus at Withdrawal Start", format_inr(corpus_at_start))
+    c2.metric("Years Before SWP", f"{years_before_swp}")
+    c3.metric("End Corpus", format_inr(balance))
+
+    st.dataframe(df, use_container_width=True)
+
+    swr = (annual_withdrawal / corpus_at_start * 100) if corpus_at_start > 0 else 0
+
+    if swr <= 4:
+        st.success(f"Safe Withdrawal Rate: {swr:.2f}% (Healthy)")
+    elif swr <= 6:
+        st.warning(f"Safe Withdrawal Rate: {swr:.2f}% (Moderate)")
+    else:
+        st.error(f"Safe Withdrawal Rate: {swr:.2f}% (Aggressive)")
 
 # =====================================================
-# CHILDREN PLANNER
+# CHILDREN PLANNER PRO
 # =====================================================
-if st.session_state.page=="children":
+if st.session_state.page == "children":
 
-    st.button("⬅ Back",on_click=lambda:go("home"))
-    st.subheader("Children Planner")
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("Children Planner (Pro)")
 
-    num_children=st.number_input("Number of Children",1,4,1)
+    num_children = st.number_input("Number of Children", 1, 4, 1)
 
-    results=[]
+    education_inflation = st.number_input("Education Inflation (%)", 0.0, 20.0, 10.0) / 100
+    marriage_inflation = st.number_input("Marriage Inflation (%)", 0.0, 20.0, 8.0) / 100
+
+    results = []
 
     for c in range(num_children):
 
-        child_age=st.number_input(f"Child {c+1} Age",0,18,2,key=f"child{c}")
+        st.markdown(f"### Child {c+1}")
 
-        goals={"10th Board":15,"12th Board":17,"Graduation":21,"Masters":24,"Marriage":28}
+        child_age = st.number_input(f"Child {c+1} Current Age", 0, 18, 2, key=f"child_age_{c}")
 
-        for goal,goal_age in goals.items():
+        goals = {
+            "10th Board": (15, education_inflation),
+            "12th Board": (17, education_inflation),
+            "Graduation": (21, education_inflation),
+            "Masters": (24, education_inflation),
+            "Marriage": (28, marriage_inflation)
+        }
 
-            cost_today=st.number_input(f"{goal} Cost Today (₹)",value=2000000,key=f"{goal}{c}")
+        for goal, (goal_age, infl) in goals.items():
 
-            years=goal_age-child_age
+            cost_today = st.number_input(
+                f"{goal} Cost Today (₹) - Child {c+1}",
+                min_value=0,
+                value=2000000,
+                key=f"{goal}_{c}"
+            )
 
-            if years>0:
+            years = goal_age - child_age
 
-                future_cost=future_value(cost_today,inflation,years)
+            if years > 0:
+                future_cost = cost_today * ((1 + infl) ** years)
+                monthly_sip = monthly_sip_required(future_cost, expected_return, years)
+                lumpsum_required = future_cost / ((1 + expected_return) ** years)
 
-                sip=sip_required(future_cost,expected_return,years)/12
+                # Monte Carlo probability
+                simulations = 300
+                success = 0
 
-                lumpsum=future_cost/((1+expected_return)**years)
+                for _ in range(simulations):
+                    corpus = 0
+                    for _yr in range(years):
+                        annual_invest = monthly_sip * 12
+                        rand_return = np.random.normal(expected_return, 0.15)
+                        corpus = (corpus + annual_invest) * (1 + rand_return)
 
-                probability=np.random.randint(90,99)
+                    if corpus >= future_cost:
+                        success += 1
+
+                probability = round((success / simulations) * 100)
 
                 results.append([
-                f"Child {c+1}",goal,goal_age,round(future_cost),
-                round(sip),round(lumpsum),probability])
+                    f"Child {c+1}",
+                    goal,
+                    goal_age,
+                    round(future_cost, 0),
+                    round(monthly_sip, 0),
+                    round(lumpsum_required, 0),
+                    probability
+                ])
 
-    df=pd.DataFrame(results,columns=[
-    "Child","Goal","Goal Age","Future Cost",
-    "Monthly SIP","Lumpsum Today","Success %"])
+    if results:
+        df = pd.DataFrame(
+            results,
+            columns=[
+                "Child",
+                "Goal",
+                "Goal Age",
+                "Future Cost (₹)",
+                "Monthly SIP Required (₹)",
+                "Lumpsum Required Today (₹)",
+                "Success Probability %"
+            ]
+        )
 
-    st.dataframe(df,use_container_width=True)
+        st.dataframe(df, use_container_width=True)
+
+        total_sip = df["Monthly SIP Required (₹)"].sum()
+        total_lumpsum = df["Lumpsum Required Today (₹)"].sum()
+
+        c1, c2 = st.columns(2)
+        c1.metric("Total Monthly SIP Required", format_inr(total_sip))
+        c2.metric("Total Lumpsum Required Today", format_inr(total_lumpsum))
 
 # =====================================================
-# RETIREMENT
+# RETIREMENT PLANNER
 # =====================================================
-if st.session_state.page=="retirement":
+if st.session_state.page == "retirement":
 
-    st.button("⬅ Back",on_click=lambda:go("home"))
+    st.button("⬅ Back", on_click=lambda: go("home"))
     st.subheader("Retirement Planner")
 
-    retirement_age=st.number_input("Retirement Age",50,75,60)
-    life_expectancy=st.number_input("Plan Till Age",70,100,90)
-    monthly_expense=st.number_input("Current Monthly Expense",value=50000)
+    retirement_age = st.number_input("Retirement Age", 45, 75, 60)
+    life_expectancy = st.number_input("Plan Till Age", 70, 100, 90)
 
-    years_to_ret=retirement_age-current_age
-    retirement_years=life_expectancy-retirement_age
+    years_to_ret = retirement_age - current_age
+    retirement_years = life_expectancy - retirement_age
 
-    expense_ret=monthly_expense*12*((1+inflation)**years_to_ret)
-    corpus=expense_ret*retirement_years
+    st.markdown("### Monthly Expense Breakdown")
 
-    st.success(f"Required Retirement Corpus : ₹ {corpus:,.0f}")
+    rent = st.number_input("Rent", 0, 1000000, 0)
+    grocery = st.number_input("Groceries + Medicine", 0, 1000000, 30000)
+    utilities = st.number_input("Utilities", 0, 1000000, 5000)
+    discretionary = st.number_input("Discretionary", 0, 1000000, 10000)
+    vehicle = st.number_input("Vehicle", 0, 1000000, 10000)
+
+    monthly_expense = rent + grocery + utilities + discretionary + vehicle
+    annual_expense = monthly_expense * 12
+
+    st.markdown("### Current Investment Corpus")
+    equity = st.number_input("Equity (₹)", min_value=0, value=1000000)
+    debt = st.number_input("Debt (₹)", min_value=0, value=1000000)
+    total_corpus = equity + debt
+
+    future_existing = total_corpus * ((1 + expected_return) ** years_to_ret)
+    expense_at_ret = annual_expense * ((1 + inflation) ** years_to_ret)
+
+    # Conservative retirement corpus method
+    post_ret_return = st.number_input("Post-Retirement Return (%)", 0.0, 15.0, 8.0) / 100
+
+    if post_ret_return > inflation:
+        required_corpus = expense_at_ret * (
+            (1 - ((1 + inflation) / (1 + post_ret_return)) ** retirement_years)
+            / (post_ret_return - inflation)
+        )
+    else:
+        required_corpus = expense_at_ret * retirement_years
+
+    gap = max(0, required_corpus - future_existing)
+    required_monthly_sip = monthly_sip_required(gap, expected_return, years_to_ret) if years_to_ret > 0 else 0
+
+    summary = pd.DataFrame({
+        "Metric": [
+            "Annual Expense Today",
+            "Expense at Retirement",
+            "Future Value of Existing Corpus",
+            "Required Retirement Corpus",
+            "Retirement Gap"
+        ],
+        "Value": [
+            format_inr(annual_expense),
+            format_inr(expense_at_ret),
+            format_inr(future_existing),
+            format_inr(required_corpus),
+            format_inr(gap)
+        ]
+    })
+
+    st.table(summary)
+
+    c1, c2 = st.columns(2)
+    c1.metric("Required Monthly SIP", format_inr(required_monthly_sip))
+    c2.metric("Years to Retirement", f"{years_to_ret}")
 
 # =====================================================
 # TERM INSURANCE
 # =====================================================
-if st.session_state.page=="term":
+if st.session_state.page == "term":
 
-    st.button("⬅ Back",on_click=lambda:go("home"))
-    st.subheader("Term Insurance")
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("Term Insurance Calculator")
 
-    income=st.number_input("Annual Income",value=2400000)
-    retirement_age=st.number_input("Retirement Age",45,75,60)
+    annual_income = st.number_input("Annual Income (₹)", min_value=0, value=2400000)
+    retirement_age = st.number_input("Retirement Age", 45, 75, 60)
+    liabilities = st.number_input("Outstanding Liabilities (₹)", min_value=0, value=0)
+    existing_cover = st.number_input("Existing Insurance Cover (₹)", min_value=0, value=0)
 
-    cover=income*(retirement_age-current_age)
+    years_left = max(0, retirement_age - current_age)
 
-    st.success(f"Recommended Cover : ₹ {cover:,.0f}")
+    income_replacement = annual_income * years_left
+    recommended_cover = max(0, income_replacement + liabilities - existing_cover)
 
-# =====================================================
-# CASHFLOW
-# =====================================================
-if st.session_state.page=="cashflow":
-
-    st.button("⬅ Back",on_click=lambda:go("home"))
-    st.subheader("Cashflow Planner")
-
-    salary=st.number_input("Salary",0)
-    side=st.number_input("Side Income",0)
-    invest_income=st.number_input("Investment Income",0)
-    other=st.number_input("Other Income",0)
-
-    inflow=salary+side+invest_income+other
-
-    rent=st.number_input("Rent/Mortgage",0)
-    utilities=st.number_input("Utilities",0)
-    groceries=st.number_input("Groceries",0)
-    transport=st.number_input("Transport",0)
-    insurance=st.number_input("Insurance",0)
-    investments=st.number_input("Investments",0)
-
-    outflow=rent+utilities+groceries+transport+insurance+investments
-
-    net=inflow-outflow
-
-    df=pd.DataFrame({
-    "Category":["Total Inflow","Total Outflow","Net Cashflow"],
-    "Amount":[inflow,outflow,net]})
+    df = pd.DataFrame({
+        "Metric": [
+            "Income Replacement Value",
+            "Outstanding Liabilities",
+            "Existing Cover",
+            "Recommended Additional Cover"
+        ],
+        "Amount": [
+            format_inr(income_replacement),
+            format_inr(liabilities),
+            format_inr(existing_cover),
+            format_inr(recommended_cover)
+        ]
+    })
 
     st.table(df)
+    st.success(f"Recommended Additional Cover: {format_inr(recommended_cover)}")
 
 # =====================================================
-# CAR PURCHASE
+# CASHFLOW PLANNER (ADVANCED)
 # =====================================================
-if st.session_state.page=="car":
+if st.session_state.page == "cashflow":
 
-    st.button("⬅ Back",on_click=lambda:go("home"))
-    st.subheader("Car Purchase Planner")
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("Advanced Cashflow Planner")
 
-    price=st.number_input("Car Price Today",value=1000000)
-    years=st.number_input("Years to Buy",value=5)
+    plan_till_age = st.number_input("Plan Till Age", 50, 100, 85)
 
-    future=price*((1+inflation)**years)
+    st.markdown("## CASH INFLOWS")
+    salary = st.number_input("Salary / Wages (After-Tax)", value=0)
+    side_income = st.number_input("Side Hustle / Freelance", value=0)
+    investment_income = st.number_input("Investment Income (Dividends / Interest)", value=0)
+    other_income = st.number_input("Other Income (Rental / Refund)", value=0)
 
-    sip=sip_required(future,expected_return,years)/12
+    total_inflow = salary + side_income + investment_income + other_income
 
-    st.metric("Future Price",f"₹ {future:,.0f}")
-    st.metric("Monthly SIP",f"₹ {sip:,.0f}")
+    st.markdown("## FIXED EXPENSES (Needs)")
+    rent = st.number_input("Rent / Mortgage", value=0)
+    utilities = st.number_input("Utilities", value=0)
+    debt = st.number_input("Debt Payments", value=0)
+    insurance = st.number_input("Insurance", value=0)
+    childcare = st.number_input("Childcare / Alimony", value=0)
+
+    fixed_total = rent + utilities + debt + insurance + childcare
+
+    st.markdown("## VARIABLE EXPENSES (Wants)")
+    groceries = st.number_input("Groceries", value=0)
+    dining = st.number_input("Dining / Entertainment", value=0)
+    transport = st.number_input("Transportation / Fuel", value=0)
+    shopping = st.number_input("Shopping / Subscriptions", value=0)
+
+    variable_total = groceries + dining + transport + shopping
+
+    st.markdown("## SAVINGS & INVESTMENTS")
+    emergency = st.number_input("Emergency Fund Savings", value=0)
+    retirement_contribution = st.number_input("Retirement Contributions", value=0)
+    investments = st.number_input("Investments (Stocks / Mutual Funds / Other)", value=0)
+
+    savings_total = emergency + retirement_contribution + investments
+
+    total_outflow = fixed_total + variable_total + savings_total
+    net_cashflow = total_inflow - total_outflow
+
+    summary = pd.DataFrame({
+        "Category": [
+            "Total Inflow (A)",
+            "Total Fixed Expenses",
+            "Total Variable Expenses",
+            "Total Savings & Investments",
+            "Total Outflow (B)",
+            "Net Cash Flow (A - B)"
+        ],
+        "Amount": [
+            total_inflow,
+            fixed_total,
+            variable_total,
+            savings_total,
+            total_outflow,
+            net_cashflow
+        ]
+    })
+
+    st.dataframe(summary, use_container_width=True)
+
+    if net_cashflow > 0:
+        st.success(f"Positive Cashflow: {format_inr(net_cashflow)}")
+    elif net_cashflow == 0:
+        st.warning("Break-even Cashflow")
+    else:
+        st.error(f"Cashflow Deficit: {format_inr(abs(net_cashflow))}")
+
+    # Projection
+    years = plan_till_age - current_age
+    corpus = 0
+    projection = []
+
+    for i in range(1, years + 1):
+        inflow_adj = total_inflow * ((1 + inflation) ** i)
+        outflow_adj = total_outflow * ((1 + inflation) ** i)
+
+        surplus = inflow_adj - outflow_adj
+        corpus = corpus * (1 + expected_return) + surplus
+
+        projection.append([
+            current_age + i,
+            round(inflow_adj, 0),
+            round(outflow_adj, 0),
+            round(surplus, 0),
+            round(corpus, 0)
+        ])
+
+    df_projection = pd.DataFrame(
+        projection,
+        columns=[
+            "Age",
+            "Inflation Adjusted Inflow",
+            "Inflation Adjusted Outflow",
+            "Net Surplus",
+            "Projected Corpus"
+        ]
+    )
+
+    st.markdown("### Long-Term Projection")
+    st.dataframe(df_projection, use_container_width=True)
 
 # =====================================================
-# IPHONE PURCHASE
+# CAR PURCHASE PLANNER
 # =====================================================
-if st.session_state.page=="iphone":
+if st.session_state.page == "car":
 
-    st.button("⬅ Back",on_click=lambda:go("home"))
-    st.subheader("iPhone Purchase Planner")
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("Car Purchase Planner 🚗")
 
-    price=st.number_input("iPhone Price Today",value=120000)
-    months=st.number_input("Months to Buy",value=12)
+    car_price = st.number_input("Car Price Today (₹)", min_value=0, value=1000000)
+    years = st.number_input("Years to Buy Car", min_value=1, max_value=30, value=5)
+    car_inflation = st.number_input("Car Price Inflation (%)", 0.0, 15.0, 6.0) / 100
 
-    rate=expected_return/12
-    future=price*(1+inflation)**(months/12)
-    sip=future/(((1+rate)**months-1)/rate)
+    future_price = car_price * ((1 + car_inflation) ** years)
+    monthly_sip = monthly_sip_required(future_price, expected_return, years)
+    lumpsum = future_price / ((1 + expected_return) ** years)
 
-    st.metric("Future Price",f"₹ {future:,.0f}")
-    st.metric("Monthly Saving",f"₹ {sip:,.0f}")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Future Car Price", format_inr(future_price))
+    c2.metric("Required Monthly SIP", format_inr(monthly_sip))
+    c3.metric("Lumpsum Required Today", format_inr(lumpsum))
+
+# =====================================================
+# IPHONE PURCHASE PLANNER
+# =====================================================
+if st.session_state.page == "iphone":
+
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("iPhone Purchase Planner 📱")
+
+    iphone_price = st.number_input("iPhone Price Today (₹)", min_value=0, value=120000)
+    months = st.number_input("Months to Buy", min_value=1, max_value=60, value=12)
+
+    monthly_rate = expected_return / 12
+    future_price = iphone_price * ((1 + inflation) ** (months / 12))
+
+    if monthly_rate > 0:
+        sip = future_price / (((1 + monthly_rate) ** months - 1) / monthly_rate)
+    else:
+        sip = future_price / months
+
+    lumpsum = future_price / ((1 + expected_return) ** (months / 12))
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Future iPhone Price", format_inr(future_price))
+    c2.metric("Monthly Saving Needed", format_inr(sip))
+    c3.metric("Lumpsum Required Today", format_inr(lumpsum))
 
 # =====================================================
 # PORTFOLIO ALLOCATION
 # =====================================================
-if st.session_state.page=="portfolio":
+if st.session_state.page == "portfolio":
 
-    st.button("⬅ Back",on_click=lambda:go("home"))
+    st.button("⬅ Back", on_click=lambda: go("home"))
     st.subheader("Portfolio Allocation")
 
-    total=st.number_input("Total Investment (₹)",value=1000000)
+    total_investment = st.number_input("Total Investment Amount (₹)", min_value=0, value=1000000)
 
-    equity=st.slider("Equity %",0,100,50)
-    debt=st.slider("Debt %",0,100,30)
-    gold=st.slider("Gold %",0,100,10)
-    realestate=st.slider("Real Estate %",0,100,5)
-    cash=st.slider("Cash %",0,100,5)
+    st.markdown("### Asset Allocation (%)")
+    equity_pct = st.slider("Equity %", 0, 100, 50)
+    debt_pct = st.slider("Debt %", 0, 100, 30)
+    gold_pct = st.slider("Gold %", 0, 100, 10)
+    realestate_pct = st.slider("Real Estate %", 0, 100, 5)
+    cash_pct = st.slider("Cash / Liquid %", 0, 100, 5)
 
-    data={
-    "Asset":["Equity","Debt","Gold","Real Estate","Cash"],
-    "Allocation %":[equity,debt,gold,realestate,cash],
-    "Amount":[
-    total*(equity/100),
-    total*(debt/100),
-    total*(gold/100),
-    total*(realestate/100),
-    total*(cash/100)
-    ]
+    total_pct = equity_pct + debt_pct + gold_pct + realestate_pct + cash_pct
+
+    if total_pct != 100:
+        st.warning(f"Allocation Total = {total_pct}% (should be 100%)")
+
+    data = {
+        "Asset Class": ["Equity", "Debt", "Gold", "Real Estate", "Cash / Liquid"],
+        "Allocation %": [equity_pct, debt_pct, gold_pct, realestate_pct, cash_pct],
+        "Amount (₹)": [
+            total_investment * (equity_pct / 100),
+            total_investment * (debt_pct / 100),
+            total_investment * (gold_pct / 100),
+            total_investment * (realestate_pct / 100),
+            total_investment * (cash_pct / 100)
+        ]
     }
 
-    df=pd.DataFrame(data)
-    st.dataframe(df,use_container_width=True)
+    df = pd.DataFrame(data)
+    st.dataframe(df, use_container_width=True)
 
-st.markdown("---")
-st.caption("Freedom Wealth Platform | For Illustration Only")
-# =============================================
+# =====================================================
 # NET WORTH DASHBOARD
-# =============================================
-if st.session_state.page=="networth":
+# =====================================================
+if st.session_state.page == "networth":
 
-    st.button("⬅ Back",on_click=lambda:go("home"))
-
+    st.button("⬅ Back", on_click=lambda: go("home"))
     st.subheader("Net Worth Dashboard")
 
     st.markdown("### Assets")
-
-    mf = st.number_input("Mutual Funds (₹)",value=0)
-    stocks = st.number_input("Stocks (₹)",value=0)
-    realestate = st.number_input("Real Estate (₹)",value=0)
-    gold = st.number_input("Gold (₹)",value=0)
-    cash = st.number_input("Cash / Bank Balance (₹)",value=0)
-    other_assets = st.number_input("Other Assets (₹)",value=0)
+    mf = st.number_input("Mutual Funds (₹)", value=0)
+    stocks = st.number_input("Stocks (₹)", value=0)
+    realestate = st.number_input("Real Estate (₹)", value=0)
+    gold = st.number_input("Gold (₹)", value=0)
+    cash = st.number_input("Cash / Bank Balance (₹)", value=0)
+    other_assets = st.number_input("Other Assets (₹)", value=0)
 
     total_assets = mf + stocks + realestate + gold + cash + other_assets
 
     st.markdown("### Liabilities")
-
-    home_loan = st.number_input("Home Loan (₹)",value=0)
-    personal_loan = st.number_input("Personal Loan (₹)",value=0)
-    car_loan = st.number_input("Car Loan (₹)",value=0)
-    credit_card = st.number_input("Credit Card Outstanding (₹)",value=0)
-    other_liabilities = st.number_input("Other Liabilities (₹)",value=0)
+    home_loan = st.number_input("Home Loan (₹)", value=0)
+    personal_loan = st.number_input("Personal Loan (₹)", value=0)
+    car_loan = st.number_input("Car Loan (₹)", value=0)
+    credit_card = st.number_input("Credit Card Outstanding (₹)", value=0)
+    other_liabilities = st.number_input("Other Liabilities (₹)", value=0)
 
     total_liabilities = home_loan + personal_loan + car_loan + credit_card + other_liabilities
-
     networth = total_assets - total_liabilities
 
-    st.markdown("### Net Worth Summary")
-
     df = pd.DataFrame({
-        "Category":["Total Assets","Total Liabilities","Net Worth"],
-        "Amount":[total_assets,total_liabilities,networth]
+        "Category": ["Total Assets", "Total Liabilities", "Net Worth"],
+        "Amount": [total_assets, total_liabilities, networth]
     })
 
     st.table(df)
 
     if networth > 0:
-        st.success(f"Net Worth : ₹ {networth:,.0f}")
+        st.success(f"Net Worth: {format_inr(networth)}")
     else:
         st.error("Net Worth Negative – Review liabilities")
-        # =============================================
+
+# =====================================================
 # GOAL FEASIBILITY DASHBOARD
-# =============================================
-if st.session_state.page=="goal":
+# =====================================================
+if st.session_state.page == "goal":
 
-    st.button("⬅ Back",on_click=lambda:go("home"))
-
+    st.button("⬅ Back", on_click=lambda: go("home"))
     st.subheader("Goal Feasibility Dashboard")
 
-    num_goals = st.number_input("Number of Goals",1,10,3)
+    num_goals = st.number_input("Number of Goals", 1, 10, 3)
 
     results = []
 
     for i in range(num_goals):
-
         st.markdown(f"### Goal {i+1}")
 
         goal_name = st.text_input(f"Goal Name {i+1}", value=f"Goal {i+1}", key=f"gname{i}")
 
         target_amount = st.number_input(
             f"Target Amount (₹) - {goal_name}",
+            min_value=0,
             value=1000000,
             key=f"gtarget{i}"
         )
@@ -423,6 +731,7 @@ if st.session_state.page=="goal":
 
         existing_investment = st.number_input(
             f"Existing Investment (₹) - {goal_name}",
+            min_value=0,
             value=0,
             key=f"gexist{i}"
         )
@@ -436,15 +745,10 @@ if st.session_state.page=="goal":
         ) / 100
 
         future_target = target_amount * ((1 + goal_inflation) ** years)
-
         future_existing = existing_investment * ((1 + expected_return) ** years)
 
-        gap = future_target - future_existing
-
-        if gap < 0:
-            gap = 0
-
-        req_sip = sip_required(gap, expected_return, years) / 12
+        gap = max(0, future_target - future_existing)
+        req_sip = monthly_sip_required(gap, expected_return, years)
 
         if gap == 0:
             status = "Fully Funded"
@@ -476,58 +780,53 @@ if st.session_state.page=="goal":
     st.dataframe(df, use_container_width=True)
 
     total_sip = df["Required Monthly SIP (₹)"].sum()
+    st.success(f"Total Monthly SIP Needed Across All Goals: {format_inr(total_sip)}")
 
-    st.success(f"Total Monthly SIP Needed Across All Goals: ₹ {total_sip:,.0f}")
-    # =============================================
+# =====================================================
 # PORTFOLIO REBALANCING ENGINE
-# =============================================
-if st.session_state.page=="rebalance":
+# =====================================================
+if st.session_state.page == "rebalance":
 
-    st.button("⬅ Back",on_click=lambda:go("home"))
-
+    st.button("⬅ Back", on_click=lambda: go("home"))
     st.subheader("Portfolio Rebalancing Engine")
 
-    total_portfolio = st.number_input("Total Portfolio Value (₹)", value=1000000)
+    total_portfolio = st.number_input("Total Portfolio Value (₹)", min_value=0, value=1000000)
 
     st.markdown("### Current Allocation (%)")
-    curr_equity = st.slider("Current Equity %",0,100,60,key="ceq")
-    curr_debt = st.slider("Current Debt %",0,100,25,key="cdebt")
-    curr_gold = st.slider("Current Gold %",0,100,10,key="cgold")
-    curr_cash = st.slider("Current Cash %",0,100,5,key="ccash")
-
-    current_total = curr_equity + curr_debt + curr_gold + curr_cash
+    curr_equity = st.slider("Current Equity %", 0, 100, 60, key="ceq")
+    curr_debt = st.slider("Current Debt %", 0, 100, 25, key="cdebt")
+    curr_gold = st.slider("Current Gold %", 0, 100, 10, key="cgold")
+    curr_cash = st.slider("Current Cash %", 0, 100, 5, key="ccash")
 
     st.markdown("### Target Allocation (%)")
-    tgt_equity = st.slider("Target Equity %",0,100,50,key="teq")
-    tgt_debt = st.slider("Target Debt %",0,100,30,key="tdebt")
-    tgt_gold = st.slider("Target Gold %",0,100,10,key="tgold")
-    tgt_cash = st.slider("Target Cash %",0,100,10,key="tcash")
+    tgt_equity = st.slider("Target Equity %", 0, 100, 50, key="teq")
+    tgt_debt = st.slider("Target Debt %", 0, 100, 30, key="tdebt")
+    tgt_gold = st.slider("Target Gold %", 0, 100, 10, key="tgold")
+    tgt_cash = st.slider("Target Cash %", 0, 100, 10, key="tcash")
 
+    current_total = curr_equity + curr_debt + curr_gold + curr_cash
     target_total = tgt_equity + tgt_debt + tgt_gold + tgt_cash
 
     if current_total != 100:
         st.warning(f"Current Allocation Total = {current_total}% (should be 100%)")
-
     if target_total != 100:
         st.warning(f"Target Allocation Total = {target_total}% (should be 100%)")
 
-    assets = ["Equity","Debt","Gold","Cash"]
-
-    current_pcts = [curr_equity,curr_debt,curr_gold,curr_cash]
-    target_pcts = [tgt_equity,tgt_debt,tgt_gold,tgt_cash]
+    assets = ["Equity", "Debt", "Gold", "Cash"]
+    current_pcts = [curr_equity, curr_debt, curr_gold, curr_cash]
+    target_pcts = [tgt_equity, tgt_debt, tgt_gold, tgt_cash]
 
     rows = []
 
-    for asset,cp,tp in zip(assets,current_pcts,target_pcts):
-
-        current_amt = total_portfolio * (cp/100)
-        target_amt = total_portfolio * (tp/100)
+    for asset, cp, tp in zip(assets, current_pcts, target_pcts):
+        current_amt = total_portfolio * (cp / 100)
+        target_amt = total_portfolio * (tp / 100)
         diff = target_amt - current_amt
 
         if diff > 0:
-            action = f"Buy ₹ {abs(diff):,.0f}"
+            action = f"Buy {format_inr(abs(diff))}"
         elif diff < 0:
-            action = f"Sell ₹ {abs(diff):,.0f}"
+            action = f"Sell {format_inr(abs(diff))}"
         else:
             action = "No Change"
 
@@ -535,9 +834,9 @@ if st.session_state.page=="rebalance":
             asset,
             cp,
             tp,
-            round(current_amt,0),
-            round(target_amt,0),
-            round(diff,0),
+            round(current_amt, 0),
+            round(target_amt, 0),
+            round(diff, 0),
             action
         ])
 
@@ -552,3 +851,102 @@ if st.session_state.page=="rebalance":
     ])
 
     st.dataframe(df, use_container_width=True)
+
+# =====================================================
+# RETIREMENT MONTE CARLO SURVIVAL SIMULATOR
+# =====================================================
+if st.session_state.page == "mc_retirement":
+
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("Retirement Monte Carlo Survival Simulator")
+
+    initial_corpus = st.number_input("Initial Retirement Corpus (₹)", min_value=0, value=50000000)
+    retirement_age = st.number_input("Retirement Start Age", 45, 80, 60)
+    life_expectancy = st.number_input("Plan Till Age", 70, 100, 90)
+
+    annual_expense_today = st.number_input("Annual Expense Today (₹)", min_value=0, value=1200000)
+    post_ret_inflation = st.number_input("Post-Retirement Inflation (%)", 0.0, 15.0, 6.0) / 100
+
+    mean_return = st.number_input("Expected Return After Retirement (%)", 0.0, 20.0, 8.0) / 100
+    std_dev = st.number_input("Volatility / Std Deviation (%)", 0.0, 50.0, 12.0) / 100
+    simulations = st.number_input("Number of Simulations", 100, 5000, 1000, step=100)
+
+    years = life_expectancy - retirement_age
+
+    success = 0
+    ruin = 0
+    sample_path = []
+    worst_path = []
+    worst_final = float("inf")
+
+    for s in range(simulations):
+        corpus = initial_corpus
+        annual_expense = annual_expense_today
+        path = []
+
+        for y in range(1, years + 1):
+            annual_return = np.random.normal(mean_return, std_dev)
+            corpus = corpus * (1 + annual_return) - annual_expense
+
+            if corpus < 0:
+                corpus = 0
+
+            path.append([
+                retirement_age + y,
+                round(annual_expense, 0),
+                round(corpus, 0)
+            ])
+
+            annual_expense = annual_expense * (1 + post_ret_inflation)
+
+            if corpus <= 0:
+                break
+
+        if s == 0:
+            sample_path = path
+
+        if corpus > 0:
+            success += 1
+        else:
+            ruin += 1
+
+        if corpus < worst_final:
+            worst_final = corpus
+            worst_path = path
+
+    success_rate = (success / simulations) * 100
+    ruin_rate = (ruin / simulations) * 100
+
+    if success_rate >= 85:
+        status = "Safe"
+    elif success_rate >= 65:
+        status = "Moderate"
+    else:
+        status = "Risky"
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Success Probability", f"{success_rate:.1f}%")
+    c2.metric("Ruin Probability", f"{ruin_rate:.1f}%")
+    c3.metric("Retirement Status", status)
+
+    swr = (annual_expense_today / initial_corpus * 100) if initial_corpus > 0 else 0
+
+    if swr <= 4:
+        st.success(f"Current Withdrawal Rate: {swr:.2f}% (Healthy)")
+    elif swr <= 6:
+        st.warning(f"Current Withdrawal Rate: {swr:.2f}% (Moderate)")
+    else:
+        st.error(f"Current Withdrawal Rate: {swr:.2f}% (Aggressive)")
+
+    st.markdown("### Sample Retirement Survival Path")
+    if sample_path:
+        df_sample = pd.DataFrame(sample_path, columns=["Age", "Inflation Adjusted Expense", "Corpus Balance"])
+        st.dataframe(df_sample, use_container_width=True)
+
+    st.markdown("### Worst Case Path")
+    if worst_path:
+        df_worst = pd.DataFrame(worst_path, columns=["Age", "Inflation Adjusted Expense", "Corpus Balance"])
+        st.dataframe(df_worst, use_container_width=True)
+
+st.markdown("---")
+st.caption("Freedom Wealth Platform | For Illustration Only")
