@@ -96,6 +96,7 @@ if st.session_state.page=="home":
         st.button("Portfolio Allocation",on_click=lambda:go("portfolio"))
         st.button("Net Worth Dashboard", on_click=lambda: go("networth"))
         st.button("Goal Feasibility", on_click=lambda: go("goal"))
+        st.button("Portfolio Rebalancing", on_click=lambda: go("rebalance"))
 # =====================================================
 # SIP CALCULATOR
 # =====================================================
@@ -476,3 +477,77 @@ if st.session_state.page=="goal":
     total_sip = df["Required Monthly SIP (₹)"].sum()
 
     st.success(f"Total Monthly SIP Needed Across All Goals: ₹ {total_sip:,.0f}")
+    # =============================================
+# PORTFOLIO REBALANCING ENGINE
+# =============================================
+if st.session_state.page=="rebalance":
+
+    st.button("⬅ Back",on_click=lambda:go("home"))
+
+    st.subheader("Portfolio Rebalancing Engine")
+
+    total_portfolio = st.number_input("Total Portfolio Value (₹)", value=1000000)
+
+    st.markdown("### Current Allocation (%)")
+    curr_equity = st.slider("Current Equity %",0,100,60,key="ceq")
+    curr_debt = st.slider("Current Debt %",0,100,25,key="cdebt")
+    curr_gold = st.slider("Current Gold %",0,100,10,key="cgold")
+    curr_cash = st.slider("Current Cash %",0,100,5,key="ccash")
+
+    current_total = curr_equity + curr_debt + curr_gold + curr_cash
+
+    st.markdown("### Target Allocation (%)")
+    tgt_equity = st.slider("Target Equity %",0,100,50,key="teq")
+    tgt_debt = st.slider("Target Debt %",0,100,30,key="tdebt")
+    tgt_gold = st.slider("Target Gold %",0,100,10,key="tgold")
+    tgt_cash = st.slider("Target Cash %",0,100,10,key="tcash")
+
+    target_total = tgt_equity + tgt_debt + tgt_gold + tgt_cash
+
+    if current_total != 100:
+        st.warning(f"Current Allocation Total = {current_total}% (should be 100%)")
+
+    if target_total != 100:
+        st.warning(f"Target Allocation Total = {target_total}% (should be 100%)")
+
+    assets = ["Equity","Debt","Gold","Cash"]
+
+    current_pcts = [curr_equity,curr_debt,curr_gold,curr_cash]
+    target_pcts = [tgt_equity,tgt_debt,tgt_gold,tgt_cash]
+
+    rows = []
+
+    for asset,cp,tp in zip(assets,current_pcts,target_pcts):
+
+        current_amt = total_portfolio * (cp/100)
+        target_amt = total_portfolio * (tp/100)
+        diff = target_amt - current_amt
+
+        if diff > 0:
+            action = f"Buy ₹ {abs(diff):,.0f}"
+        elif diff < 0:
+            action = f"Sell ₹ {abs(diff):,.0f}"
+        else:
+            action = "No Change"
+
+        rows.append([
+            asset,
+            cp,
+            tp,
+            round(current_amt,0),
+            round(target_amt,0),
+            round(diff,0),
+            action
+        ])
+
+    df = pd.DataFrame(rows, columns=[
+        "Asset Class",
+        "Current %",
+        "Target %",
+        "Current Amount (₹)",
+        "Target Amount (₹)",
+        "Rebalancing Amount (₹)",
+        "Action"
+    ])
+
+    st.dataframe(df, use_container_width=True)
