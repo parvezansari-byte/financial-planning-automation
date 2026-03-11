@@ -95,6 +95,7 @@ if st.session_state.page=="home":
         st.button("Cashflow Planner",on_click=lambda:go("cashflow"))
         st.button("Portfolio Allocation",on_click=lambda:go("portfolio"))
         st.button("Net Worth Dashboard", on_click=lambda: go("networth"))
+        st.button("Goal Feasibility", on_click=lambda: go("goal"))
 # =====================================================
 # SIP CALCULATOR
 # =====================================================
@@ -385,3 +386,93 @@ if st.session_state.page=="networth":
         st.success(f"Net Worth : ₹ {networth:,.0f}")
     else:
         st.error("Net Worth Negative – Review liabilities")
+        # =============================================
+# GOAL FEASIBILITY DASHBOARD
+# =============================================
+if st.session_state.page=="goal":
+
+    st.button("⬅ Back",on_click=lambda:go("home"))
+
+    st.subheader("Goal Feasibility Dashboard")
+
+    num_goals = st.number_input("Number of Goals",1,10,3)
+
+    results = []
+
+    for i in range(num_goals):
+
+        st.markdown(f"### Goal {i+1}")
+
+        goal_name = st.text_input(f"Goal Name {i+1}", value=f"Goal {i+1}", key=f"gname{i}")
+
+        target_amount = st.number_input(
+            f"Target Amount (₹) - {goal_name}",
+            value=1000000,
+            key=f"gtarget{i}"
+        )
+
+        years = st.number_input(
+            f"Years to Goal - {goal_name}",
+            min_value=1,
+            max_value=50,
+            value=10,
+            key=f"gyears{i}"
+        )
+
+        existing_investment = st.number_input(
+            f"Existing Investment (₹) - {goal_name}",
+            value=0,
+            key=f"gexist{i}"
+        )
+
+        goal_inflation = st.number_input(
+            f"Goal Inflation (%) - {goal_name}",
+            min_value=0.0,
+            max_value=20.0,
+            value=6.0,
+            key=f"ginfl{i}"
+        ) / 100
+
+        future_target = target_amount * ((1 + goal_inflation) ** years)
+
+        future_existing = existing_investment * ((1 + expected_return) ** years)
+
+        gap = future_target - future_existing
+
+        if gap < 0:
+            gap = 0
+
+        req_sip = sip_required(gap, expected_return, years) / 12
+
+        if gap == 0:
+            status = "Fully Funded"
+        elif req_sip <= 10000:
+            status = "Easy"
+        elif req_sip <= 50000:
+            status = "Moderate"
+        else:
+            status = "Stretch"
+
+        results.append([
+            goal_name,
+            round(future_target),
+            round(future_existing),
+            round(gap),
+            round(req_sip),
+            status
+        ])
+
+    df = pd.DataFrame(results, columns=[
+        "Goal",
+        "Future Target (₹)",
+        "Future Value of Existing Investment (₹)",
+        "Funding Gap (₹)",
+        "Required Monthly SIP (₹)",
+        "Feasibility"
+    ])
+
+    st.dataframe(df, use_container_width=True)
+
+    total_sip = df["Required Monthly SIP (₹)"].sum()
+
+    st.success(f"Total Monthly SIP Needed Across All Goals: ₹ {total_sip:,.0f}")
