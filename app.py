@@ -139,6 +139,7 @@ if st.session_state.page == "home":
         st.button("Net Worth Dashboard", on_click=lambda: go("networth"))
         st.button("Retirement Monte Carlo", on_click=lambda: go("mc_retirement"))
         st.button("MF Portfolio + XIRR", on_click=lambda: go("mf_xirr"))
+        st.button("CAS PDF + XIRR", on_click=lambda: go("cas_pdf"))
 
 # =====================================================
 # SIP CALCULATOR
@@ -192,6 +193,360 @@ if st.session_state.page == "sip":
     c1.metric("Total Invested", format_inr(invested))
     c2.metric("Total Gain", format_inr(total_gain))
     c3.metric("Final Corpus", format_inr(corpus))
+    # =====================================================
+# CAMS / KFINTECH PDF CAS PARSER + XIRR
+# =====================================================
+if st.session_state.page == "cas_pdf":
+
+    import pdfplumber
+    import re
+    from io import BytesIO
+
+    st.button("⬅ Back", on_click=lambda: go("home"))
+    st.subheader("CAMS / KFintech PDF CAS Parser + XIRR")
+
+    st.markdown("""
+    ### Supported
+    - CAMS CAS PDF
+    - KFintech CAS PDF
+    - Portfolio statement PDFs (text-based)
+
+    ### Important
+    - Best works on **text-based PDFs**
+    - **Image/scanned PDFs may not parse**
+    - **Password protected PDFs may fail**
+    - For accurate XIRR, transaction rows should clearly show:
+      - Date
+      - Scheme Name
+      - Transaction Nature
+      - Amount
+    """)
+
+    uploaded_pdf = st.file_uploader("Upload CAS PDF", type=["pdf"], key="cas_pdf_upload")
+
+    # -------------------------------------------------
+    # XIRR FUNCTIONS
+    # -------------------------------------------------
+    def xnpv(rate, cashflows):
+        if len(cashflows) == 0:
+            return 0
+        t0 = cashflows[0][0]
+        return sum(cf / ((1 + rate) ** ((dt - t0).days / 365.0)) for dt, cf in cashflows)
+
+    def xirr(cashflows):
+        if len(cashflows) < 2:
+            return None
+
+        low = -0.9999
+        high = 10.0
+
+        for _ in range(200):
+            mid = (low + high) / 2
+            val = xnpv(mid, cashflows)
+
+            if abs(val) < 1e-6:
+                return mid
+
+            if val > 0:
+                low = mid
+            else:
+                high = mid
+
+        return mid
+
+    # -------------------------------------------------
+    # HELPERS
+    # -------------------------------------------------
+    def clean_amount(x):
+        if pd.isna(x):
+            return np.nan
+        x = str(x).replace(",", "").replace("₹", "").replace("Rs.", "").replace("Rs", "").strip()
+        x = re.sub(r"[^0-9.\-]", "", x)
+        try:
+            return float(x)
+        except:
+            return np.nan
+
+    def normalize_txn_type(x):
+        x = str(x).strip().lower()
+
+        purchase_keywords = [
+            "purchase", "sip", "systematic investment", "switch in", "stp in",
+            "allotment", "buy", "investment", "additional purchase"
+        ]
+
+        redemption_keywords = [
+            "redemption", "switch out", "sell", "withdrawal", "swp", "stp out", "redeem"
+        ]
+
+        for kw in purchase_keywords:
+            if kw in x:
+                return "Purchase"
+
+        for kw in redemption_keywords:
+            if kw in x:
+                return "Redemption"
+
+        return "Unknown"
+
+    def extract_pdf_text(pdf_file):
+        all_text = []
+        try:
+            with pdfplumber.open(pdf_file) as pdf:
+                for page in pdf.pages:
+                    txt = page.extract_text()
+                    if txt:
+                        all_text.append(txt)
+        except Exception as e:
+            st.error(f"PDF read error: {e}")
+            return ""
+
+        return "\n".join(all_text)
+
+    # -------------------------------------------------
+    # HEURISTIC PARSER FOR TRANSACTION LINES
+    # -------------------------------------------------
+    def parse_transactions_from_text(text):
+        """
+        Heuristic parser:
+        Looks for lines containing:
+        - date pattern
+        - amount
+        - transaction keywords
+        Keeps last seen scheme name as context
+        """
+
+        lines = [line.strip() for line in text.split("\n") if line.strip()]
+
+        date_pattern = re.compile(r"\b\d{1,2}[-/]\d{1,2}[-/]\d{2,4}\b")
+        amount_pattern = re.compile(r"[-]?\d[\d,]*\.?\d*")
+
+        scheme_keywords = ["fund", "scheme", "plan", "direct", "regular", "growth", "dividend"]
+
+        transactions = []
+        current_scheme = None
+
+        for line in lines:
+
+            lower_line = line.lower()
+
+            # Detect likely scheme line
+            if (
+                any(k in lower_line for k in scheme_keywords)
+                and not date_pattern.search(line)
+                and len(line) > 10
+            ):
+                current_scheme = line.strip()
+
+            # Detect transaction line
+            has_date = date_pattern.search(line) is not None
+            txn_type = normalize_txn_type(line)
+
+            if has_date and txn_type in ["Purchase", "Redemption"]:
+
+                date_match = date_pattern.search(line)
+                txn_date = date_match.group(0) if date_match else None
+
+                # Find all numeric values
+                nums = amount_pattern.findall(line)
+
+                amt = None
+                if nums:
+                    # Usually last or near-last numeric is amount
+                    # We'll take the largest positive number from parsed values
+                    cleaned_nums = []
+                    for n in nums:
+                        val = clean_amount(n)
+                        if pd.notna(val):
+                            cleaned_nums.append(val)
+
+                    if cleaned_nums:
+                        amt = max(cleaned_nums)
+
+                if txn_date and amt and current_scheme:
+                    transactions.append({
+                        "Date": txn_date,
+                        "Fund Name": current_scheme,
+                        "Transaction Type": txn_type,
+                        "Amount": amt,
+                        "Raw Line": line
+                    })
+
+        return pd.DataFrame(transactions)
+
+    # -------------------------------------------------
+    # OPTIONAL CURRENT VALUE INPUT
+    # -------------------------------------------------
+    def build_current_value_table(fund_names):
+        st.markdown("### Optional: Enter Current Market Value (for live XIRR)")
+        st.caption("If CAS PDF does not contain current valuation clearly, enter current values manually.")
+
+        current_values = []
+        for i, fund in enumerate(fund_names):
+            val = st.number_input(
+                f"Current Value - {fund}",
+                min_value=0.0,
+                value=0.0,
+                key=f"curr_val_{i}"
+            )
+            current_values.append({"Fund Name": fund, "Current Value": val})
+
+        return pd.DataFrame(current_values)
+
+    # -------------------------------------------------
+    # MAIN FLOW
+    # -------------------------------------------------
+    if uploaded_pdf is not None:
+
+        try:
+            pdf_bytes = BytesIO(uploaded_pdf.read())
+
+            # Extract text
+            extracted_text = extract_pdf_text(pdf_bytes)
+
+            if not extracted_text or len(extracted_text.strip()) == 0:
+                st.error("No readable text found. This may be a scanned/image PDF or password-protected PDF.")
+            else:
+                with st.expander("Preview Extracted Text (First 3000 chars)"):
+                    st.text(extracted_text[:3000])
+
+                # Parse transactions
+                parsed_df = parse_transactions_from_text(extracted_text)
+
+                if parsed_df.empty:
+                    st.error("No transaction rows detected automatically. Try a text-based CAS PDF or use CSV/Excel version.")
+                else:
+                    # Standardize date + amount
+                    parsed_df["Date"] = pd.to_datetime(parsed_df["Date"], dayfirst=True, errors="coerce")
+                    parsed_df["Amount"] = pd.to_numeric(parsed_df["Amount"], errors="coerce")
+                    parsed_df = parsed_df.dropna(subset=["Date", "Amount", "Fund Name"])
+
+                    st.markdown("### Auto-Parsed Transactions")
+                    st.dataframe(parsed_df, use_container_width=True)
+
+                    # Download cleaned transactions
+                    csv_data = parsed_df.to_csv(index=False).encode("utf-8")
+                    st.download_button(
+                        "Download Parsed Transactions CSV",
+                        data=csv_data,
+                        file_name="parsed_cas_transactions.csv",
+                        mime="text/csv"
+                    )
+
+                    fund_names = sorted(parsed_df["Fund Name"].unique().tolist())
+
+                    # Optional current values
+                    current_value_df = build_current_value_table(fund_names)
+
+                    # -------------------------------------------------
+                    # FUND-WISE SUMMARY
+                    # -------------------------------------------------
+                    fund_summary = []
+
+                    for fund in fund_names:
+                        fund_df = parsed_df[parsed_df["Fund Name"] == fund].copy()
+
+                        purchases = fund_df[fund_df["Transaction Type"] == "Purchase"]["Amount"].sum()
+                        redemptions = fund_df[fund_df["Transaction Type"] == "Redemption"]["Amount"].sum()
+
+                        current_value = 0
+                        cv_row = current_value_df[current_value_df["Fund Name"] == fund]
+                        if not cv_row.empty:
+                            current_value = cv_row["Current Value"].iloc[0]
+
+                        profit_loss = current_value + redemptions - purchases
+
+                        cashflows = []
+
+                        for _, row in fund_df.iterrows():
+                            if row["Transaction Type"] == "Purchase":
+                                cashflows.append((row["Date"], -row["Amount"]))
+                            elif row["Transaction Type"] == "Redemption":
+                                cashflows.append((row["Date"], row["Amount"]))
+
+                        if current_value > 0:
+                            cashflows.append((pd.Timestamp.today().normalize(), current_value))
+
+                        fund_xirr = None
+                        if len(cashflows) >= 2:
+                            try:
+                                fund_xirr = xirr(cashflows)
+                            except:
+                                fund_xirr = None
+
+                        fund_summary.append([
+                            fund,
+                            round(purchases, 0),
+                            round(redemptions, 0),
+                            round(current_value, 0),
+                            round(profit_loss, 0),
+                            round(fund_xirr * 100, 2) if fund_xirr is not None else "N/A"
+                        ])
+
+                    summary_df = pd.DataFrame(
+                        fund_summary,
+                        columns=[
+                            "Fund Name",
+                            "Fund-wise Purchase",
+                            "Fund-wise Redemption",
+                            "Current Value",
+                            "Profit / Loss",
+                            "XIRR %"
+                        ]
+                    )
+
+                    st.markdown("### Fund-wise Portfolio Summary")
+                    st.dataframe(summary_df, use_container_width=True)
+
+                    # -------------------------------------------------
+                    # PORTFOLIO LEVEL SUMMARY
+                    # -------------------------------------------------
+                    total_purchase = summary_df["Fund-wise Purchase"].sum()
+                    total_redemption = summary_df["Fund-wise Redemption"].sum()
+                    total_current = summary_df["Current Value"].sum()
+                    total_pl = summary_df["Profit / Loss"].sum()
+
+                    portfolio_cashflows = []
+
+                    for _, row in parsed_df.iterrows():
+                        if row["Transaction Type"] == "Purchase":
+                            portfolio_cashflows.append((row["Date"], -row["Amount"]))
+                        elif row["Transaction Type"] == "Redemption":
+                            portfolio_cashflows.append((row["Date"], row["Amount"]))
+
+                    if total_current > 0:
+                        portfolio_cashflows.append((pd.Timestamp.today().normalize(), total_current))
+
+                    portfolio_xirr = None
+                    if len(portfolio_cashflows) >= 2:
+                        try:
+                            portfolio_xirr = xirr(portfolio_cashflows)
+                        except:
+                            portfolio_xirr = None
+
+                    c1, c2, c3, c4, c5 = st.columns(5)
+                    c1.metric("Total Purchase", f"₹ {total_purchase:,.0f}")
+                    c2.metric("Total Redemption", f"₹ {total_redemption:,.0f}")
+                    c3.metric("Current Value", f"₹ {total_current:,.0f}")
+                    c4.metric("Profit / Loss", f"₹ {total_pl:,.0f}")
+                    c5.metric("Portfolio XIRR", f"{portfolio_xirr*100:.2f}%" if portfolio_xirr is not None else "N/A")
+
+                    # -------------------------------------------------
+                    # ADVISOR NOTE
+                    # -------------------------------------------------
+                    st.markdown("### Advisor Note")
+                    if portfolio_xirr is None:
+                        st.warning("Portfolio XIRR could not be calculated. Please ensure current values are entered for open holdings.")
+                    else:
+                        if portfolio_xirr * 100 >= 12:
+                            st.success("Portfolio performance is strong. XIRR indicates healthy long-term compounding.")
+                        elif portfolio_xirr * 100 >= 8:
+                            st.info("Portfolio XIRR is moderate. Review asset allocation and fund concentration for optimization.")
+                        else:
+                            st.warning("Portfolio XIRR is below expectation. Consider fund-level review, underperformers, and rebalancing.")
+
+        except Exception as e:
+            st.error(f"Error processing CAS PDF: {e}")
 
 # =====================================================
 # SWP CALCULATOR (ADVANCED)
