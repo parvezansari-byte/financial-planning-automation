@@ -25,26 +25,26 @@ st.set_page_config(page_title="Freedom V3 PRO", layout="wide")
 st.markdown("""
 <style>
 .stApp {
-    background: #F5F1E8;
-    color: #1F2937;
+    background: #F3E7D3;
+    color: #2B1E12;
 }
 section[data-testid="stSidebar"] {
-    background: #F3EEE4;
+    background: #E8D8BF;
 }
 
 .main-title {
-    background: linear-gradient(90deg, #6D28D9, #7C3AED);
+    background: linear-gradient(90deg, #7A1F1F, #A52A2A, #C58B39);
     padding: 22px;
     border-radius: 0px;
     text-align: center;
-    color: white;
+    color: #FFF8ED;
     font-size: 40px;
     font-weight: 800;
-    border: 2px solid #2D1B69;
+    border: 2px solid #5C1A1A;
 }
 .sub-title {
-    background: #0B2A6B;
-    color: white;
+    background: #6B1E1E;
+    color: #FFF8ED;
     text-align: center;
     padding: 8px;
     font-size: 18px;
@@ -53,84 +53,84 @@ section[data-testid="stSidebar"] {
 }
 .prepared-line {
     font-style: italic;
-    color: #374151;
+    color: #5A3B1F;
     margin: 8px 0 12px 0;
 }
 
 .wealthy-box {
-    border: 2px solid #1F2937;
-    background: white;
+    border: 2px solid #6B1E1E;
+    background: #FFF8ED;
     margin-bottom: 14px;
 }
 .wealthy-header {
-    background: #C4B5FD;
-    color: #111827;
+    background: #B22222;
+    color: #FFF8ED;
     text-align: center;
     font-weight: 800;
     font-size: 22px;
     padding: 8px;
-    border-bottom: 2px solid #1F2937;
+    border-bottom: 2px solid #6B1E1E;
 }
 .wealthy-subheader {
-    background: #E9D5FF;
-    color: #111827;
+    background: #D4A15A;
+    color: #2B1E12;
     text-align: center;
     font-weight: 700;
     padding: 6px;
-    border-bottom: 1px solid #1F2937;
+    border-bottom: 1px solid #6B1E1E;
 }
 
 .stButton > button {
     width: 100%;
     height: 52px;
     border-radius: 6px;
-    border: 1px solid #1F2937;
-    background: #C4B5FD;
-    color: #111827;
+    border: 1px solid #6B1E1E;
+    background: #B22222;
+    color: #FFF8ED;
     font-weight: 700;
     box-shadow: none;
 }
 .stButton > button:hover {
-    background: #A78BFA;
-    color: #111827;
+    background: #8B1E1E;
+    color: #FFF8ED;
 }
 
 .stDownloadButton > button {
     width: 100%;
     height: 46px;
     border-radius: 6px;
-    border: 1px solid #1F2937;
-    background: #86EFAC;
-    color: #111827;
+    border: 1px solid #6B1E1E;
+    background: #C58B39;
+    color: #2B1E12;
     font-weight: 800;
 }
 
 label, .stMarkdown, .stText, .stCaption, p, div {
-    color: #111827 !important;
+    color: #2B1E12 !important;
 }
 
 [data-testid="metric-container"] {
-    background: #FFFFFF;
-    border: 2px solid #1F2937;
+    background: #FFF8ED;
+    border: 2px solid #6B1E1E;
     border-radius: 0px;
     padding: 10px;
 }
 
 thead tr th {
-    background-color: #C4B5FD !important;
-    color: #111827 !important;
-    border: 1px solid #1F2937 !important;
+    background-color: #B22222 !important;
+    color: #FFF8ED !important;
+    border: 1px solid #6B1E1E !important;
 }
 
 tbody tr td {
-    color: #111827 !important;
-    border: 1px solid #D1D5DB !important;
-    background: #FFFFFF !important;
+    color: #2B1E12 !important;
+    border: 1px solid #D6B98C !important;
+    background: #FFF8ED !important;
 }
 
 hr {
     border: none;
-    border-top: 2px solid #D1D5DB;
+    border-top: 2px solid #D6B98C;
 }
 </style>
 """, unsafe_allow_html=True)
