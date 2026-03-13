@@ -201,6 +201,50 @@ button[kind="secondary"] {
     box-shadow: 0 8px 18px rgba(92, 26, 26, 0.06);
 }
 
+.signature-banner {
+    background: linear-gradient(90deg, #4A120F 0%, #6B1E1E 25%, #8E2B2B 55%, #C58B39 100%);
+    color: #FFF8ED !important;
+    border: 1px solid rgba(212,175,55,0.55);
+    border-radius: 22px;
+    padding: 18px 22px;
+    margin-bottom: 14px;
+    box-shadow: 0 12px 28px rgba(92, 26, 26, 0.18);
+}
+
+.signature-card {
+    background: linear-gradient(180deg, rgba(255,248,237,0.97) 0%, rgba(248,236,208,0.96) 100%);
+    border: 1px solid rgba(107, 30, 30, 0.14);
+    border-left: 6px solid #B8860B;
+    border-radius: 18px;
+    padding: 18px;
+    min-height: 190px;
+    box-shadow: 0 8px 20px rgba(92, 26, 26, 0.08);
+    margin-bottom: 12px;
+}
+
+.signature-title {
+    font-family: 'Cinzel', serif;
+    color: #6B1E1E !important;
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.signature-text {
+    color: #3A2918 !important;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.score-strip {
+    background: linear-gradient(90deg, rgba(255,248,237,0.95) 0%, rgba(249,238,214,0.96) 100%);
+    border: 1px solid rgba(184,134,11,0.22);
+    border-radius: 18px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 8px 18px rgba(92, 26, 26, 0.06);
+}
+
 /* =========================
    SECTION BOXES
 ========================= */
@@ -571,6 +615,9 @@ if st.session_state.page == "home":
     suggested_eq = 75 if current_age <= 35 else (60 if current_age <= 50 else 40)
     suggested_debt = 20 if current_age <= 35 else (30 if current_age <= 50 else 45)
     suggested_gold = 5 if current_age <= 35 else (10 if current_age <= 50 else 15)
+    retirement_priority = "High" if current_age >= 40 else "Moderate"
+    protection_score = min(100, max(55, 100 - current_age))
+    discipline_score = min(100, max(50, round((expected_return * 100) * 6)))
 
     kpi_row([
         ("Client", client_name),
@@ -578,6 +625,16 @@ if st.session_state.page == "home":
         ("Inflation", f"{inflation*100:.1f}%"),
         ("Expected Return", f"{expected_return*100:.1f}%")
     ])
+
+    st.markdown(f"""
+    <div class="signature-banner">
+        <div style="font-family:'Cinzel', serif; font-size:26px; font-weight:800; margin-bottom:6px;">V5 SIGNATURE PRIVATE BANKER EDITION</div>
+        <div style="font-size:14px; line-height:1.6;">
+            Elite advisory interface designed for premium financial planning discussions. Present net worth, cashflow, retirement,
+            child goals, insurance, and asset allocation in a private-banker style meeting flow.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     k1, k2, k3, k4 = st.columns(4)
     with k1:
@@ -590,7 +647,7 @@ if st.session_state.page == "home":
     with k2:
         st.markdown(f"""
         <div class="kpi-card">
-            <div class="kpi-title">Advisory Readiness Score</div>
+            <div class="kpi-title">Advisory Readiness</div>
             <div class="kpi-value">{base_score}%</div>
         </div>
         """, unsafe_allow_html=True)
@@ -604,24 +661,68 @@ if st.session_state.page == "home":
     with k4:
         st.markdown(f"""
         <div class="kpi-card">
-            <div class="kpi-title">Age-Based Equity View</div>
+            <div class="kpi-title">Equity Lens</div>
             <div class="kpi-value">{suggested_eq}%</div>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown(f"""
     <div class="summary-strip">
-        V4.2 ULTRA PREMIUM | Roman Imperial Wealth Command Center &nbsp;&nbsp; | &nbsp;&nbsp;
-        Suggested Allocation: <b>{suggested_eq}% Equity</b> · <b>{suggested_debt}% Debt</b> · <b>{suggested_gold}% Gold</b>
+        V5 Signature Allocation Lens &nbsp;&nbsp; | &nbsp;&nbsp;
+        Suggested Allocation: <b>{suggested_eq}% Equity</b> · <b>{suggested_debt}% Debt</b> · <b>{suggested_gold}% Gold</b> &nbsp;&nbsp; | &nbsp;&nbsp;
+        Retirement Priority: <b>{retirement_priority}</b>
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("""
-    <div class="hero-banner">
-        <b>Advisor Summary:</b> Use this command center to present goal planning, retirement feasibility, cashflow structure,
-        SWP sustainability, insurance adequacy, and portfolio discipline in one premium client-facing interface.
+    st.markdown(f"""
+    <div class="score-strip">
+        <b>Client Advisory Scorecards:</b>
+        &nbsp;&nbsp;• Protection Score: <b>{protection_score}%</b>
+        &nbsp;&nbsp;• Investment Discipline Score: <b>{discipline_score}%</b>
+        &nbsp;&nbsp;• Meeting Positioning: <b>Private Banker Premium Flow</b>
     </div>
     """, unsafe_allow_html=True)
+
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        st.markdown(f"""
+        <div class="signature-card">
+            <div class="signature-title">👤 Client Profile Summary</div>
+            <div class="signature-text">
+                <b>Name:</b> {client_name}<br>
+                <b>Current Age:</b> {current_age}<br>
+                <b>Inflation Assumption:</b> {inflation*100:.1f}%<br>
+                <b>Expected Return:</b> {expected_return*100:.1f}%<br><br>
+                Use this as the opening frame in client meetings before moving to goals and retirement strategy.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c2:
+        st.markdown(f"""
+        <div class="signature-card">
+            <div class="signature-title">🎯 Goal Progress Scorecards</div>
+            <div class="signature-text">
+                <b>Retirement Priority:</b> {retirement_priority}<br>
+                <b>Protection Score:</b> {protection_score}%<br>
+                <b>Investment Discipline:</b> {discipline_score}%<br>
+                <b>Advisory Readiness:</b> {base_score}%<br><br>
+                Present this as a premium advisory snapshot before detailed module walkthrough.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c3:
+        st.markdown(f"""
+        <div class="signature-card">
+            <div class="signature-title">📊 Recommended Allocation Dashboard</div>
+            <div class="signature-text">
+                <b>Equity:</b> {suggested_eq}%<br>
+                <b>Debt:</b> {suggested_debt}%<br>
+                <b>Gold:</b> {suggested_gold}%<br>
+                <b>Mode:</b> {wealth_mode}<br><br>
+                Combine this with Portfolio Allocation + Rebalancing for premium recommendation flow.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
     t1, t2, t3 = st.columns(3)
     with t1:
@@ -673,7 +774,7 @@ if st.session_state.page == "home":
         st.button("iPhone Purchase Planner", on_click=lambda: go("iphone"), use_container_width=True)
 
     st.markdown("---")
-    st.markdown("### 📊 Premium Advisory Snapshot")
+    st.markdown("### 📊 Signature Advisory Snapshot")
     s1, s2, s3 = st.columns(3)
     with s1:
         alloc_df = pd.DataFrame({
@@ -691,11 +792,11 @@ if st.session_state.page == "home":
         st.markdown(f"""
         <div class="export-panel">
             <b>Client Meeting Presentation Mode</b><br><br>
-            • Start with Net Worth & Cashflow<br>
-            • Move to Goal & Children Planning<br>
+            • Start with Client Profile & Net Worth<br>
+            • Move to Cashflow & Goal Planning<br>
             • Present Retirement Feasibility<br>
             • Close with Insurance & Rebalancing<br><br>
-            <b>Advisory Tone:</b> Premium | Structured | Client-Facing
+            <b>Advisory Tone:</b> Signature | Premium | Private Banker
         </div>
         """, unsafe_allow_html=True)
 
