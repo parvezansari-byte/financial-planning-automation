@@ -518,6 +518,10 @@ if st.sidebar.button("📊 Net Worth", use_container_width=True):
 if st.session_state.page == "home":
     st.markdown('<div class="imperial-box"><div class="imperial-header">Freedom Planner Index</div></div>', unsafe_allow_html=True)
 
+    total_modules = 15
+    base_score = min(100, round((expected_return * 100) * 5 + (12 - inflation * 100) * 3))
+    wealth_mode = "Imperial Growth" if expected_return >= 0.12 else "Capital Shield"
+
     kpi_row([
         ("Client", client_name),
         ("Advisor", advisor_name),
@@ -525,32 +529,78 @@ if st.session_state.page == "home":
         ("Expected Return", f"{expected_return*100:.1f}%")
     ])
 
-    st.markdown('<div class="imperial-box"><div class="imperial-subheader">Roman Imperial Wealth Dashboard</div></div>', unsafe_allow_html=True)
+    k1, k2, k3 = st.columns(3)
+    with k1:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-title">Planner Modules</div>
+            <div class="kpi-value">{total_modules}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with k2:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-title">Advisory Readiness Score</div>
+            <div class="kpi-value">{base_score}%</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with k3:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-title">Portfolio Mode</div>
+            <div class="kpi-value" style="font-size:22px;">{wealth_mode}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    c1, c2, c3 = st.columns(3)
+    st.markdown("""
+    <div class="imperial-box">
+        <div class="imperial-subheader">V4.1 ULTRA ENHANCED | Roman Imperial Wealth Command Center</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    with c1:
+    st.markdown("""
+    <div class="hero-banner">
+        <b>Advisor Summary:</b> Use this command center to present goal planning, retirement feasibility, cashflow structure,
+        SWP sustainability, insurance adequacy, and portfolio discipline in one premium client-facing interface.
+    </div>
+    """, unsafe_allow_html=True)
+
+    a1, a2, a3 = st.columns(3)
+
+    with a1:
+        st.markdown("### 🏛️ Core Wealth Planning")
         st.button("SIP & Lumpsum Calculator", on_click=lambda: go("sip"), use_container_width=True)
-        st.button("Future Planning for Children", on_click=lambda: go("children"), use_container_width=True)
-        st.button("Cashflow Planner", on_click=lambda: go("cashflow"), use_container_width=True)
-        st.button("Car Purchase Planner", on_click=lambda: go("car"), use_container_width=True)
+        st.button("SIP + SWP Planner", on_click=lambda: go("sip_swp"), use_container_width=True)
+        st.button("SWP Calculator", on_click=lambda: go("swp"), use_container_width=True)
+        st.button("Goal Feasibility", on_click=lambda: go("goal"), use_container_width=True)
         st.button("Portfolio Allocation", on_click=lambda: go("portfolio"), use_container_width=True)
 
-    with c2:
-        st.button("SWP Calculator", on_click=lambda: go("swp"), use_container_width=True)
+    with a2:
+        st.markdown("### 👨‍👩‍👧 Life Goal & Protection")
+        st.button("Future Planning for Children", on_click=lambda: go("children"), use_container_width=True)
         st.button("Retirement Planner", on_click=lambda: go("retirement"), use_container_width=True)
-        st.button("House Planning", on_click=lambda: go("house"), use_container_width=True)
-        st.button("Net Worth Dashboard", on_click=lambda: go("networth"), use_container_width=True)
-        st.button("Goal Feasibility", on_click=lambda: go("goal"), use_container_width=True)
-
-    with c3:
-        st.button("SIP + SWP Planner", on_click=lambda: go("sip_swp"), use_container_width=True)
         st.button("Term Insurance Calculator", on_click=lambda: go("term"), use_container_width=True)
-        st.button("iPhone Purchase Planner", on_click=lambda: go("iphone"), use_container_width=True)
-        st.button("Portfolio Rebalancing", on_click=lambda: go("rebalance"), use_container_width=True)
         st.button("Retirement Monte Carlo", on_click=lambda: go("mc_retirement"), use_container_width=True)
+        st.button("Portfolio Rebalancing", on_click=lambda: go("rebalance"), use_container_width=True)
+
+    with a3:
+        st.markdown("### 💼 Lifestyle & Balance Sheet")
+        st.button("Cashflow Planner", on_click=lambda: go("cashflow"), use_container_width=True)
+        st.button("Net Worth Dashboard", on_click=lambda: go("networth"), use_container_width=True)
+        st.button("House Planning", on_click=lambda: go("house"), use_container_width=True)
+        st.button("Car Purchase Planner", on_click=lambda: go("car"), use_container_width=True)
+        st.button("iPhone Purchase Planner", on_click=lambda: go("iphone"), use_container_width=True)
 
     st.markdown("---")
+    st.markdown("### 📜 Private Banker Executive Notes")
+    note1, note2, note3 = st.columns(3)
+    with note1:
+        st.info("Prioritize retirement first, then child goals, then lifestyle purchases.")
+    with note2:
+        st.info("Keep SWP sustainable and align withdrawals with realistic post-retirement return.")
+    with note3:
+        st.info("Use portfolio allocation + rebalancing modules together for client presentation.")
+
     st.caption("Disclaimer: Output of these calculators is for illustration / advisory discussion purpose only. Please validate before execution.")
 
 # =====================================================
