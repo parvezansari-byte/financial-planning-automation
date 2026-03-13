@@ -146,12 +146,59 @@ button[kind="secondary"] {
 
 .hero-banner {
     background:
-        linear-gradient(135deg, rgba(255,248,237,0.78), rgba(247,231,201,0.72));
-    border: 1px solid rgba(184,134,11,0.20);
+        linear-gradient(135deg, rgba(255,248,237,0.82), rgba(247,231,201,0.76));
+    border: 1px solid rgba(184,134,11,0.22);
     border-radius: 20px;
     padding: 16px 18px;
     margin-bottom: 14px;
     box-shadow: 0 8px 22px rgba(92, 26, 26, 0.06);
+}
+
+.summary-strip {
+    background: linear-gradient(90deg, #5C1212 0%, #7A1F1F 35%, #A52A2A 68%, #C58B39 100%);
+    color: #FFF8ED !important;
+    border: 1px solid rgba(212,175,55,0.55);
+    border-radius: 18px;
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 10px 24px rgba(92, 26, 26, 0.14);
+    font-weight: 700;
+}
+
+.tile-card {
+    background: linear-gradient(180deg, rgba(255,248,237,0.96) 0%, rgba(249,238,214,0.96) 100%);
+    border: 1px solid rgba(107, 30, 30, 0.14);
+    border-top: 4px solid #B8860B;
+    border-radius: 18px;
+    padding: 16px;
+    min-height: 170px;
+    box-shadow: 0 8px 20px rgba(92, 26, 26, 0.08);
+    margin-bottom: 12px;
+}
+
+.tile-title {
+    font-family: 'Cinzel', serif;
+    color: #6B1E1E !important;
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.tile-text {
+    color: #3A2918 !important;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.export-panel {
+    background: linear-gradient(135deg, rgba(242,217,155,0.45), rgba(255,248,237,0.88));
+    border: 1px solid rgba(184,134,11,0.25);
+    border-left: 6px solid #7A1F1F;
+    border-radius: 18px;
+    padding: 16px;
+    margin-top: 8px;
+    margin-bottom: 12px;
+    box-shadow: 0 8px 18px rgba(92, 26, 26, 0.06);
 }
 
 /* =========================
@@ -519,8 +566,11 @@ if st.session_state.page == "home":
     st.markdown('<div class="imperial-box"><div class="imperial-header">Freedom Planner Index</div></div>', unsafe_allow_html=True)
 
     total_modules = 15
-    base_score = min(100, round((expected_return * 100) * 5 + (12 - inflation * 100) * 3))
+    base_score = min(100, max(45, round((expected_return * 100) * 5 + (12 - inflation * 100) * 3)))
     wealth_mode = "Imperial Growth" if expected_return >= 0.12 else "Capital Shield"
+    suggested_eq = 75 if current_age <= 35 else (60 if current_age <= 50 else 40)
+    suggested_debt = 20 if current_age <= 35 else (30 if current_age <= 50 else 45)
+    suggested_gold = 5 if current_age <= 35 else (10 if current_age <= 50 else 15)
 
     kpi_row([
         ("Client", client_name),
@@ -529,7 +579,7 @@ if st.session_state.page == "home":
         ("Expected Return", f"{expected_return*100:.1f}%")
     ])
 
-    k1, k2, k3 = st.columns(3)
+    k1, k2, k3, k4 = st.columns(4)
     with k1:
         st.markdown(f"""
         <div class="kpi-card">
@@ -551,10 +601,18 @@ if st.session_state.page == "home":
             <div class="kpi-value" style="font-size:22px;">{wealth_mode}</div>
         </div>
         """, unsafe_allow_html=True)
+    with k4:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-title">Age-Based Equity View</div>
+            <div class="kpi-value">{suggested_eq}%</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    st.markdown("""
-    <div class="imperial-box">
-        <div class="imperial-subheader">V4.1 ULTRA ENHANCED | Roman Imperial Wealth Command Center</div>
+    st.markdown(f"""
+    <div class="summary-strip">
+        V4.2 ULTRA PREMIUM | Roman Imperial Wealth Command Center &nbsp;&nbsp; | &nbsp;&nbsp;
+        Suggested Allocation: <b>{suggested_eq}% Equity</b> · <b>{suggested_debt}% Debt</b> · <b>{suggested_gold}% Gold</b>
     </div>
     """, unsafe_allow_html=True)
 
@@ -564,6 +622,29 @@ if st.session_state.page == "home":
         SWP sustainability, insurance adequacy, and portfolio discipline in one premium client-facing interface.
     </div>
     """, unsafe_allow_html=True)
+
+    t1, t2, t3 = st.columns(3)
+    with t1:
+        st.markdown(f"""
+        <div class="tile-card">
+            <div class="tile-title">🏛️ Core Wealth Planning</div>
+            <div class="tile-text">Run SIP, SWP, goal feasibility, and allocation tools to build the core wealth blueprint for long-term compounding.</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with t2:
+        st.markdown(f"""
+        <div class="tile-card">
+            <div class="tile-title">🛡️ Protection & Retirement</div>
+            <div class="tile-text">Use retirement, term cover, and Monte Carlo modules to test sustainability and protect family financial outcomes.</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with t3:
+        st.markdown(f"""
+        <div class="tile-card">
+            <div class="tile-title">💼 Lifestyle & Balance Sheet</div>
+            <div class="tile-text">Track cashflow, net worth, and lifestyle purchases so the client can spend with structure and not disturb long-term goals.</div>
+        </div>
+        """, unsafe_allow_html=True)
 
     a1, a2, a3 = st.columns(3)
 
@@ -592,6 +673,32 @@ if st.session_state.page == "home":
         st.button("iPhone Purchase Planner", on_click=lambda: go("iphone"), use_container_width=True)
 
     st.markdown("---")
+    st.markdown("### 📊 Premium Advisory Snapshot")
+    s1, s2, s3 = st.columns(3)
+    with s1:
+        alloc_df = pd.DataFrame({
+            "Asset Class": ["Equity", "Debt", "Gold"],
+            "Suggested %": [suggested_eq, suggested_debt, suggested_gold]
+        })
+        st.dataframe(alloc_df, use_container_width=True, hide_index=True)
+    with s2:
+        fund_df = pd.DataFrame({
+            "Model Bucket": ["Large Cap / Flexi Cap", "Hybrid / Debt", "Gold / SGB"],
+            "Role": ["Growth Engine", "Stability & Income", "Diversifier / Hedge"]
+        })
+        st.dataframe(fund_df, use_container_width=True, hide_index=True)
+    with s3:
+        st.markdown(f"""
+        <div class="export-panel">
+            <b>Client Meeting Presentation Mode</b><br><br>
+            • Start with Net Worth & Cashflow<br>
+            • Move to Goal & Children Planning<br>
+            • Present Retirement Feasibility<br>
+            • Close with Insurance & Rebalancing<br><br>
+            <b>Advisory Tone:</b> Premium | Structured | Client-Facing
+        </div>
+        """, unsafe_allow_html=True)
+
     st.markdown("### 📜 Private Banker Executive Notes")
     note1, note2, note3 = st.columns(3)
     with note1:
