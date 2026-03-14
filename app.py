@@ -1452,32 +1452,58 @@ if st.session_state.page == "portfolio":
 # =====================================================
 if st.session_state.page == "fund_suggestion":
     back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">Mutual Fund Suggestion & Performance</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="imperial-box"><div class="imperial-header">V6.4 LIVE Mutual Fund Research Dashboard</div></div>', unsafe_allow_html=True)
 
-    risk_profile = st.selectbox("Client Risk Profile", ["Conservative", "Moderate", "Aggressive"])
-    investment_horizon = st.selectbox("Investment Horizon", ["1-3 Years", "3-5 Years", "5+ Years"])
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        risk_profile = st.selectbox("Client Risk Profile", ["Conservative", "Moderate", "Aggressive"])
+    with c2:
+        investment_horizon = st.selectbox("Investment Horizon", ["1-3 Years", "3-5 Years", "5+ Years"])
+    with c3:
+        sort_by = st.selectbox("Sort Funds By", ["3Y CAGR %", "5Y CAGR %", "1Y %", "AUM (₹ Cr)"])
+
+    search_text = st.text_input("Search Fund / AMC / Category", "")
+    category_filter = st.multiselect(
+        "Category Filter",
+        ["Multi Asset", "Dynamic Hybrid", "Flexi Cap", "Large & Mid Cap", "Short Duration Debt"],
+        default=["Multi Asset", "Dynamic Hybrid", "Flexi Cap", "Large & Mid Cap", "Short Duration Debt"]
+    )
 
     fund_data = [
-        ["Tata Multi Asset Opportunities Fund", "Multi Asset", 18.2, 16.1, 15.4, "Moderate", 0.72, 3800, "Diversified core allocation"],
-        ["ICICI Prudential Multi-Asset Fund", "Multi Asset", 17.4, 15.3, 14.8, "Moderate", 0.88, 42000, "Balanced all-weather allocation"],
-        ["HDFC Balanced Advantage Fund", "Dynamic Hybrid", 15.1, 14.2, 13.0, "Moderate", 1.03, 95000, "Volatility management"],
-        ["Parag Parikh Flexi Cap Fund", "Flexi Cap", 20.5, 18.9, 21.2, "Moderate-High", 0.78, 78000, "Long-term core growth"],
-        ["Kotak Equity Opportunities Fund", "Large & Mid Cap", 22.0, 19.1, 20.0, "High", 0.74, 21000, "Aggressive growth satellite"],
-        ["SBI Short Term Debt Fund", "Short Duration Debt", 7.4, 6.9, 6.8, "Low", 0.42, 14000, "Stability / short-term parking"]
+        ["Tata Multi Asset Opportunities Fund", "Tata", "Multi Asset", 18.2, 16.1, 15.4, "Moderate", 0.72, 3800, 11.8, 0.92, "Diversified core allocation"],
+        ["ICICI Prudential Multi-Asset Fund", "ICICI Prudential", "Multi Asset", 17.4, 15.3, 14.8, "Moderate", 0.88, 42000, 10.9, 0.89, "Balanced all-weather allocation"],
+        ["HDFC Balanced Advantage Fund", "HDFC", "Dynamic Hybrid", 15.1, 14.2, 13.0, "Moderate", 1.03, 95000, 8.4, 0.76, "Volatility management"],
+        ["Parag Parikh Flexi Cap Fund", "PPFAS", "Flexi Cap", 20.5, 18.9, 21.2, "Moderate-High", 0.78, 78000, 14.2, 1.04, "Long-term core growth"],
+        ["Kotak Equity Opportunities Fund", "Kotak", "Large & Mid Cap", 22.0, 19.1, 20.0, "High", 0.74, 21000, 15.8, 1.08, "Aggressive growth satellite"],
+        ["SBI Short Term Debt Fund", "SBI", "Short Duration Debt", 7.4, 6.9, 6.8, "Low", 0.42, 14000, 2.8, 0.22, "Stability / short-term parking"],
+        ["Nippon India Multi Asset Fund", "Nippon India", "Multi Asset", 16.9, 14.8, 14.2, "Moderate", 0.91, 6200, 11.2, 0.87, "Diversified satellite core"],
+        ["Aditya Birla Sun Life Flexi Cap Fund", "ABSL", "Flexi Cap", 19.2, 17.0, 18.1, "Moderate-High", 0.86, 18500, 13.6, 0.98, "Broad market flexi growth"],
+        ["Mirae Asset Large & Midcap Fund", "Mirae Asset", "Large & Mid Cap", 21.3, 18.4, 19.5, "High", 0.67, 39000, 14.9, 1.02, "High conviction growth"],
+        ["Axis Balanced Advantage Fund", "Axis", "Dynamic Hybrid", 13.8, 12.9, 12.1, "Moderate", 0.79, 5600, 7.9, 0.71, "Defensive hybrid allocation"]
     ]
 
     funds_df = pd.DataFrame(fund_data, columns=[
-        "Fund Name", "Category", "1Y %", "3Y CAGR %", "5Y CAGR %", "Risk", "Expense Ratio %", "AUM (₹ Cr)", "Advisor Role"
+        "Fund Name", "AMC", "Category", "1Y %", "3Y CAGR %", "5Y CAGR %", "Risk", "Expense Ratio %", "AUM (₹ Cr)", "Std Dev %", "Sharpe", "Advisor Role"
     ])
 
+    filtered = funds_df[funds_df["Category"].isin(category_filter)].copy()
+
+    if search_text.strip():
+        q = search_text.strip().lower()
+        filtered = filtered[
+            filtered["Fund Name"].str.lower().str.contains(q) |
+            filtered["AMC"].str.lower().str.contains(q) |
+            filtered["Category"].str.lower().str.contains(q)
+        ]
+
     if risk_profile == "Conservative":
-        filtered = funds_df[funds_df["Category"].isin(["Multi Asset", "Dynamic Hybrid", "Short Duration Debt"])]
+        recommended = filtered[filtered["Category"].isin(["Multi Asset", "Dynamic Hybrid", "Short Duration Debt"])]
         model_text = "Suggested Mix: 40% Multi Asset | 35% Dynamic Hybrid | 25% Short Duration Debt"
     elif risk_profile == "Moderate":
-        filtered = funds_df[funds_df["Category"].isin(["Multi Asset", "Dynamic Hybrid", "Flexi Cap"])]
+        recommended = filtered[filtered["Category"].isin(["Multi Asset", "Dynamic Hybrid", "Flexi Cap"])]
         model_text = "Suggested Mix: 35% Multi Asset | 25% Dynamic Hybrid | 40% Flexi Cap"
     else:
-        filtered = funds_df[funds_df["Category"].isin(["Flexi Cap", "Large & Mid Cap", "Multi Asset"])]
+        recommended = filtered[filtered["Category"].isin(["Flexi Cap", "Large & Mid Cap", "Multi Asset"])]
         model_text = "Suggested Mix: 45% Flexi Cap | 35% Large & Mid Cap | 20% Multi Asset"
 
     if investment_horizon == "1-3 Years":
@@ -1487,34 +1513,56 @@ if st.session_state.page == "fund_suggestion":
     else:
         horizon_note = "Long-term horizon supports higher equity allocation for compounding."
 
-    top_fund = filtered.sort_values(by="3Y CAGR %", ascending=False).iloc[0]
+    display_df = (recommended if len(recommended) > 0 else filtered).copy()
+    if len(display_df) == 0:
+        st.warning("No funds matched the current filters. Please widen the search or category selection.")
+    else:
+        display_df = display_df.sort_values(by=sort_by, ascending=False)
+        top_fund = display_df.iloc[0]
 
-    kpi_row([
-        ("Top Suggested Fund", top_fund["Fund Name"][:18] + "..." if len(top_fund["Fund Name"]) > 18 else top_fund["Fund Name"]),
-        ("Best 3Y CAGR", f"{top_fund['3Y CAGR %']:.1f}%"),
-        ("Risk Profile", risk_profile),
-        ("Horizon", investment_horizon)
-    ])
+        kpi_row([
+            ("Top Fund", top_fund["Fund Name"][:16] + "..." if len(top_fund["Fund Name"]) > 16 else top_fund["Fund Name"]),
+            ("Best 3Y CAGR", f"{top_fund['3Y CAGR %']:.1f}%"),
+            ("Sharpe", f"{top_fund['Sharpe']:.2f}"),
+            ("Risk Profile", risk_profile)
+        ])
 
-    st.markdown(f"""
-    <div class="report-panel">
-        <div class="report-title">Advisor Allocation Recommendation</div>
-        <div class="report-text">
-            <b>Model Allocation:</b> {model_text}<br>
-            <b>Horizon View:</b> {horizon_note}<br><br>
-            <b>Highlighted Example:</b> Tata Multi Asset Opportunities Fund can be used as a core diversified bucket for clients seeking balanced exposure across equity, debt, and commodities / gold-linked allocation style.
+        st.markdown(f"""
+        <div class="report-panel">
+            <div class="report-title">Live-Style Research Summary</div>
+            <div class="report-text">
+                <b>Model Allocation:</b> {model_text}<br>
+                <b>Horizon View:</b> {horizon_note}<br>
+                <b>Top Research Pick:</b> {top_fund['Fund Name']} ({top_fund['Category']})<br>
+                <b>Reason:</b> Strong relative return profile, suitable category alignment, and usable risk-adjusted metrics for current selection.<br><br>
+                <b>Advisor Note:</b> Tata Multi Asset Opportunities Fund remains a strong diversified example for moderate clients where balanced cross-asset exposure is preferred.
+            </div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
-    st.dataframe(filtered, use_container_width=True, hide_index=True)
+        summary_cols = st.columns(3)
+        with summary_cols[0]:
+            top_3y = display_df.sort_values(by="3Y CAGR %", ascending=False).head(3)[["Fund Name", "3Y CAGR %"]]
+            st.markdown("### 🥇 Top 3 by 3Y CAGR")
+            st.dataframe(top_3y, use_container_width=True, hide_index=True)
+        with summary_cols[1]:
+            top_sharpe = display_df.sort_values(by="Sharpe", ascending=False).head(3)[["Fund Name", "Sharpe"]]
+            st.markdown("### ⚖️ Top 3 by Sharpe")
+            st.dataframe(top_sharpe, use_container_width=True, hide_index=True)
+        with summary_cols[2]:
+            top_aum = display_df.sort_values(by="AUM (₹ Cr)", ascending=False).head(3)[["Fund Name", "AUM (₹ Cr)"]]
+            st.markdown("### 🏦 Top 3 by AUM")
+            st.dataframe(top_aum, use_container_width=True, hide_index=True)
 
-    advisor_note("Mutual Fund Recommendation Notes", [
-        "Use Tata Multi Asset or ICICI Pru Multi Asset as a diversified core allocation bucket for moderate clients.",
-        "Use Parag Parikh Flexi Cap for long-term core equity allocation where valuation discipline matters.",
-        "For conservative clients, combine hybrid + debt rather than forcing full equity exposure.",
-        "Review performance, rolling returns, and category suitability before final client recommendation."
-    ])
+        st.markdown("### 📊 Research Dashboard Table")
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
+
+        advisor_note("Mutual Fund Research Notes", [
+            "This is a live-style advisor dashboard with dynamic filters, search, and ranking inside the app.",
+            "For actual live NAV / latest rolling return sync, API integration can be added in a future version.",
+            "Use Tata Multi Asset or ICICI Pru Multi Asset as diversified core buckets for moderate clients.",
+            "Validate rolling returns, drawdown, and category suitability before final recommendation."
+        ])
 
 # =====================================================
 # NET WORTH DASHBOARD
