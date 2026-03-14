@@ -651,6 +651,8 @@ if st.sidebar.button("🛡️ Retirement Planner", use_container_width=True):
     go("retirement")
 if st.sidebar.button("📊 Net Worth", use_container_width=True):
     go("networth")
+if st.sidebar.button("🏦 Fund Suggestion & Performance", use_container_width=True):
+    go("fund_suggestion")
 
 # =====================================================
 # HOME PAGE
@@ -790,6 +792,7 @@ if st.session_state.page == "home":
         st.button("SWP Calculator", on_click=lambda: go("swp"), use_container_width=True)
         st.button("Goal Feasibility", on_click=lambda: go("goal"), use_container_width=True)
         st.button("Portfolio Allocation", on_click=lambda: go("portfolio"), use_container_width=True)
+        st.button("Fund Suggestion & Performance", on_click=lambda: go("fund_suggestion"), use_container_width=True)
     with a2:
         st.markdown("### 👨‍👩‍👧 Life Goal & Protection")
         st.button("Future Planning for Children", on_click=lambda: go("children"), use_container_width=True)
@@ -1445,6 +1448,75 @@ if st.session_state.page == "portfolio":
     st.dataframe(df, use_container_width=True)
 
 # =====================================================
+# FUND SUGGESTION & PERFORMANCE
+# =====================================================
+if st.session_state.page == "fund_suggestion":
+    back_button()
+    st.markdown('<div class="imperial-box"><div class="imperial-header">Mutual Fund Suggestion & Performance</div></div>', unsafe_allow_html=True)
+
+    risk_profile = st.selectbox("Client Risk Profile", ["Conservative", "Moderate", "Aggressive"])
+    investment_horizon = st.selectbox("Investment Horizon", ["1-3 Years", "3-5 Years", "5+ Years"])
+
+    fund_data = [
+        ["Tata Multi Asset Opportunities Fund", "Multi Asset", 18.2, 16.1, 15.4, "Moderate", 0.72, 3800, "Diversified core allocation"],
+        ["ICICI Prudential Multi-Asset Fund", "Multi Asset", 17.4, 15.3, 14.8, "Moderate", 0.88, 42000, "Balanced all-weather allocation"],
+        ["HDFC Balanced Advantage Fund", "Dynamic Hybrid", 15.1, 14.2, 13.0, "Moderate", 1.03, 95000, "Volatility management"],
+        ["Parag Parikh Flexi Cap Fund", "Flexi Cap", 20.5, 18.9, 21.2, "Moderate-High", 0.78, 78000, "Long-term core growth"],
+        ["Kotak Equity Opportunities Fund", "Large & Mid Cap", 22.0, 19.1, 20.0, "High", 0.74, 21000, "Aggressive growth satellite"],
+        ["SBI Short Term Debt Fund", "Short Duration Debt", 7.4, 6.9, 6.8, "Low", 0.42, 14000, "Stability / short-term parking"]
+    ]
+
+    funds_df = pd.DataFrame(fund_data, columns=[
+        "Fund Name", "Category", "1Y %", "3Y CAGR %", "5Y CAGR %", "Risk", "Expense Ratio %", "AUM (₹ Cr)", "Advisor Role"
+    ])
+
+    if risk_profile == "Conservative":
+        filtered = funds_df[funds_df["Category"].isin(["Multi Asset", "Dynamic Hybrid", "Short Duration Debt"])]
+        model_text = "Suggested Mix: 40% Multi Asset | 35% Dynamic Hybrid | 25% Short Duration Debt"
+    elif risk_profile == "Moderate":
+        filtered = funds_df[funds_df["Category"].isin(["Multi Asset", "Dynamic Hybrid", "Flexi Cap"])]
+        model_text = "Suggested Mix: 35% Multi Asset | 25% Dynamic Hybrid | 40% Flexi Cap"
+    else:
+        filtered = funds_df[funds_df["Category"].isin(["Flexi Cap", "Large & Mid Cap", "Multi Asset"])]
+        model_text = "Suggested Mix: 45% Flexi Cap | 35% Large & Mid Cap | 20% Multi Asset"
+
+    if investment_horizon == "1-3 Years":
+        horizon_note = "Prefer stability-oriented allocation. Use debt / hybrid heavier positioning."
+    elif investment_horizon == "3-5 Years":
+        horizon_note = "Balanced allocation can be used with limited equity volatility tolerance."
+    else:
+        horizon_note = "Long-term horizon supports higher equity allocation for compounding."
+
+    top_fund = filtered.sort_values(by="3Y CAGR %", ascending=False).iloc[0]
+
+    kpi_row([
+        ("Top Suggested Fund", top_fund["Fund Name"][:18] + "..." if len(top_fund["Fund Name"]) > 18 else top_fund["Fund Name"]),
+        ("Best 3Y CAGR", f"{top_fund['3Y CAGR %']:.1f}%"),
+        ("Risk Profile", risk_profile),
+        ("Horizon", investment_horizon)
+    ])
+
+    st.markdown(f"""
+    <div class="report-panel">
+        <div class="report-title">Advisor Allocation Recommendation</div>
+        <div class="report-text">
+            <b>Model Allocation:</b> {model_text}<br>
+            <b>Horizon View:</b> {horizon_note}<br><br>
+            <b>Highlighted Example:</b> Tata Multi Asset Opportunities Fund can be used as a core diversified bucket for clients seeking balanced exposure across equity, debt, and commodities / gold-linked allocation style.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.dataframe(filtered, use_container_width=True, hide_index=True)
+
+    advisor_note("Mutual Fund Recommendation Notes", [
+        "Use Tata Multi Asset or ICICI Pru Multi Asset as a diversified core allocation bucket for moderate clients.",
+        "Use Parag Parikh Flexi Cap for long-term core equity allocation where valuation discipline matters.",
+        "For conservative clients, combine hybrid + debt rather than forcing full equity exposure.",
+        "Review performance, rolling returns, and category suitability before final client recommendation."
+    ])
+
+# =====================================================
 # NET WORTH DASHBOARD
 # =====================================================
 if st.session_state.page == "networth":
@@ -1569,7 +1641,7 @@ if st.session_state.page == "mc_retirement":
 valid_pages = [
     "home", "sip", "swp", "sip_swp", "children", "retirement", "term",
     "cashflow", "car", "house", "iphone", "portfolio", "networth",
-    "goal", "rebalance", "mc_retirement", "emi_vs_sip"
+    "goal", "rebalance", "mc_retirement", "emi_vs_sip", "fund_suggestion"
 ]
 if st.session_state.page not in valid_pages:
     st.session_state.page = "home"
