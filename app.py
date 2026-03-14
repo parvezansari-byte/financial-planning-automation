@@ -1529,7 +1529,7 @@ if st.session_state.page == "fund_suggestion":
         except Exception:
             return {"nav": None, "date": "N/A", "scheme_name": "", "status": "ERROR"}
 
-    c1, c2, c3, c4 = st.columns(4)
+        c1, c2, c3, c4 = st.columns(4)
     with c1:
         risk_profile = st.selectbox("Client Risk Profile", ["Conservative", "Moderate", "Aggressive"])
     with c2:
@@ -1539,6 +1539,60 @@ if st.session_state.page == "fund_suggestion":
     with c4:
         nav_source = st.selectbox("NAV Source Mode", ["Static Demo Data", "AMFI/MFAPI Live Fetch"])
 
+    # FULL LIVE AMFI SCHEME MASTER IMPORT READY helper
+    def extract_amc_name(scheme_name):
+        scheme_name = str(scheme_name)
+        amc_keywords = [
+            "Tata", "ICICI Prudential", "HDFC", "Parag Parikh", "PPFAS", "Kotak", "SBI",
+            "Nippon India", "Aditya Birla Sun Life", "ABSL", "Mirae Asset", "Axis", "UTI", "DSP", "Franklin"
+        ]
+        for amc in sorted(amc_keywords, key=len, reverse=True):
+            if amc.lower() in scheme_name.lower():
+                return amc
+        parts = scheme_name.split()
+        return " ".join(parts[:2]) if len(parts) >= 2 else (parts[0] if parts else "Unknown")
+
+    def extract_category_name(scheme_name):
+        scheme_name = str(scheme_name).lower()
+        category_map = {
+            "multi asset": "Multi Asset",
+            "balanced advantage": "Dynamic Hybrid",
+            "dynamic asset allocation": "Dynamic Hybrid",
+            "dynamic hybrid": "Dynamic Hybrid",
+            "flexi cap": "Flexi Cap",
+            "large & mid": "Large & Mid Cap",
+            "large and mid": "Large & Mid Cap",
+            "large midcap": "Large & Mid Cap",
+            "short duration": "Short Duration Debt",
+            "short term debt": "Short Duration Debt",
+            "liquid": "Liquid / Overnight",
+            "overnight": "Liquid / Overnight",
+            "small cap": "Small Cap",
+            "mid cap": "Mid Cap",
+            "large cap": "Large Cap"
+        }
+        for key, val in category_map.items():
+            if key in scheme_name:
+                return val
+        return "Other / Needs Mapping"
+
+    def fetch_scheme_master_amfi():
+        try:
+            import requests
+            url = "https://api.mfapi.in/mf"
+            resp = requests.get(url, timeout=8)
+            if resp.status_code == 200:
+                data = resp.json()
+                if isinstance(data, list) and len(data) > 0:
+                    master_df = pd.DataFrame(data)
+                    if "schemeCode" in master_df.columns and "schemeName" in master_df.columns:
+                        master_df = master_df.rename(columns={"schemeCode": "Scheme Code", "schemeName": "Scheme Name"})
+                        master_df["AMC Extracted"] = master_df["Scheme Name"].astype(str).apply(extract_amc_name)
+                        master_df["Category Extracted"] = master_df["Scheme Name"].astype(str).apply(extract_category_name)
+                        return master_df, "LIVE"
+            return pd.DataFrame(), "FAILED"
+        except Exception:
+            return pd.DataFrame(), "ERROR"
     search_text = st.text_input("Search Fund / AMC / Category / Scheme Code", "")
     dynamic_amc_filter = []
     dynamic_category_filter = []
