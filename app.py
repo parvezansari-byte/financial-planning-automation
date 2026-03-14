@@ -31,7 +31,7 @@ def go(page_name):
     st.session_state.page = page_name
 
 def back_button():
-    st.markdown("<div style='margin-top:8px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top:4px; margin-bottom:8px;'></div>", unsafe_allow_html=True)
     st.button("⬅ Back to Roman Index", on_click=lambda: go("home"), use_container_width=True)
 
 # =====================================================
@@ -61,10 +61,12 @@ html, body, [class*="css"] {
    MAIN CONTAINER
 ========================= */
 .main .block-container {
-    max-width: 96%;
-    padding-top: 1rem;
-    padding-bottom: 2rem;
-    background: rgba(255, 248, 237, 0.48);
+    max-width: 94%;
+    padding-top: 1.15rem;
+    padding-bottom: 2.2rem;
+    padding-left: 1.2rem;
+    padding-right: 1.2rem;
+    background: rgba(255, 248, 237, 0.52);
     border: 1px solid rgba(107, 30, 30, 0.10);
     border-radius: 24px;
     backdrop-filter: blur(6px);
@@ -76,8 +78,8 @@ html, body, [class*="css"] {
 ========================= */
 section[data-testid="stSidebar"] {
     background:
-        linear-gradient(180deg, #f1e3c9 0%, #e8d4ad 45%, #d8bb83 100%);
-    border-right: 3px solid #B8860B;
+        linear-gradient(180deg, #f4e8d0 0%, #ead8b3 45%, #ddc08a 100%);
+    border-right: 2px solid #C58B39;
     box-shadow: inset -8px 0 22px rgba(107, 30, 30, 0.05);
 }
 
@@ -199,6 +201,31 @@ button[kind="secondary"] {
     margin-top: 8px;
     margin-bottom: 12px;
     box-shadow: 0 8px 18px rgba(92, 26, 26, 0.06);
+}
+
+.report-panel {
+    background: linear-gradient(180deg, rgba(255,248,237,0.98) 0%, rgba(248,236,208,0.97) 100%);
+    border: 1px solid rgba(107, 30, 30, 0.14);
+    border-left: 6px solid #B8860B;
+    border-radius: 18px;
+    padding: 18px;
+    margin-top: 8px;
+    margin-bottom: 12px;
+    box-shadow: 0 8px 18px rgba(92, 26, 26, 0.06);
+}
+
+.report-title {
+    font-family: 'Cinzel', serif;
+    color: #6B1E1E !important;
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.report-text {
+    color: #3A2918 !important;
+    font-size: 14px;
+    line-height: 1.65;
 }
 
 .signature-banner {
@@ -611,6 +638,7 @@ st.session_state.advisor_name = advisor_name
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("### Quick Navigation")
+st.sidebar.caption("Production Ready Navigation Panel")
 if st.sidebar.button("🏛️ Home Dashboard", use_container_width=True):
     go("home")
 if st.sidebar.button("📈 SIP & Lumpsum", use_container_width=True):
@@ -798,6 +826,45 @@ if st.session_state.page == "home":
             • Present Children + Retirement Planning<br>
             • Close with Insurance + Allocation + Rebalancing<br><br>
             <b>Meeting Tone:</b> Boardroom | Elite | Private Banker
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("### 🧾 V6.2 EXPORT + PDF READY | Advisor Summary")
+    r1, r2 = st.columns([1.4, 1])
+    with r1:
+        st.markdown(f"""
+        <div class="report-panel">
+            <div class="report-title">Executive Meeting Summary</div>
+            <div class="report-text">
+                <b>Client:</b> {client_name}<br>
+                <b>Advisor:</b> {advisor_name}<br>
+                <b>Boardroom Score:</b> {boardroom_score}%<br>
+                <b>Suggested Allocation:</b> {suggested_eq}% Equity | {suggested_debt}% Debt | {suggested_gold}% Gold<br>
+                <b>Portfolio Mode:</b> {wealth_mode}<br>
+                <b>Retirement Priority:</b> {retirement_priority}<br><br>
+                <b>Recommended Meeting Flow:</b><br>
+                1. Net Worth + Cashflow Review<br>
+                2. Goal Feasibility + Children Planning<br>
+                3. Retirement Sustainability + SWP Logic<br>
+                4. Insurance Adequacy + Allocation + Rebalancing<br><br>
+                <b>Advisor Closing Note:</b> Focus first on retirement security, then goal-based investing, and finally lifestyle aspirations without disturbing core wealth compounding.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    with r2:
+        summary_df = pd.DataFrame({
+            "Metric": ["Readiness", "Protection", "Discipline", "Boardroom"],
+            "Score": [f"{base_score}%", f"{protection_score}%", f"{discipline_score}%", f"{boardroom_score}%"]
+        })
+        st.dataframe(summary_df, use_container_width=True, hide_index=True)
+        st.markdown(f"""
+        <div class="export-panel">
+            <b>PDF / Print Ready Guidance</b><br><br>
+            • Use this home dashboard as cover page<br>
+            • Export screenshots module-wise for client deck<br>
+            • Present summary first, then calculators<br>
+            • Use Boardroom Master Summary as closing page<br><br>
+            <b>Format:</b> HNI | Boardroom | Presentation Ready
         </div>
         """, unsafe_allow_html=True)
 
@@ -1457,4 +1524,4 @@ if st.session_state.page not in valid_pages:
 # FOOTER
 # =====================================================
 st.markdown("---")
-st.caption("Freedom V4 ULTRA | Roman Imperial Private Banker Edition | For Illustration / Advisory Discussion Purpose Only")
+st.caption("Freedom V6.1 PRODUCTION READY | Boardroom Elite Roman Imperial Edition | For Illustration / Advisory Discussion Purpose Only")
