@@ -211,6 +211,27 @@ button[kind="secondary"] {
     box-shadow: 0 12px 28px rgba(92, 26, 26, 0.18);
 }
 
+.boardroom-banner {
+    background: linear-gradient(90deg, #3E0F0F 0%, #5C1212 22%, #7A1F1F 48%, #A52A2A 72%, #D4AF37 100%);
+    color: #FFF8ED !important;
+    border: 1px solid rgba(212,175,55,0.65);
+    border-radius: 24px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 14px 32px rgba(92, 26, 26, 0.20);
+}
+
+.boardroom-panel {
+    background: linear-gradient(180deg, rgba(255,248,237,0.98) 0%, rgba(248,236,208,0.97) 100%);
+    border: 1px solid rgba(107, 30, 30, 0.14);
+    border-top: 5px solid #B8860B;
+    border-radius: 20px;
+    padding: 18px;
+    min-height: 210px;
+    box-shadow: 0 10px 24px rgba(92, 26, 26, 0.08);
+    margin-bottom: 12px;
+}
+
 .signature-card {
     background: linear-gradient(180deg, rgba(255,248,237,0.97) 0%, rgba(248,236,208,0.96) 100%);
     border: 1px solid rgba(107, 30, 30, 0.14);
@@ -314,21 +335,21 @@ button[kind="secondary"] {
     width: 100%;
     min-height: 58px;
     border-radius: 14px;
-    border: 1px solid #8B6B2E;
-    background: linear-gradient(145deg, #7A1F1F 0%, #A52A2A 60%, #C58B39 100%);
-    color: #FFF8ED !important;
+    border: 1px solid #C58B39;
+    background: linear-gradient(145deg, #FFF8ED 0%, #F8E7C5 55%, #E8C989 100%);
+    color: #5C1A1A !important;
     font-weight: 800;
     font-family: 'Cinzel', serif;
-    box-shadow: 0 6px 18px rgba(92, 26, 26, 0.16);
+    box-shadow: 0 6px 18px rgba(92, 26, 26, 0.10);
     transition: all 0.25s ease;
 }
 
 .stButton > button:hover {
     transform: translateY(-2px);
-    background: linear-gradient(145deg, #5C1212 0%, #7A1F1F 55%, #D4AF37 100%);
-    color: #FFF8ED !important;
+    background: linear-gradient(145deg, #FFFDF8 0%, #F6E6C0 45%, #DDB56A 100%);
+    color: #4A120F !important;
     border: 1px solid #D4AF37;
-    box-shadow: 0 10px 24px rgba(92, 26, 26, 0.22);
+    box-shadow: 0 10px 24px rgba(92, 26, 26, 0.16);
 }
 
 .stDownloadButton > button {
@@ -618,6 +639,7 @@ if st.session_state.page == "home":
     retirement_priority = "High" if current_age >= 40 else "Moderate"
     protection_score = min(100, max(55, 100 - current_age))
     discipline_score = min(100, max(50, round((expected_return * 100) * 6)))
+    boardroom_score = min(100, max(60, round((base_score + protection_score + discipline_score) / 3)))
 
     kpi_row([
         ("Client", client_name),
@@ -627,99 +649,84 @@ if st.session_state.page == "home":
     ])
 
     st.markdown(f"""
-    <div class="signature-banner">
-        <div style="font-family:'Cinzel', serif; font-size:26px; font-weight:800; margin-bottom:6px;">V5 SIGNATURE PRIVATE BANKER EDITION</div>
-        <div style="font-size:14px; line-height:1.6;">
-            Elite advisory interface designed for premium financial planning discussions. Present net worth, cashflow, retirement,
-            child goals, insurance, and asset allocation in a private-banker style meeting flow.
+    <div class="boardroom-banner">
+        <div style="font-family:'Cinzel', serif; font-size:28px; font-weight:800; margin-bottom:6px;">FINAL V6 BOARDROOM ELITE EDITION</div>
+        <div style="font-size:14px; line-height:1.65;">
+            Executive-grade HNI financial planning interface built for boardroom-style client meetings. Use this elite dashboard to present
+            net worth, cashflow, goals, retirement, insurance, allocation, and rebalancing in a premium structured advisory flow.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    k1, k2, k3, k4 = st.columns(4)
+    k1, k2, k3, k4, k5 = st.columns(5)
     with k1:
         st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-title">Planner Modules</div>
-            <div class="kpi-value">{total_modules}</div>
-        </div>
+        <div class="kpi-card"><div class="kpi-title">Modules</div><div class="kpi-value">{total_modules}</div></div>
         """, unsafe_allow_html=True)
     with k2:
         st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-title">Advisory Readiness</div>
-            <div class="kpi-value">{base_score}%</div>
-        </div>
+        <div class="kpi-card"><div class="kpi-title">Readiness</div><div class="kpi-value">{base_score}%</div></div>
         """, unsafe_allow_html=True)
     with k3:
         st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-title">Portfolio Mode</div>
-            <div class="kpi-value" style="font-size:22px;">{wealth_mode}</div>
-        </div>
+        <div class="kpi-card"><div class="kpi-title">Protection</div><div class="kpi-value">{protection_score}%</div></div>
         """, unsafe_allow_html=True)
     with k4:
         st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-title">Equity Lens</div>
-            <div class="kpi-value">{suggested_eq}%</div>
-        </div>
+        <div class="kpi-card"><div class="kpi-title">Discipline</div><div class="kpi-value">{discipline_score}%</div></div>
+        """, unsafe_allow_html=True)
+    with k5:
+        st.markdown(f"""
+        <div class="kpi-card"><div class="kpi-title">Boardroom Score</div><div class="kpi-value">{boardroom_score}%</div></div>
         """, unsafe_allow_html=True)
 
     st.markdown(f"""
     <div class="summary-strip">
-        V5 Signature Allocation Lens &nbsp;&nbsp; | &nbsp;&nbsp;
-        Suggested Allocation: <b>{suggested_eq}% Equity</b> · <b>{suggested_debt}% Debt</b> · <b>{suggested_gold}% Gold</b> &nbsp;&nbsp; | &nbsp;&nbsp;
-        Retirement Priority: <b>{retirement_priority}</b>
+        Boardroom Allocation Lens &nbsp;&nbsp; | &nbsp;&nbsp;
+        <b>{suggested_eq}% Equity</b> · <b>{suggested_debt}% Debt</b> · <b>{suggested_gold}% Gold</b>
+        &nbsp;&nbsp; | &nbsp;&nbsp; Mode: <b>{wealth_mode}</b>
+        &nbsp;&nbsp; | &nbsp;&nbsp; Retirement Priority: <b>{retirement_priority}</b>
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown(f"""
-    <div class="score-strip">
-        <b>Client Advisory Scorecards:</b>
-        &nbsp;&nbsp;• Protection Score: <b>{protection_score}%</b>
-        &nbsp;&nbsp;• Investment Discipline Score: <b>{discipline_score}%</b>
-        &nbsp;&nbsp;• Meeting Positioning: <b>Private Banker Premium Flow</b>
-    </div>
-    """, unsafe_allow_html=True)
-
-    c1, c2, c3 = st.columns(3)
-    with c1:
+    b1, b2, b3 = st.columns(3)
+    with b1:
         st.markdown(f"""
-        <div class="signature-card">
-            <div class="signature-title">👤 Client Profile Summary</div>
+        <div class="boardroom-panel">
+            <div class="signature-title">👤 HNI Client Profile Panel</div>
             <div class="signature-text">
-                <b>Name:</b> {client_name}<br>
-                <b>Current Age:</b> {current_age}<br>
+                <b>Client:</b> {client_name}<br>
+                <b>Advisor:</b> {advisor_name}<br>
+                <b>Age:</b> {current_age}<br>
                 <b>Inflation Assumption:</b> {inflation*100:.1f}%<br>
                 <b>Expected Return:</b> {expected_return*100:.1f}%<br><br>
-                Use this as the opening frame in client meetings before moving to goals and retirement strategy.
+                Use as opening boardroom profile before moving into wealth, protection, and lifestyle planning.
             </div>
         </div>
         """, unsafe_allow_html=True)
-    with c2:
+    with b2:
         st.markdown(f"""
-        <div class="signature-card">
-            <div class="signature-title">🎯 Goal Progress Scorecards</div>
+        <div class="boardroom-panel">
+            <div class="signature-title">🎯 Executive Goal Scorecards</div>
             <div class="signature-text">
-                <b>Retirement Priority:</b> {retirement_priority}<br>
+                <b>Advisory Readiness:</b> {base_score}%<br>
                 <b>Protection Score:</b> {protection_score}%<br>
-                <b>Investment Discipline:</b> {discipline_score}%<br>
-                <b>Advisory Readiness:</b> {base_score}%<br><br>
-                Present this as a premium advisory snapshot before detailed module walkthrough.
+                <b>Discipline Score:</b> {discipline_score}%<br>
+                <b>Boardroom Score:</b> {boardroom_score}%<br><br>
+                Ideal for premium discussion framing before detailed module walkthrough.
             </div>
         </div>
         """, unsafe_allow_html=True)
-    with c3:
+    with b3:
         st.markdown(f"""
-        <div class="signature-card">
-            <div class="signature-title">📊 Recommended Allocation Dashboard</div>
+        <div class="boardroom-panel">
+            <div class="signature-title">📊 Advisor Recommendation Engine</div>
             <div class="signature-text">
-                <b>Equity:</b> {suggested_eq}%<br>
-                <b>Debt:</b> {suggested_debt}%<br>
-                <b>Gold:</b> {suggested_gold}%<br>
-                <b>Mode:</b> {wealth_mode}<br><br>
-                Combine this with Portfolio Allocation + Rebalancing for premium recommendation flow.
+                <b>Suggested Allocation:</b><br>
+                Equity {suggested_eq}% | Debt {suggested_debt}% | Gold {suggested_gold}%<br>
+                <b>Portfolio Mode:</b> {wealth_mode}<br>
+                <b>Priority:</b> {retirement_priority}<br><br>
+                Pair this with Portfolio Allocation + Rebalancing for a final premium recommendation close.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -729,26 +736,25 @@ if st.session_state.page == "home":
         st.markdown(f"""
         <div class="tile-card">
             <div class="tile-title">🏛️ Core Wealth Planning</div>
-            <div class="tile-text">Run SIP, SWP, goal feasibility, and allocation tools to build the core wealth blueprint for long-term compounding.</div>
+            <div class="tile-text">SIP, SWP, goal feasibility, and allocation modules to build the long-term compounding blueprint.</div>
         </div>
         """, unsafe_allow_html=True)
     with t2:
         st.markdown(f"""
         <div class="tile-card">
             <div class="tile-title">🛡️ Protection & Retirement</div>
-            <div class="tile-text">Use retirement, term cover, and Monte Carlo modules to test sustainability and protect family financial outcomes.</div>
+            <div class="tile-text">Retirement, term cover, and Monte Carlo modules to stress-test sustainability and family protection.</div>
         </div>
         """, unsafe_allow_html=True)
     with t3:
         st.markdown(f"""
         <div class="tile-card">
             <div class="tile-title">💼 Lifestyle & Balance Sheet</div>
-            <div class="tile-text">Track cashflow, net worth, and lifestyle purchases so the client can spend with structure and not disturb long-term goals.</div>
+            <div class="tile-text">Cashflow, net worth, and lifestyle purchase planners to preserve financial discipline without harming goals.</div>
         </div>
         """, unsafe_allow_html=True)
 
     a1, a2, a3 = st.columns(3)
-
     with a1:
         st.markdown("### 🏛️ Core Wealth Planning")
         st.button("SIP & Lumpsum Calculator", on_click=lambda: go("sip"), use_container_width=True)
@@ -756,7 +762,6 @@ if st.session_state.page == "home":
         st.button("SWP Calculator", on_click=lambda: go("swp"), use_container_width=True)
         st.button("Goal Feasibility", on_click=lambda: go("goal"), use_container_width=True)
         st.button("Portfolio Allocation", on_click=lambda: go("portfolio"), use_container_width=True)
-
     with a2:
         st.markdown("### 👨‍👩‍👧 Life Goal & Protection")
         st.button("Future Planning for Children", on_click=lambda: go("children"), use_container_width=True)
@@ -764,7 +769,6 @@ if st.session_state.page == "home":
         st.button("Term Insurance Calculator", on_click=lambda: go("term"), use_container_width=True)
         st.button("Retirement Monte Carlo", on_click=lambda: go("mc_retirement"), use_container_width=True)
         st.button("Portfolio Rebalancing", on_click=lambda: go("rebalance"), use_container_width=True)
-
     with a3:
         st.markdown("### 💼 Lifestyle & Balance Sheet")
         st.button("Cashflow Planner", on_click=lambda: go("cashflow"), use_container_width=True)
@@ -774,40 +778,37 @@ if st.session_state.page == "home":
         st.button("iPhone Purchase Planner", on_click=lambda: go("iphone"), use_container_width=True)
 
     st.markdown("---")
-    st.markdown("### 📊 Signature Advisory Snapshot")
+    st.markdown("### 🏛️ Boardroom Elite Master Summary")
     s1, s2, s3 = st.columns(3)
     with s1:
-        alloc_df = pd.DataFrame({
-            "Asset Class": ["Equity", "Debt", "Gold"],
-            "Suggested %": [suggested_eq, suggested_debt, suggested_gold]
-        })
+        alloc_df = pd.DataFrame({"Asset Class": ["Equity", "Debt", "Gold"], "Suggested %": [suggested_eq, suggested_debt, suggested_gold]})
         st.dataframe(alloc_df, use_container_width=True, hide_index=True)
     with s2:
         fund_df = pd.DataFrame({
             "Model Bucket": ["Large Cap / Flexi Cap", "Hybrid / Debt", "Gold / SGB"],
-            "Role": ["Growth Engine", "Stability & Income", "Diversifier / Hedge"]
+            "Boardroom Role": ["Growth Engine", "Capital Stability", "Strategic Hedge"]
         })
         st.dataframe(fund_df, use_container_width=True, hide_index=True)
     with s3:
         st.markdown(f"""
         <div class="export-panel">
-            <b>Client Meeting Presentation Mode</b><br><br>
-            • Start with Client Profile & Net Worth<br>
-            • Move to Cashflow & Goal Planning<br>
-            • Present Retirement Feasibility<br>
-            • Close with Insurance & Rebalancing<br><br>
-            <b>Advisory Tone:</b> Signature | Premium | Private Banker
+            <b>HNI Client Presentation Flow</b><br><br>
+            • Open with Client Profile & Net Worth<br>
+            • Move to Cashflow & Goal Feasibility<br>
+            • Present Children + Retirement Planning<br>
+            • Close with Insurance + Allocation + Rebalancing<br><br>
+            <b>Meeting Tone:</b> Boardroom | Elite | Private Banker
         </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("### 📜 Private Banker Executive Notes")
+    st.markdown("### 📜 Executive Private Banker Notes")
     note1, note2, note3 = st.columns(3)
     with note1:
         st.info("Prioritize retirement first, then child goals, then lifestyle purchases.")
     with note2:
-        st.info("Keep SWP sustainable and align withdrawals with realistic post-retirement return.")
+        st.info("Use SWP only after a sustainable corpus is validated through retirement modules.")
     with note3:
-        st.info("Use portfolio allocation + rebalancing modules together for client presentation.")
+        st.info("Close every meeting with allocation + rebalancing for a professional advisory finish.")
 
     st.caption("Disclaimer: Output of these calculators is for illustration / advisory discussion purpose only. Please validate before execution.")
 
