@@ -893,62 +893,7 @@ if st.session_state.page == "sip":
     t1, t2 = st.tabs(["SIP Planner", "Lumpsum Planner"])
 
     with t1:
-        # FULL LIVE AMFI SCHEME MASTER IMPORT READY helper
-    def fetch_scheme_master_amfi():
-        try:
-            import requests
-            url = "https://api.mfapi.in/mf"
-            resp = requests.get(url, timeout=8)
-            if resp.status_code == 200:
-                data = resp.json()
-                if isinstance(data, list) and len(data) > 0:
-                    master_df = pd.DataFrame(data)
-                    if "schemeCode" in master_df.columns and "schemeName" in master_df.columns:
-                        master_df = master_df.rename(columns={"schemeCode": "Scheme Code", "schemeName": "Scheme Name"})
-                        master_df["AMC Extracted"] = master_df["Scheme Name"].astype(str).apply(extract_amc_name)
-                        master_df["Category Extracted"] = master_df["Scheme Name"].astype(str).apply(extract_category_name)
-                        return master_df, "LIVE"
-            return pd.DataFrame(), "FAILED"
-        except Exception:
-            return pd.DataFrame(), "ERROR"
-
-    def extract_amc_name(scheme_name):
-        scheme_name = str(scheme_name)
-        amc_keywords = [
-            "Tata", "ICICI Prudential", "HDFC", "Parag Parikh", "PPFAS", "Kotak", "SBI",
-            "Nippon India", "Aditya Birla Sun Life", "ABSL", "Mirae Asset", "Axis", "UTI", "DSP", "Franklin"
-        ]
-        for amc in sorted(amc_keywords, key=len, reverse=True):
-            if amc.lower() in scheme_name.lower():
-                return amc
-        parts = scheme_name.split()
-        return " ".join(parts[:2]) if len(parts) >= 2 else (parts[0] if parts else "Unknown")
-
-    def extract_category_name(scheme_name):
-        scheme_name = str(scheme_name).lower()
-        category_map = {
-            "multi asset": "Multi Asset",
-            "balanced advantage": "Dynamic Hybrid",
-            "dynamic asset allocation": "Dynamic Hybrid",
-            "dynamic hybrid": "Dynamic Hybrid",
-            "flexi cap": "Flexi Cap",
-            "large & mid": "Large & Mid Cap",
-            "large and mid": "Large & Mid Cap",
-            "large midcap": "Large & Mid Cap",
-            "short duration": "Short Duration Debt",
-            "short term debt": "Short Duration Debt",
-            "liquid": "Liquid / Overnight",
-            "overnight": "Liquid / Overnight",
-            "small cap": "Small Cap",
-            "mid cap": "Mid Cap",
-            "large cap": "Large Cap"
-        }
-        for key, val in category_map.items():
-            if key in scheme_name:
-                return val
-        return "Other / Needs Mapping"
-
-    c1, c2, c3, c4 = st.columns(4)
+        c1, c2, c3, c4 = st.columns(4)
         with c1:
             monthly_sip = st.number_input("Monthly SIP (₹)", 0, 100000000, 5000)
         with c2:
@@ -1507,7 +1452,7 @@ if st.session_state.page == "portfolio":
 # =====================================================
 if st.session_state.page == "fund_suggestion":
     back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">V6.8 FULL LIVE AMFI SCHEME MASTER IMPORT READY</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="imperial-box"><div class="imperial-header">V6.6 REAL AMFI API INTEGRATION READY CODE</div></div>', unsafe_allow_html=True)
 
     # API-ready helper (safe fallback structure)
     def fetch_live_nav_amfi(scheme_code):
@@ -1529,7 +1474,7 @@ if st.session_state.page == "fund_suggestion":
         except Exception:
             return {"nav": None, "date": "N/A", "scheme_name": "", "status": "ERROR"}
 
-        c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4 = st.columns(4)
     with c1:
         risk_profile = st.selectbox("Client Risk Profile", ["Conservative", "Moderate", "Aggressive"])
     with c2:
@@ -1539,80 +1484,14 @@ if st.session_state.page == "fund_suggestion":
     with c4:
         nav_source = st.selectbox("NAV Source Mode", ["Static Demo Data", "AMFI/MFAPI Live Fetch"])
 
-    # FULL LIVE AMFI SCHEME MASTER IMPORT READY helper
-    def extract_amc_name(scheme_name):
-        scheme_name = str(scheme_name)
-        amc_keywords = [
-            "Tata", "ICICI Prudential", "HDFC", "Parag Parikh", "PPFAS", "Kotak", "SBI",
-            "Nippon India", "Aditya Birla Sun Life", "ABSL", "Mirae Asset", "Axis", "UTI", "DSP", "Franklin"
-        ]
-        for amc in sorted(amc_keywords, key=len, reverse=True):
-            if amc.lower() in scheme_name.lower():
-                return amc
-        parts = scheme_name.split()
-        return " ".join(parts[:2]) if len(parts) >= 2 else (parts[0] if parts else "Unknown")
-
-    def extract_category_name(scheme_name):
-        scheme_name = str(scheme_name).lower()
-        category_map = {
-            "multi asset": "Multi Asset",
-            "balanced advantage": "Dynamic Hybrid",
-            "dynamic asset allocation": "Dynamic Hybrid",
-            "dynamic hybrid": "Dynamic Hybrid",
-            "flexi cap": "Flexi Cap",
-            "large & mid": "Large & Mid Cap",
-            "large and mid": "Large & Mid Cap",
-            "large midcap": "Large & Mid Cap",
-            "short duration": "Short Duration Debt",
-            "short term debt": "Short Duration Debt",
-            "liquid": "Liquid / Overnight",
-            "overnight": "Liquid / Overnight",
-            "small cap": "Small Cap",
-            "mid cap": "Mid Cap",
-            "large cap": "Large Cap"
-        }
-        for key, val in category_map.items():
-            if key in scheme_name:
-                return val
-        return "Other / Needs Mapping"
-
-    def fetch_scheme_master_amfi():
-        try:
-            import requests
-            url = "https://api.mfapi.in/mf"
-            resp = requests.get(url, timeout=8)
-            if resp.status_code == 200:
-                data = resp.json()
-                if isinstance(data, list) and len(data) > 0:
-                    master_df = pd.DataFrame(data)
-                    if "schemeCode" in master_df.columns and "schemeName" in master_df.columns:
-                        master_df = master_df.rename(columns={"schemeCode": "Scheme Code", "schemeName": "Scheme Name"})
-                        master_df["AMC Extracted"] = master_df["Scheme Name"].astype(str).apply(extract_amc_name)
-                        master_df["Category Extracted"] = master_df["Scheme Name"].astype(str).apply(extract_category_name)
-                        return master_df, "LIVE"
-            return pd.DataFrame(), "FAILED"
-        except Exception:
-            return pd.DataFrame(), "ERROR"
     search_text = st.text_input("Search Fund / AMC / Category / Scheme Code", "")
-    dynamic_amc_filter = []
-    dynamic_category_filter = []
-    amc_filter = st.multiselect(
-        "AMC Filter",
-        ["Tata", "ICICI Prudential", "HDFC", "PPFAS", "Kotak", "SBI", "Nippon India", "ABSL", "Mirae Asset", "Axis"],
-        default=["Tata", "ICICI Prudential", "HDFC", "PPFAS", "Kotak", "SBI", "Nippon India", "ABSL", "Mirae Asset", "Axis"]
-    )
-
     category_filter = st.multiselect(
         "Category Filter",
         ["Multi Asset", "Dynamic Hybrid", "Flexi Cap", "Large & Mid Cap", "Short Duration Debt"],
         default=["Multi Asset", "Dynamic Hybrid", "Flexi Cap", "Large & Mid Cap", "Short Duration Debt"]
     )
 
-    r1, r2 = st.columns(2)
-    with r1:
-        refresh_live = st.button("🔄 Refresh Live NAV from AMFI/MFAPI", use_container_width=True)
-    with r2:
-        import_master = st.button("📥 Import AMFI Scheme Master (Ready)", use_container_width=True)
+    refresh_live = st.button("🔄 Refresh Live NAV from AMFI/MFAPI", use_container_width=True)
 
     fund_data = [
         ["120503", "Tata Multi Asset Opportunities Fund", "Tata", "Multi Asset", 18.2, 16.1, 15.4, "Moderate", 0.72, 3800, 11.8, 0.92, 24.87, "2026-03-14", "Diversified core allocation"],
@@ -1631,41 +1510,26 @@ if st.session_state.page == "fund_suggestion":
         "Scheme Code", "Fund Name", "AMC", "Category", "1Y %", "3Y CAGR %", "5Y CAGR %", "Risk", "Expense Ratio %", "AUM (₹ Cr)", "Std Dev %", "Sharpe", "Latest NAV", "NAV Date", "Advisor Role"
     ])
 
-    # Optional live scheme master import (production-ready structure)
-    imported_master_df = pd.DataFrame()
-    import_status = "NOT RUN"
-    if import_master:
-        imported_master_df, import_status = fetch_scheme_master_amfi()
-        if not imported_master_df.empty:
-        st.markdown("### 🌐 Live AMFI Scheme Master Preview")
-        preview_cols = [col for col in ["Scheme Code", "Scheme Name", "AMC Extracted", "Category Extracted"] if col in imported_master_df.columns]
-        st.dataframe(imported_master_df[preview_cols].head(25), use_container_width=True, hide_index=True)
+    # Optional live fetch update for visible list (top limited rows for safety)
+    if refresh_live and nav_source == "AMFI/MFAPI Live Fetch":
+        live_updates = 0
+        for idx in funds_df.index[:5]:
+            scheme_code = str(funds_df.loc[idx, "Scheme Code"])
+            live_data = fetch_live_nav_amfi(scheme_code)
+            if live_data["nav"] is not None:
+                funds_df.loc[idx, "Latest NAV"] = live_data["nav"]
+                funds_df.loc[idx, "NAV Date"] = live_data["date"]
+                if live_data["scheme_name"]:
+                    funds_df.loc[idx, "Fund Name"] = live_data["scheme_name"]
+                live_updates += 1
+        if live_updates > 0:
+            st.success(f"Live NAV updated for {live_updates} schemes using AMFI/MFAPI structure.")
+        else:
+            st.warning("Live NAV fetch did not update current rows. Static fallback values are still displayed.")
+    elif refresh_live:
+        st.info("Currently using Static Demo Data. Switch NAV Source Mode to AMFI/MFAPI Live Fetch to try real NAV updates.")
 
-        if "AMC Extracted" in imported_master_df.columns:
-            dyn_amc = sorted(imported_master_df["AMC Extracted"].dropna().astype(str).unique().tolist())
-            if dyn_amc:
-                st.markdown(f"**Dynamic AMC Universe Loaded (sample):** {', '.join(dyn_amc[:12])}{' ...' if len(dyn_amc) > 12 else ''}")
-                dynamic_amc_filter = st.multiselect("Dynamic AMC Filter (Imported Master)", dyn_amc, default=dyn_amc[: min(10, len(dyn_amc))])
-
-        if "Category Extracted" in imported_master_df.columns:
-            dyn_cat = sorted(imported_master_df["Category Extracted"].dropna().astype(str).unique().tolist())
-            if dyn_cat:
-                dynamic_category_filter = st.multiselect("Dynamic Category Filter (Imported Master)", dyn_cat, default=dyn_cat)
-
-        if dynamic_amc_filter or dynamic_category_filter:
-            dynamic_preview = imported_master_df.copy()
-            if dynamic_amc_filter and "AMC Extracted" in dynamic_preview.columns:
-                dynamic_preview = dynamic_preview[dynamic_preview["AMC Extracted"].isin(dynamic_amc_filter)]
-            if dynamic_category_filter and "Category Extracted" in dynamic_preview.columns:
-                dynamic_preview = dynamic_preview[dynamic_preview["Category Extracted"].isin(dynamic_category_filter)]
-            st.markdown("### 🧠 Dynamic AMC + Category Auto Mapping Preview")
-            preview2_cols = [col for col in ["Scheme Code", "Scheme Name", "AMC Extracted", "Category Extracted"] if col in dynamic_preview.columns]
-            st.dataframe(dynamic_preview[preview2_cols].head(50), use_container_width=True, hide_index=True)
-
-    filtered = funds_df[
-        (funds_df["Category"].isin(category_filter)) &
-        (funds_df["AMC"].isin(amc_filter))
-    ].copy()
+    filtered = funds_df[funds_df["Category"].isin(category_filter)].copy()
 
     if search_text.strip():
         q = search_text.strip().lower()
@@ -1710,35 +1574,17 @@ if st.session_state.page == "fund_suggestion":
 
         st.markdown(f"""
         <div class="report-panel">
-            <div class="report-title">V6.9 Dynamic AMC + Category Auto Mapping Summary</div>
+            <div class="report-title">V6.6 Production Integration Summary</div>
             <div class="report-text">
                 <b>NAV Source:</b> {nav_source}<br>
                 <b>Model Allocation:</b> {model_text}<br>
                 <b>Horizon View:</b> {horizon_note}<br>
                 <b>Top Research Pick:</b> {top_fund['Fund Name']} ({top_fund['Category']})<br>
                 <b>Latest NAV:</b> ₹ {top_fund['Latest NAV']:.2f} as of {top_fund['NAV Date']}<br><br>
-                <b>Production Ready Logic Added:</b> requests-based AMFI/MFAPI fetch function, live refresh flow, fallback handling, scheme-code architecture, AMFI scheme master import-ready structure, and dynamic AMC + category auto-mapping engine.
+                <b>Production Ready Logic Added:</b> requests-based AMFI/MFAPI fetch function, live refresh flow, fallback handling, and scheme-code architecture.
             </div>
         </div>
         """, unsafe_allow_html=True)
-
-        st.markdown("### 🏦 AMC Summary")
-        amc_summary = display_df.groupby("AMC").agg(
-            Fund_Count=("Fund Name", "count"),
-            Avg_3Y_CAGR=("3Y CAGR %", "mean"),
-            Avg_5Y_CAGR=("5Y CAGR %", "mean"),
-            Total_AUM=("AUM (₹ Cr)", "sum")
-        ).reset_index().sort_values(by="Avg_3Y_CAGR", ascending=False)
-        st.dataframe(amc_summary, use_container_width=True, hide_index=True)
-
-        st.markdown("### 📂 Category Summary")
-        category_summary = display_df.groupby("Category").agg(
-            Fund_Count=("Fund Name", "count"),
-            Avg_3Y_CAGR=("3Y CAGR %", "mean"),
-            Avg_5Y_CAGR=("5Y CAGR %", "mean"),
-            Avg_Sharpe=("Sharpe", "mean")
-        ).reset_index().sort_values(by="Avg_3Y_CAGR", ascending=False)
-        st.dataframe(category_summary, use_container_width=True, hide_index=True)
 
         summary_cols = st.columns(4)
         with summary_cols[0]:
@@ -1757,16 +1603,6 @@ if st.session_state.page == "fund_suggestion":
             top_aum = display_df.sort_values(by="AUM (₹ Cr)", ascending=False).head(3)[["Fund Name", "AUM (₹ Cr)"]]
             st.markdown("### 🏦 Top 3 by AUM")
             st.dataframe(top_aum, use_container_width=True, hide_index=True)
-
-        top5_cols = st.columns(2)
-        with top5_cols[0]:
-            st.markdown("### 🔝 Top 5 Funds by Selected AMC / Filters")
-            top5_amc = display_df.sort_values(by=sort_by, ascending=False).head(5)[["AMC", "Fund Name", sort_by]]
-            st.dataframe(top5_amc, use_container_width=True, hide_index=True)
-        with top5_cols[1]:
-            st.markdown("### 🎯 Top 5 Funds by Selected Category")
-            top5_cat = display_df.sort_values(by="3Y CAGR %", ascending=False).head(5)[["Category", "Fund Name", "3Y CAGR %"]]
-            st.dataframe(top5_cat, use_container_width=True, hide_index=True)
 
         st.markdown("### 📡 AMFI / MFAPI Live Research Table")
         st.dataframe(display_df, use_container_width=True, hide_index=True)
@@ -1790,21 +1626,15 @@ def fetch_live_nav_amfi(scheme_code):
             • latest NAV + date live refresh structure added<br>
             • fallback protection if API fails<br>
             • ready for deployment with internet-enabled Streamlit environment<br><br>
-            <b>Status:</b> V6.9 FULL DYNAMIC AMC + CATEGORY AUTO MAPPING ENGINE
+            <b>Status:</b> V6.6 REAL AMFI API INTEGRATION READY
         </div>
         """, unsafe_allow_html=True)
 
         advisor_note("Mutual Fund Production Notes", [
-            "V6.7 now supports AMC-wise + category-wise mutual fund screening inside the app.",
-            "Use AMC Summary and Category Summary tables for advisor-level research discussions.",
-            "AMC filter + category filter + search together now create a mini mutual fund research terminal.",
-            ""],)
-
-        advisor_note("Mutual Fund Research Terminal Notes", [
-            "V6.9 now adds dynamic AMC + category auto-mapping from imported AMFI scheme master data.",
-            "Imported schemes can now be auto-grouped into advisor-usable AMC and category buckets.",
-            "This is the bridge between static research dashboard and full live mutual fund terminal.",
-            "Next upgrade can convert static filters into fully live auto-populated filters from imported master."
+            "This version now contains real AMFI/MFAPI integration-ready code structure.",
+            "Live NAV depends on internet access and valid scheme codes in deployed Streamlit environment.",
+            "You can later extend this with rolling returns, XIRR, and benchmark comparison.",
+            "Validate live scheme mapping before client-facing production deployment."
         ])
 
 # =====================================================
