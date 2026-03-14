@@ -1485,6 +1485,12 @@ if st.session_state.page == "fund_suggestion":
         nav_source = st.selectbox("NAV Source Mode", ["Static Demo Data", "AMFI/MFAPI Live Fetch"])
 
     search_text = st.text_input("Search Fund / AMC / Category / Scheme Code", "")
+    amc_filter = st.multiselect(
+        "AMC Filter",
+        ["Tata", "ICICI Prudential", "HDFC", "PPFAS", "Kotak", "SBI", "Nippon India", "ABSL", "Mirae Asset", "Axis"],
+        default=["Tata", "ICICI Prudential", "HDFC", "PPFAS", "Kotak", "SBI", "Nippon India", "ABSL", "Mirae Asset", "Axis"]
+    )
+
     category_filter = st.multiselect(
         "Category Filter",
         ["Multi Asset", "Dynamic Hybrid", "Flexi Cap", "Large & Mid Cap", "Short Duration Debt"],
@@ -1529,7 +1535,10 @@ if st.session_state.page == "fund_suggestion":
     elif refresh_live:
         st.info("Currently using Static Demo Data. Switch NAV Source Mode to AMFI/MFAPI Live Fetch to try real NAV updates.")
 
-    filtered = funds_df[funds_df["Category"].isin(category_filter)].copy()
+    filtered = funds_df[
+        (funds_df["Category"].isin(category_filter)) &
+        (funds_df["AMC"].isin(amc_filter))
+    ].copy()
 
     if search_text.strip():
         q = search_text.strip().lower()
@@ -1586,6 +1595,24 @@ if st.session_state.page == "fund_suggestion":
         </div>
         """, unsafe_allow_html=True)
 
+        st.markdown("### 🏦 AMC Summary")
+        amc_summary = display_df.groupby("AMC").agg(
+            Fund_Count=("Fund Name", "count"),
+            Avg_3Y_CAGR=("3Y CAGR %", "mean"),
+            Avg_5Y_CAGR=("5Y CAGR %", "mean"),
+            Total_AUM=("AUM (₹ Cr)", "sum")
+        ).reset_index().sort_values(by="Avg_3Y_CAGR", ascending=False)
+        st.dataframe(amc_summary, use_container_width=True, hide_index=True)
+
+        st.markdown("### 📂 Category Summary")
+        category_summary = display_df.groupby("Category").agg(
+            Fund_Count=("Fund Name", "count"),
+            Avg_3Y_CAGR=("3Y CAGR %", "mean"),
+            Avg_5Y_CAGR=("5Y CAGR %", "mean"),
+            Avg_Sharpe=("Sharpe", "mean")
+        ).reset_index().sort_values(by="Avg_3Y_CAGR", ascending=False)
+        st.dataframe(category_summary, use_container_width=True, hide_index=True)
+
         summary_cols = st.columns(4)
         with summary_cols[0]:
             top_3y = display_df.sort_values(by="3Y CAGR %", ascending=False).head(3)[["Fund Name", "3Y CAGR %"]]
@@ -1603,6 +1630,16 @@ if st.session_state.page == "fund_suggestion":
             top_aum = display_df.sort_values(by="AUM (₹ Cr)", ascending=False).head(3)[["Fund Name", "AUM (₹ Cr)"]]
             st.markdown("### 🏦 Top 3 by AUM")
             st.dataframe(top_aum, use_container_width=True, hide_index=True)
+
+        top5_cols = st.columns(2)
+        with top5_cols[0]:
+            st.markdown("### 🔝 Top 5 Funds by Selected AMC / Filters")
+            top5_amc = display_df.sort_values(by=sort_by, ascending=False).head(5)[["AMC", "Fund Name", sort_by]]
+            st.dataframe(top5_amc, use_container_width=True, hide_index=True)
+        with top5_cols[1]:
+            st.markdown("### 🎯 Top 5 Funds by Selected Category")
+            top5_cat = display_df.sort_values(by="3Y CAGR %", ascending=False).head(5)[["Category", "Fund Name", "3Y CAGR %"]]
+            st.dataframe(top5_cat, use_container_width=True, hide_index=True)
 
         st.markdown("### 📡 AMFI / MFAPI Live Research Table")
         st.dataframe(display_df, use_container_width=True, hide_index=True)
@@ -1629,6 +1666,12 @@ def fetch_live_nav_amfi(scheme_code):
             <b>Status:</b> V6.6 REAL AMFI API INTEGRATION READY
         </div>
         """, unsafe_allow_html=True)
+
+        advisor_note("Mutual Fund Production Notes", [
+            "V6.7 now supports AMC-wise + category-wise mutual fund screening inside the app.",
+            "Use AMC Summary and Category Summary tables for advisor-level research discussions.",
+            "AMC filter + category filter + search together now create a mini mutual fund research terminal.",
+            ""],)
 
         advisor_note("Mutual Fund Production Notes", [
             "This version now contains real AMFI/MFAPI integration-ready code structure.",
