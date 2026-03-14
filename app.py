@@ -803,6 +803,7 @@ if st.session_state.page == "home":
         st.button("Net Worth Dashboard", on_click=lambda: go("networth"), use_container_width=True)
         st.button("House Planning", on_click=lambda: go("house"), use_container_width=True)
         st.button("Car Purchase Planner", on_click=lambda: go("car"), use_container_width=True)
+        st.button("EMI vs SIP Calculator", on_click=lambda: go("emi_vs_sip"), use_container_width=True)
         st.button("iPhone Purchase Planner", on_click=lambda: go("iphone"), use_container_width=True)
 
     st.markdown("---")
@@ -1343,6 +1344,59 @@ if st.session_state.page == "house":
     ])
 
 # =====================================================
+# EMI VS SIP CALCULATOR
+# =====================================================
+if st.session_state.page == "emi_vs_sip":
+    back_button()
+    st.markdown('<div class="imperial-box"><div class="imperial-header">EMI vs SIP Calculator</div></div>', unsafe_allow_html=True)
+
+    c1, c2 = st.columns(2)
+    with c1:
+        asset_cost = st.number_input("Asset / Loan Amount (₹)", 0, 1000000000, 1000000)
+        down_payment = st.number_input("Down Payment (₹)", 0, 1000000000, 200000)
+        loan_rate = st.number_input("Loan Interest Rate (%)", 0.0, 25.0, 9.0) / 100
+        loan_years = st.number_input("Loan Tenure (Years)", 1, 30, 5)
+    with c2:
+        sip_return_alt = st.number_input("Expected SIP Return (%)", 0.0, 25.0, 12.0) / 100
+        compare_years = st.number_input("Comparison Period (Years)", 1, 30, int(loan_years))
+        annual_stepup_alt = st.number_input("SIP Annual Step-up (%)", 0.0, 30.0, 0.0) / 100
+
+    loan_principal = max(asset_cost - down_payment, 0)
+    emi = emi_calculator(loan_principal, loan_rate, loan_years)
+
+    sip_corpus = 0
+    monthly_sip_alt = emi
+    total_sip_invested = 0
+    months_alt = int(compare_years * 12)
+    for m in range(1, months_alt + 1):
+        sip_corpus = sip_corpus * (1 + sip_return_alt / 12) + monthly_sip_alt
+        total_sip_invested += monthly_sip_alt
+        if annual_stepup_alt > 0 and m % 12 == 0:
+            monthly_sip_alt *= (1 + annual_stepup_alt)
+
+    total_emi_outflow = emi * min(int(loan_years * 12), months_alt)
+    wealth_difference = sip_corpus - total_emi_outflow
+
+    kpi_row([
+        ("Monthly EMI", fmt(emi)),
+        ("Total EMI Outflow", fmt(total_emi_outflow)),
+        ("SIP Corpus (If Invested)", fmt(sip_corpus)),
+        ("Wealth Gap", fmt(wealth_difference))
+    ])
+
+    compare_df = pd.DataFrame({
+        "Metric": ["Loan Principal", "Monthly EMI", "Total EMI Outflow", "Equivalent SIP", "Projected SIP Corpus", "Net Wealth Difference"],
+        "Value (₹)": [round(loan_principal,0), round(emi,0), round(total_emi_outflow,0), round(emi,0), round(sip_corpus,0), round(wealth_difference,0)]
+    })
+    st.dataframe(compare_df, use_container_width=True, hide_index=True)
+
+    advisor_note("EMI vs SIP Recommendation", [
+        "If the asset is non-essential, compare EMI burden with wealth creation lost via SIP.",
+        "For depreciating assets, financing should be balanced against long-term investment discipline.",
+        "Use this module in client meetings to show opportunity cost of EMIs."
+    ])
+
+# =====================================================
 # iPHONE PURCHASE
 # =====================================================
 if st.session_state.page == "iphone":
@@ -1515,7 +1569,7 @@ if st.session_state.page == "mc_retirement":
 valid_pages = [
     "home", "sip", "swp", "sip_swp", "children", "retirement", "term",
     "cashflow", "car", "house", "iphone", "portfolio", "networth",
-    "goal", "rebalance", "mc_retirement"
+    "goal", "rebalance", "mc_retirement", "emi_vs_sip"
 ]
 if st.session_state.page not in valid_pages:
     st.session_state.page = "home"
