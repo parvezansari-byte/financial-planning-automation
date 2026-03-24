@@ -7,7 +7,7 @@ import re
 # PAGE CONFIG
 # =====================================================
 st.set_page_config(
-    page_title="Freedom V6.9 ULTRA - Roman Imperial",
+    page_title="Freedom V6.9 ULTRA - Luxury Heritage",
     page_icon="🏛️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -34,7 +34,7 @@ def back_button():
 # =====================================================
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair Display:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 .stApp {
     background:
@@ -99,14 +99,14 @@ section[data-testid="stSidebar"] * { color: #2B1E12 !important; }
     box-shadow: 0 8px 18px rgba(92, 26, 26, 0.06);
     margin-bottom: 12px;
 }
-.summary-strip, .boardroom-banner {
+.summary-strip, .luxury-banner {
     background: linear-gradient(90deg, #3E0F0F 0%, #5C1212 22%, #7A1F1F 48%, #A52A2A 72%, #D4AF37 100%);
     color: #FFF8ED !important;
     border-radius: 18px;
     padding: 14px 18px;
     margin-bottom: 14px;
 }
-.imperial-box {
+.signature-box {
     border: 1px solid rgba(107, 30, 30, 0.14);
     background: linear-gradient(180deg, rgba(255,248,237,0.92) 0%, rgba(250,240,220,0.92) 100%);
     margin-bottom: 14px;
@@ -114,7 +114,7 @@ section[data-testid="stSidebar"] * { color: #2B1E12 !important; }
     overflow: hidden;
     box-shadow: 0 8px 22px rgba(92, 26, 26, 0.08);
 }
-.imperial-header {
+.signature-header {
     background: linear-gradient(90deg, #7A1F1F 0%, #A52A2A 58%, #C58B39 100%);
     color: #FFF8ED;
     text-align: center;
@@ -123,7 +123,7 @@ section[data-testid="stSidebar"] * { color: #2B1E12 !important; }
     font-family: 'Cinzel', serif;
     padding: 12px;
 }
-.imperial-subheader {
+.signature-subheader {
     background: linear-gradient(90deg, #F2D99B 0%, #D4A15A 100%);
     color: #2B1E12;
     text-align: center;
@@ -220,7 +220,7 @@ def emi_calculator(principal, annual_rate, years):
 
 
 def advisor_note(title, lines):
-    st.markdown('<div class="imperial-box">', unsafe_allow_html=True)
+    st.markdown('<div class="signature-box">', unsafe_allow_html=True)
     st.markdown('<div class="imperial-subheader">Private Banker Advisory Notes</div>', unsafe_allow_html=True)
     st.markdown(f"**{title}**")
     for line in lines:
@@ -321,7 +321,7 @@ def fetch_live_nav_amfi(scheme_code):
 # HEADER
 # =====================================================
 st.markdown('<div class="main-title">Freedom</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">Roman Imperial Private Banker Edition | Investment & Insurance Planner</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">Roman Signature Private Banker Edition | Investment & Insurance Planner</div>', unsafe_allow_html=True)
 
 # =====================================================
 # SIDEBAR
