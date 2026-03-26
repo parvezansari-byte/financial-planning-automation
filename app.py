@@ -3,10 +3,10 @@ import pandas as pd
 import numpy as np
 
 # =====================================================
-# FREEDOM | FINAL SAFE BUILD
+# PAGE CONFIG
 # =====================================================
 st.set_page_config(
-    page_title="Freedom",
+    page_title="Freedom - Mutual Fund Product & Research Analyst Platform",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -30,11 +30,14 @@ def back_button():
 # =====================================================
 # THEME
 # =====================================================
-st.markdown(
-    """
+st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
-html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
+}
+
 .stApp {
     background:
         radial-gradient(circle at 85% 10%, rgba(212,175,55,0.18) 0%, rgba(212,175,55,0.02) 20%, transparent 42%),
@@ -43,6 +46,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     color: #2B1E12;
     background-attachment: fixed;
 }
+
 .main .block-container {
     max-width: 95%;
     padding-top: 1.1rem;
@@ -55,18 +59,26 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     backdrop-filter: blur(6px);
     box-shadow: 0 12px 35px rgba(120, 85, 35, 0.08);
 }
+
 section[data-testid="stSidebar"] {
     background: linear-gradient(180deg, #f7edd8 0%, #efddb7 45%, #e4c889 100%);
     border-right: 2px solid #C58B39;
 }
-section[data-testid="stSidebar"] * { color: #2B1E12 !important; }
-.stTextInput input, .stNumberInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
+section[data-testid="stSidebar"] * {
+    color: #2B1E12 !important;
+}
+
+.stTextInput input,
+.stNumberInput input,
+.stTextArea textarea,
+.stSelectbox div[data-baseweb="select"] {
     background: linear-gradient(180deg, #fffdf8 0%, #f9f0dc 100%) !important;
     color: #2B1E12 !important;
     border: 1px solid #B8860B !important;
     border-radius: 12px !important;
     font-weight: 700 !important;
 }
+
 .main-title {
     background: linear-gradient(90deg, #5C3A0A 0%, #8B6B2E 30%, #C58B39 65%, #E5C47A 100%);
     padding: 24px;
@@ -80,6 +92,7 @@ section[data-testid="stSidebar"] * { color: #2B1E12 !important; }
     box-shadow: 0 12px 30px rgba(92, 58, 10, 0.18);
     margin-bottom: 8px;
 }
+
 .sub-title {
     background: linear-gradient(90deg, #7B5B20 0%, #B8860B 55%, #D4AF37 100%);
     color: #FFF8ED;
@@ -90,6 +103,7 @@ section[data-testid="stSidebar"] * { color: #2B1E12 !important; }
     border-radius: 12px;
     margin-bottom: 14px;
 }
+
 .banner, .panel, .kpi-card {
     background: linear-gradient(180deg, rgba(255,250,240,0.98) 0%, rgba(250,240,220,0.97) 100%);
     border: 1px solid rgba(120, 85, 35, 0.14);
@@ -98,6 +112,7 @@ section[data-testid="stSidebar"] * { color: #2B1E12 !important; }
     box-shadow: 0 8px 18px rgba(92, 58, 10, 0.06);
     margin-bottom: 12px;
 }
+
 .section-box {
     border: 1px solid rgba(120, 85, 35, 0.14);
     background: linear-gradient(180deg, rgba(255,250,240,0.92) 0%, rgba(250,240,220,0.92) 100%);
@@ -106,6 +121,7 @@ section[data-testid="stSidebar"] * { color: #2B1E12 !important; }
     overflow: hidden;
     box-shadow: 0 8px 22px rgba(92, 58, 10, 0.08);
 }
+
 .section-header {
     background: linear-gradient(90deg, #8B6B2E 0%, #C58B39 58%, #E5C47A 100%);
     color: #FFF8ED;
@@ -115,29 +131,54 @@ section[data-testid="stSidebar"] * { color: #2B1E12 !important; }
     font-family: 'Playfair Display', serif;
     padding: 12px;
 }
-.kpi-title { color: #6B4E16; font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-.kpi-value { color: #7B5B20; font-size: 24px; font-weight: 800; }
-.stButton > button {
-    width: 100%; min-height: 54px; border-radius: 14px; border: 1px solid #C58B39;
-    background: linear-gradient(145deg, #FFF8ED 0%, #F8E7C5 55%, #E8C989 100%);
-    color: #5C3A0A !important; font-weight: 800;
+
+.kpi-title {
+    color: #6B4E16;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
 }
+
+.kpi-value {
+    color: #7B5B20;
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.stButton > button {
+    width: 100%;
+    min-height: 54px;
+    border-radius: 14px;
+    border: 1px solid #C58B39;
+    background: linear-gradient(145deg, #FFF8ED 0%, #F8E7C5 55%, #E8C989 100%);
+    color: #5C3A0A !important;
+    font-weight: 800;
+}
+
 [data-testid="metric-container"], [data-testid="stAlert"] {
     background: linear-gradient(180deg, #FFF8ED 0%, #F7E9D0 100%) !important;
     border: 1px solid rgba(120, 85, 35, 0.14) !important;
     border-radius: 14px !important;
 }
+
 thead tr th {
     background: linear-gradient(90deg, #8B6B2E 0%, #C58B39 60%, #E5C47A 100%) !important;
     color: #FFF8ED !important;
 }
-tbody tr td { background: #FFF8ED !important; color: #2B1E12 !important; }
-header[data-testid="stHeader"] { background: rgba(0,0,0,0); }
-footer { visibility: hidden; }
+
+tbody tr td {
+    background: #FFF8ED !important;
+    color: #2B1E12 !important;
+}
+
+header[data-testid="stHeader"] {
+    background: rgba(0,0,0,0);
+}
+footer {
+    visibility: hidden;
+}
 </style>
-""",
-    unsafe_allow_html=True,
-)
+""", unsafe_allow_html=True)
 
 # =====================================================
 # HELPERS
@@ -186,9 +227,9 @@ def kpi_row(items):
         with cols[i]:
             st.markdown(
                 f"""
-                <div class=\"kpi-card\">
-                    <div class=\"kpi-title\">{label}</div>
-                    <div class=\"kpi-value\">{value}</div>
+                <div class="kpi-card">
+                    <div class="kpi-title">{label}</div>
+                    <div class="kpi-value">{value}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -346,17 +387,26 @@ if st.session_state.page == "sip":
         corpus = 0.0
         total_invested = 0.0
         sip_amt = monthly_sip
-        for _y in range(years):
-            for _m in range(12):
+        rows = []
+
+        for y in range(1, years + 1):
+            yearly_invested = 0
+            for _ in range(12):
                 corpus = corpus * (1 + sip_return / 12) + sip_amt
                 total_invested += sip_amt
+                yearly_invested += sip_amt
+            rows.append([y, round(sip_amt, 0), round(yearly_invested, 0), round(total_invested, 0), round(corpus, 0)])
             sip_amt *= (1 + step_up)
+
+        sip_df = pd.DataFrame(rows, columns=["Year", "Monthly SIP", "Yearly Invested", "Total Invested", "Corpus"])
 
         kpi_row([
             ("Invested", fmt(total_invested)),
             ("Final Value", fmt(corpus)),
             ("Absolute Gain", f"{((corpus-total_invested)/total_invested*100 if total_invested>0 else 0):.2f}%"),
         ])
+
+        st.dataframe(sip_df, use_container_width=True, hide_index=True)
 
     with tab2:
         c1, c2, c3 = st.columns(3)
@@ -366,7 +416,9 @@ if st.session_state.page == "sip":
             lumpsum_return = st.number_input("Expected Return for Lumpsum (%)", 0.0, 30.0, 12.0) / 100
         with c3:
             lumpsum_years = st.number_input("Investment Period in Years", 1, 60, 7)
+
         final_lumpsum = future_value(lumpsum_amt, lumpsum_return, lumpsum_years)
+
         kpi_row([
             ("Invested", fmt(lumpsum_amt)),
             ("Final Value", fmt(final_lumpsum)),
@@ -379,6 +431,7 @@ if st.session_state.page == "sip":
 if st.session_state.page == "swp":
     back_button()
     st.markdown('<div class="section-box"><div class="section-header">SWP Planner</div></div>', unsafe_allow_html=True)
+
     c1, c2, c3 = st.columns(3)
     with c1:
         initial_corpus = st.number_input("Current Corpus (₹)", 0, 1000000000, 10000000)
@@ -389,6 +442,7 @@ if st.session_state.page == "swp":
 
     swr = (yearly_withdrawal / initial_corpus * 100) if initial_corpus > 0 else 0
     indicative_years = int(initial_corpus / yearly_withdrawal) if yearly_withdrawal > 0 else 0
+
     kpi_row([
         ("Corpus", fmt(initial_corpus)),
         ("Yearly SWP", fmt(yearly_withdrawal)),
@@ -402,13 +456,16 @@ if st.session_state.page == "swp":
 if st.session_state.page == "children":
     back_button()
     st.markdown('<div class="section-box"><div class="section-header">Future Planning for Children</div></div>', unsafe_allow_html=True)
+
     child_age = st.number_input("Child Age", 0, 25, 5)
     goal_age = st.number_input("Goal Age", child_age, 35, 18)
     goal_cost = st.number_input("Goal Cost Today (₹)", 0, 100000000, 2000000)
+
     years_left = max(goal_age - child_age, 0)
     future_cost = future_value(goal_cost, inflation, years_left)
     sip_req = monthly_sip_required(future_cost, expected_return, years_left)
     lump_req = lumpsum_required(future_cost, expected_return, years_left)
+
     kpi_row([
         ("Future Cost", fmt(future_cost)),
         ("Monthly SIP Required", fmt(sip_req)),
@@ -421,6 +478,7 @@ if st.session_state.page == "children":
 if st.session_state.page == "retirement":
     back_button()
     st.markdown('<div class="section-box"><div class="section-header">Retirement Planner</div></div>', unsafe_allow_html=True)
+
     c1, c2, c3 = st.columns(3)
     with c1:
         my_age = st.number_input("Current Age", 18, 80, current_age)
@@ -434,6 +492,7 @@ if st.session_state.page == "retirement":
     expense_at_ret = annual_exp_today * ((1 + inflation) ** years_to_ret)
     required_corpus = expense_at_ret * 20
     req_sip = monthly_sip_required(required_corpus, expected_return, years_to_ret)
+
     kpi_row([
         ("Expense at Retirement", fmt(expense_at_ret)),
         ("Target Corpus", fmt(required_corpus)),
@@ -467,6 +526,7 @@ if st.session_state.page == "fund_suggestion":
         ["120323", "Kotak Equity Opportunities Fund", "Kotak", "Large & Mid Cap", 22.0, 19.1, 20.0, "High", 0.74, 21000, 15.8, 1.08, 239.12, "2026-03-14", "Aggressive growth satellite"],
         ["103566", "SBI Short Term Debt Fund", "SBI", "Short Duration Debt", 7.4, 6.9, 6.8, "Low", 0.42, 14000, 2.8, 0.22, 39.84, "2026-03-14", "Stability / short-term parking"],
     ]
+
     funds_df = pd.DataFrame(
         fund_data,
         columns=["Scheme Code", "Fund Name", "AMC", "Category", "1Y %", "3Y CAGR %", "5Y CAGR %", "Risk", "Expense Ratio %", "AUM (₹ Cr)", "Std Dev %", "Sharpe", "Latest NAV", "NAV Date", "Advisor Role"],
@@ -521,6 +581,7 @@ if st.session_state.page == "fund_suggestion":
     else:
         display_df = display_df.sort_values(by=sort_by, ascending=False)
         top_fund = display_df.iloc[0]
+
         kpi_row([
             ("Top Fund", top_fund["Fund Name"][:18] + "..." if len(top_fund["Fund Name"]) > 18 else top_fund["Fund Name"]),
             ("Latest NAV", f"₹ {top_fund['Latest NAV']:.2f}"),
@@ -564,13 +625,16 @@ if st.session_state.page == "fund_suggestion":
 if st.session_state.page == "networth":
     back_button()
     st.markdown('<div class="section-box"><div class="section-header">Net Worth Dashboard</div></div>', unsafe_allow_html=True)
+
     mf = st.number_input("Mutual Funds (₹)", 0, 1000000000, 2000000)
     equity = st.number_input("Direct Equity (₹)", 0, 1000000000, 1000000)
     real_estate = st.number_input("Real Estate (₹)", 0, 10000000000, 5000000)
     cash = st.number_input("Cash / Bank (₹)", 0, 1000000000, 500000)
     liabilities = st.number_input("Total Liabilities (₹)", 0, 1000000000, 0)
+
     assets = mf + equity + real_estate + cash
     nw = assets - liabilities
+
     kpi_row([
         ("Assets", fmt(assets)),
         ("Liabilities", fmt(liabilities)),
@@ -583,6 +647,7 @@ if st.session_state.page == "networth":
 if st.session_state.page == "emi_vs_sip":
     back_button()
     st.markdown('<div class="section-box"><div class="section-header">EMI vs SIP Calculator</div></div>', unsafe_allow_html=True)
+
     c1, c2 = st.columns(2)
     with c1:
         asset_cost = st.number_input("Asset / Loan Amount (₹)", 0, 1000000000, 1000000)
@@ -596,15 +661,19 @@ if st.session_state.page == "emi_vs_sip":
 
     loan_principal = max(asset_cost - down_payment, 0)
     emi = emi_calculator(loan_principal, loan_rate, loan_years)
+
     sip_corpus = 0.0
     monthly_sip_alt = emi
     months_alt = int(compare_years * 12)
+
     for m in range(1, months_alt + 1):
         sip_corpus = sip_corpus * (1 + sip_return_alt / 12) + monthly_sip_alt
         if annual_stepup_alt > 0 and m % 12 == 0:
             monthly_sip_alt *= (1 + annual_stepup_alt)
+
     total_emi_outflow = emi * min(int(loan_years * 12), months_alt)
     wealth_difference = sip_corpus - total_emi_outflow
+
     kpi_row([
         ("Monthly EMI", fmt(emi)),
         ("Total EMI Outflow", fmt(total_emi_outflow)),
@@ -613,11 +682,14 @@ if st.session_state.page == "emi_vs_sip":
     ])
 
 # =====================================================
-# FOOTER
+# SAFETY CHECK
 # =====================================================
 valid_pages = ["home", "sip", "swp", "children", "retirement", "fund_suggestion", "networth", "emi_vs_sip"]
 if st.session_state.page not in valid_pages:
     st.session_state.page = "home"
 
+# =====================================================
+# FOOTER
+# =====================================================
 st.markdown("---")
 st.caption("Freedom | Mutual Fund Product & Research Analyst Platform | FINAL SAFE BUILD")
