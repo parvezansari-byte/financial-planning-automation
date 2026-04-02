@@ -1,15 +1,22 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import os
 
 # =========================================================
 # PAGE CONFIG
 # =========================================================
 st.set_page_config(
-    page_title="Freedom ULTRA PRO V2",
+    page_title="Freedom ULTRA PRO V3",
     page_icon="🚀",
     layout="wide"
 )
+
+# =========================================================
+# FILE PATHS
+# =========================================================
+LEADS_FILE = "leads.csv"
+CLIENTS_FILE = "clients.csv"
 
 # =========================================================
 # PREMIUM DARK CSS
@@ -132,107 +139,122 @@ hr {
 """, unsafe_allow_html=True)
 
 # =========================================================
-# SESSION STATE INIT
+# HELPERS - FILE SYSTEM
 # =========================================================
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
+LEAD_COLUMNS = [
+    "Lead ID", "Date", "Client Name", "Mobile", "City", "Lead Source",
+    "Lead Stage", "Follow-up Status", "Monthly Income", "Monthly Surplus",
+    "Lead Score", "Lead Temperature"
+]
 
-if "lead_db" not in st.session_state:
-    st.session_state.lead_db = pd.DataFrame([
-        {
-            "Lead ID": "L001",
-            "Date": datetime.now().strftime("%Y-%m-%d"),
-            "Client Name": "Rahul Sharma",
-            "Mobile": "9999999991",
-            "City": "Bengaluru",
-            "Lead Source": "Referral",
-            "Lead Stage": "Qualified",
-            "Follow-up Status": "Today",
-            "Monthly Income": 120000,
-            "Monthly Surplus": 35000,
-            "Lead Score": 78,
-            "Lead Temperature": "🔥 Hot Lead"
-        },
-        {
-            "Lead ID": "L002",
-            "Date": datetime.now().strftime("%Y-%m-%d"),
-            "Client Name": "Amit Verma",
-            "Mobile": "9999999992",
-            "City": "Mumbai",
-            "Lead Source": "Digital",
-            "Lead Stage": "Prospect",
-            "Follow-up Status": "Pending",
-            "Monthly Income": 70000,
-            "Monthly Surplus": 15000,
-            "Lead Score": 46,
-            "Lead Temperature": "🔵 Cold Lead"
-        }
-    ])
+CLIENT_COLUMNS = [
+    "Client ID", "Date", "Client Name", "Mobile", "City", "Segment",
+    "Risk Category", "Monthly SIP", "Net Worth"
+]
 
-if "client_db" not in st.session_state:
-    st.session_state.client_db = pd.DataFrame([
-        {
-            "Client ID": "C001",
-            "Date": datetime.now().strftime("%Y-%m-%d"),
-            "Client Name": "Sneha Patel",
-            "Mobile": "9999999993",
-            "City": "Delhi",
-            "Segment": "Growth",
-            "Risk Category": "Balanced",
-            "Monthly SIP": 12000,
-            "Net Worth": 2800000
-        },
-        {
-            "Client ID": "C002",
-            "Date": datetime.now().strftime("%Y-%m-%d"),
-            "Client Name": "Karan Mehta",
-            "Mobile": "9999999994",
-            "City": "Hyderabad",
-            "Segment": "Premium",
-            "Risk Category": "Aggressive",
-            "Monthly SIP": 30000,
-            "Net Worth": 12500000
-        }
-    ])
+def create_default_files():
+    if not os.path.exists(LEADS_FILE):
+        default_leads = pd.DataFrame([
+            {
+                "Lead ID": "L001",
+                "Date": datetime.now().strftime("%Y-%m-%d"),
+                "Client Name": "Rahul Sharma",
+                "Mobile": "9999999991",
+                "City": "Bengaluru",
+                "Lead Source": "Referral",
+                "Lead Stage": "Qualified",
+                "Follow-up Status": "Today",
+                "Monthly Income": 120000,
+                "Monthly Surplus": 35000,
+                "Lead Score": 78,
+                "Lead Temperature": "🔥 Hot Lead"
+            },
+            {
+                "Lead ID": "L002",
+                "Date": datetime.now().strftime("%Y-%m-%d"),
+                "Client Name": "Amit Verma",
+                "Mobile": "9999999992",
+                "City": "Mumbai",
+                "Lead Source": "Digital",
+                "Lead Stage": "Prospect",
+                "Follow-up Status": "Pending",
+                "Monthly Income": 70000,
+                "Monthly Surplus": 15000,
+                "Lead Score": 46,
+                "Lead Temperature": "🔵 Cold Lead"
+            }
+        ], columns=LEAD_COLUMNS)
+        default_leads.to_csv(LEADS_FILE, index=False)
+
+    if not os.path.exists(CLIENTS_FILE):
+        default_clients = pd.DataFrame([
+            {
+                "Client ID": "C001",
+                "Date": datetime.now().strftime("%Y-%m-%d"),
+                "Client Name": "Sneha Patel",
+                "Mobile": "9999999993",
+                "City": "Delhi",
+                "Segment": "Growth",
+                "Risk Category": "Balanced",
+                "Monthly SIP": 12000,
+                "Net Worth": 2800000
+            },
+            {
+                "Client ID": "C002",
+                "Date": datetime.now().strftime("%Y-%m-%d"),
+                "Client Name": "Karan Mehta",
+                "Mobile": "9999999994",
+                "City": "Hyderabad",
+                "Segment": "Premium",
+                "Risk Category": "Aggressive",
+                "Monthly SIP": 30000,
+                "Net Worth": 12500000
+            }
+        ], columns=CLIENT_COLUMNS)
+        default_clients.to_csv(CLIENTS_FILE, index=False)
+
+def load_leads():
+    try:
+        if os.path.exists(LEADS_FILE):
+            df = pd.read_csv(LEADS_FILE)
+            for col in LEAD_COLUMNS:
+                if col not in df.columns:
+                    df[col] = ""
+            return df[LEAD_COLUMNS]
+        return pd.DataFrame(columns=LEAD_COLUMNS)
+    except:
+        return pd.DataFrame(columns=LEAD_COLUMNS)
+
+def load_clients():
+    try:
+        if os.path.exists(CLIENTS_FILE):
+            df = pd.read_csv(CLIENTS_FILE)
+            for col in CLIENT_COLUMNS:
+                if col not in df.columns:
+                    df[col] = ""
+            return df[CLIENT_COLUMNS]
+        return pd.DataFrame(columns=CLIENT_COLUMNS)
+    except:
+        return pd.DataFrame(columns=CLIENT_COLUMNS)
+
+def save_leads(df):
+    df = df.copy()
+    for col in LEAD_COLUMNS:
+        if col not in df.columns:
+            df[col] = ""
+    df = df[LEAD_COLUMNS]
+    df.to_csv(LEADS_FILE, index=False)
+
+def save_clients(df):
+    df = df.copy()
+    for col in CLIENT_COLUMNS:
+        if col not in df.columns:
+            df[col] = ""
+    df = df[CLIENT_COLUMNS]
+    df.to_csv(CLIENTS_FILE, index=False)
 
 # =========================================================
-# LOGIN SCREEN
-# =========================================================
-if not st.session_state.logged_in:
-    st.markdown('<div class="main-title">🚀 Freedom ULTRA PRO V2</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-title">Persistent CRM • Lead Master • Client Master • Search • Filter • Delete • MIS Reports</div>', unsafe_allow_html=True)
-    st.markdown('<div class="brand-bar">Login to access your premium advisory workspace</div>', unsafe_allow_html=True)
-
-    c1, c2, c3 = st.columns([1, 1.4, 1])
-    with c2:
-        st.markdown("### 🔐 Advisor Login")
-        username = st.text_input("Username", value="admin")
-        password = st.text_input("Password", type="password", value="freedom123")
-        if st.button("Login"):
-            if username == "admin" and password == "freedom123":
-                st.session_state.logged_in = True
-                st.success("Login successful. Please continue.")
-                st.rerun()
-            else:
-                st.error("Invalid username or password.")
-        st.info("Demo login credentials: admin / freedom123")
-    st.stop()
-
-# =========================================================
-# HEADER
-# =========================================================
-st.markdown('<div class="main-title">🚀 Freedom ULTRA PRO V2</div>', unsafe_allow_html=True)
-st.markdown(
-    '<div class="sub-title">Persistent CRM • Add Lead • Add Client • Search • Filter • Delete • SIP Conversion • Reports</div>',
-    unsafe_allow_html=True
-)
-st.markdown(
-    '<div class="brand-bar">Freedom Advisory ULTRA PRO V2 • Business Operating System for MFD / Advisor Growth</div>',
-    unsafe_allow_html=True
-)
-
-# =========================================================
-# HELPERS
+# HELPERS - BUSINESS LOGIC
 # =========================================================
 def format_inr(value):
     try:
@@ -241,9 +263,12 @@ def format_inr(value):
         return "₹0"
 
 def safe_ratio(a, b):
-    if b == 0:
+    try:
+        if float(b) == 0:
+            return 0.0
+        return (float(a) / float(b)) * 100
+    except:
         return 0.0
-    return (a / b) * 100
 
 def future_value_with_inflation(current_value, inflation, years):
     return current_value * ((1 + inflation / 100) ** years)
@@ -423,18 +448,106 @@ def get_client_segment(monthly_income, monthly_surplus, net_worth):
         return "Emerging"
     return "Starter"
 
-def next_lead_id():
-    count = len(st.session_state.lead_db) + 1
-    return f"L{str(count).zfill(3)}"
+def calculate_lead_score(lead_source, lead_stage, follow_up_status, monthly_surplus, days_since_last_meeting=3):
+    score = 0
+    score += {"Referral": 25, "Existing Client": 20, "Corporate Reference": 18, "Walk-in": 12, "Digital": 10, "Other": 8}.get(lead_source, 8)
+    score += {"Prospect": 10, "Qualified": 25, "Proposal Shared": 45, "Negotiation": 65, "Converted": 100}.get(lead_stage, 0)
+    score += {"Completed": 10, "Today": 8, "This Week": 5, "Pending": 2}.get(follow_up_status, 2)
 
-def next_client_id():
-    count = len(st.session_state.client_db) + 1
-    return f"C{str(count).zfill(3)}"
+    if days_since_last_meeting <= 3:
+        score += 10
+    elif days_since_last_meeting <= 7:
+        score += 7
+    elif days_since_last_meeting <= 15:
+        score += 4
+    else:
+        score += 1
+
+    if monthly_surplus >= 30000:
+        score += 20
+    elif monthly_surplus >= 15000:
+        score += 14
+    elif monthly_surplus > 0:
+        score += 8
+    else:
+        score += 2
+
+    return max(min(score, 100), 0)
+
+def next_lead_id(leads_df):
+    if len(leads_df) == 0:
+        return "L001"
+    try:
+        ids = leads_df["Lead ID"].astype(str).str.replace("L", "", regex=False)
+        nums = pd.to_numeric(ids, errors="coerce").fillna(0)
+        return f"L{str(int(nums.max()) + 1).zfill(3)}"
+    except:
+        return f"L{str(len(leads_df) + 1).zfill(3)}"
+
+def next_client_id(clients_df):
+    if len(clients_df) == 0:
+        return "C001"
+    try:
+        ids = clients_df["Client ID"].astype(str).str.replace("C", "", regex=False)
+        nums = pd.to_numeric(ids, errors="coerce").fillna(0)
+        return f"C{str(int(nums.max()) + 1).zfill(3)}"
+    except:
+        return f"C{str(len(clients_df) + 1).zfill(3)}"
+
+# =========================================================
+# INITIALIZE FILES + SESSION
+# =========================================================
+create_default_files()
+
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if "lead_db" not in st.session_state:
+    st.session_state.lead_db = load_leads()
+
+if "client_db" not in st.session_state:
+    st.session_state.client_db = load_clients()
+
+# =========================================================
+# LOGIN SCREEN
+# =========================================================
+if not st.session_state.logged_in:
+    st.markdown('<div class="main-title">🚀 Freedom ULTRA PRO V3</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-title">TRUE CSV Database • Lead CRM • Client CRM • Search • Filter • Delete • MIS Reports</div>', unsafe_allow_html=True)
+    st.markdown('<div class="brand-bar">Login to access your premium advisory workspace</div>', unsafe_allow_html=True)
+
+    c1, c2, c3 = st.columns([1, 1.4, 1])
+    with c2:
+        st.markdown("### 🔐 Advisor Login")
+        username = st.text_input("Username", value="admin")
+        password = st.text_input("Password", type="password", value="freedom123")
+        if st.button("Login"):
+            if username == "admin" and password == "freedom123":
+                st.session_state.logged_in = True
+                st.success("Login successful. Please continue.")
+                st.rerun()
+            else:
+                st.error("Invalid username or password.")
+        st.info("Demo login credentials: admin / freedom123")
+    st.stop()
+
+# =========================================================
+# HEADER
+# =========================================================
+st.markdown('<div class="main-title">🚀 Freedom ULTRA PRO V3</div>', unsafe_allow_html=True)
+st.markdown(
+    '<div class="sub-title">TRUE CSV Database • Add Lead • Add Client • Search • Filter • Delete • SIP Conversion • Reports</div>',
+    unsafe_allow_html=True
+)
+st.markdown(
+    '<div class="brand-bar">Freedom Advisory ULTRA PRO V3 • Real CSV-Based Business Operating System for MFD / Advisor Growth</div>',
+    unsafe_allow_html=True
+)
 
 # =========================================================
 # SIDEBAR
 # =========================================================
-st.sidebar.header("🏢 Freedom ULTRA PRO V2 Setup")
+st.sidebar.header("🏢 Freedom ULTRA PRO V3 Setup")
 
 advisor_name = st.sidebar.text_input("Advisor / MFD Name", "Freedom Advisory")
 branch_name = st.sidebar.text_input("Branch / Location", "Bengaluru")
@@ -529,31 +642,13 @@ risk_score, derived_risk_category = risk_score_from_inputs(age, monthly_surplus,
 suggested_allocation = get_allocation(derived_risk_category)
 client_segment = get_client_segment(monthly_income, monthly_surplus, net_worth)
 
-# CRM scoring
-lead_score = 0
-lead_score += {"Referral": 25, "Existing Client": 20, "Corporate Reference": 18, "Walk-in": 12, "Digital": 10, "Other": 8}.get(lead_source, 8)
-lead_score += {"Prospect": 10, "Qualified": 25, "Proposal Shared": 45, "Negotiation": 65, "Converted": 100}.get(lead_stage, 0)
-lead_score += {"Completed": 10, "Today": 8, "This Week": 5, "Pending": 2}.get(follow_up_status, 2)
-
-if days_since_last_meeting <= 3:
-    lead_score += 10
-elif days_since_last_meeting <= 7:
-    lead_score += 7
-elif days_since_last_meeting <= 15:
-    lead_score += 4
-else:
-    lead_score += 1
-
-if monthly_surplus >= 30000:
-    lead_score += 20
-elif monthly_surplus >= 15000:
-    lead_score += 14
-elif monthly_surplus > 0:
-    lead_score += 8
-else:
-    lead_score += 2
-
-lead_score = max(min(lead_score, 100), 0)
+lead_score = calculate_lead_score(
+    lead_source=lead_source,
+    lead_stage=lead_stage,
+    follow_up_status=follow_up_status,
+    monthly_surplus=monthly_surplus,
+    days_since_last_meeting=days_since_last_meeting
+)
 lead_temperature = get_lead_temperature(lead_score)
 conversion_probability = get_conversion_probability(lead_score)
 
@@ -605,10 +700,10 @@ st.markdown("")
 # =========================================================
 # TABS
 # =========================================================
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12 = st.tabs([
     "🎯 Dashboard",
-    "📞 Lead CRM V2",
-    "👥 Client CRM V2",
+    "📞 Lead CRM V3",
+    "👥 Client CRM V3",
     "📈 SIP Proposal",
     "🏖 Retirement",
     "🛡 Protection",
@@ -616,19 +711,20 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
     "🏆 RM Leaderboard",
     "📂 CSV Upload",
     "📊 MIS Reports",
-    "🧾 Final Summary"
+    "🧾 Final Summary",
+    "⚙️ Admin Tools"
 ])
 
 # =========================================================
 # TAB 1 - DASHBOARD
 # =========================================================
 with tab1:
-    st.markdown('<div class="section-title">ULTRA PRO V2 Business Dashboard</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">ULTRA PRO V3 Business Dashboard</div>', unsafe_allow_html=True)
 
     total_leads = len(st.session_state.lead_db)
     total_clients = len(st.session_state.client_db)
-    hot_leads = len(st.session_state.lead_db[st.session_state.lead_db["Lead Temperature"] == "🔥 Hot Lead"])
-    total_client_sip = st.session_state.client_db["Monthly SIP"].sum() if len(st.session_state.client_db) > 0 else 0
+    hot_leads = len(st.session_state.lead_db[st.session_state.lead_db["Lead Temperature"].astype(str) == "🔥 Hot Lead"]) if total_leads > 0 else 0
+    total_client_sip = pd.to_numeric(st.session_state.client_db["Monthly SIP"], errors="coerce").fillna(0).sum() if total_clients > 0 else 0
 
     d1, d2, d3, d4 = st.columns(4)
     d1.metric("Total Leads", total_leads)
@@ -641,55 +737,52 @@ with tab1:
     }, index=["Lead", "SIP", "Cross-Sell", "Risk"])
     st.bar_chart(dash_df, use_container_width=True)
 
-    pipeline_summary = st.session_state.lead_db.groupby("Lead Stage").size().reset_index(name="Count")
-    if len(pipeline_summary) > 0:
-        st.markdown("### 📌 Lead Pipeline Summary")
-        st.dataframe(pipeline_summary, use_container_width=True, hide_index=True)
+    if total_leads > 0 and "Lead Stage" in st.session_state.lead_db.columns:
+        pipeline_summary = st.session_state.lead_db.groupby("Lead Stage").size().reset_index(name="Count")
+        if len(pipeline_summary) > 0:
+            st.markdown("### 📌 Lead Pipeline Summary")
+            st.dataframe(pipeline_summary, use_container_width=True, hide_index=True)
 
 # =========================================================
-# TAB 2 - LEAD CRM V2
+# TAB 2 - LEAD CRM V3
 # =========================================================
 with tab2:
-    st.markdown('<div class="section-title">Lead CRM V2 (Add • Search • Filter • Delete)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Lead CRM V3 (TRUE CSV DB)</div>', unsafe_allow_html=True)
 
     st.markdown("### ➕ Add New Lead")
     l1, l2, l3, l4 = st.columns(4)
     with l1:
-        new_lead_name = st.text_input("Lead Name", key="new_lead_name")
+        new_lead_name = st.text_input("Lead Name", key="new_lead_name_v3")
     with l2:
-        new_lead_mobile = st.text_input("Lead Mobile", key="new_lead_mobile")
+        new_lead_mobile = st.text_input("Lead Mobile", key="new_lead_mobile_v3")
     with l3:
-        new_lead_city = st.text_input("Lead City", key="new_lead_city", value="Bengaluru")
+        new_lead_city = st.text_input("Lead City", key="new_lead_city_v3", value="Bengaluru")
     with l4:
-        new_lead_source = st.selectbox("Lead Source", ["Referral", "Walk-in", "Existing Client", "Digital", "Corporate Reference", "Other"], key="new_lead_source")
+        new_lead_source = st.selectbox("Lead Source", ["Referral", "Walk-in", "Existing Client", "Digital", "Corporate Reference", "Other"], key="new_lead_source_v3")
 
-    l5, l6, l7, l8 = st.columns(4)
+    l5, l6, l7, l8, l9 = st.columns(5)
     with l5:
-        new_lead_stage = st.selectbox("Lead Stage", ["Prospect", "Qualified", "Proposal Shared", "Negotiation", "Converted"], key="new_lead_stage")
+        new_lead_stage = st.selectbox("Lead Stage", ["Prospect", "Qualified", "Proposal Shared", "Negotiation", "Converted"], key="new_lead_stage_v3")
     with l6:
-        new_followup = st.selectbox("Follow-up Status", ["Pending", "Today", "This Week", "Completed"], key="new_followup")
+        new_followup = st.selectbox("Follow-up Status", ["Pending", "Today", "This Week", "Completed"], key="new_followup_v3")
     with l7:
-        new_income = st.number_input("Monthly Income (₹)", min_value=0, max_value=5000000, value=50000, step=5000, key="new_income")
+        new_income = st.number_input("Monthly Income (₹)", min_value=0, max_value=5000000, value=50000, step=5000, key="new_income_v3")
     with l8:
-        new_surplus = st.number_input("Monthly Surplus (₹)", min_value=-500000, max_value=5000000, value=10000, step=5000, key="new_surplus")
+        new_surplus = st.number_input("Monthly Surplus (₹)", min_value=-500000, max_value=5000000, value=10000, step=5000, key="new_surplus_v3")
+    with l9:
+        new_days = st.number_input("Days Since Last Meeting", min_value=0, max_value=365, value=3, step=1, key="new_days_v3")
 
-    if st.button("Add Lead"):
-        temp_score = 0
-        temp_score += {"Referral": 25, "Existing Client": 20, "Corporate Reference": 18, "Walk-in": 12, "Digital": 10, "Other": 8}.get(new_lead_source, 8)
-        temp_score += {"Prospect": 10, "Qualified": 25, "Proposal Shared": 45, "Negotiation": 65, "Converted": 100}.get(new_lead_stage, 0)
-        temp_score += {"Completed": 10, "Today": 8, "This Week": 5, "Pending": 2}.get(new_followup, 2)
-        if new_surplus >= 30000:
-            temp_score += 20
-        elif new_surplus >= 15000:
-            temp_score += 14
-        elif new_surplus > 0:
-            temp_score += 8
-        else:
-            temp_score += 2
-        temp_score = max(min(temp_score, 100), 0)
+    if st.button("Add Lead to CSV Database"):
+        temp_score = calculate_lead_score(
+            lead_source=new_lead_source,
+            lead_stage=new_lead_stage,
+            follow_up_status=new_followup,
+            monthly_surplus=new_surplus,
+            days_since_last_meeting=new_days
+        )
 
         new_row = pd.DataFrame([{
-            "Lead ID": next_lead_id(),
+            "Lead ID": next_lead_id(st.session_state.lead_db),
             "Date": datetime.now().strftime("%Y-%m-%d"),
             "Client Name": new_lead_name if new_lead_name else "Unnamed Lead",
             "Mobile": new_lead_mobile if new_lead_mobile else "",
@@ -701,39 +794,40 @@ with tab2:
             "Monthly Surplus": new_surplus,
             "Lead Score": temp_score,
             "Lead Temperature": get_lead_temperature(temp_score)
-        }])
+        }], columns=LEAD_COLUMNS)
 
         st.session_state.lead_db = pd.concat([st.session_state.lead_db, new_row], ignore_index=True)
-        st.success("Lead added successfully.")
+        save_leads(st.session_state.lead_db)
+        st.success("Lead added and saved to leads.csv successfully.")
 
     st.markdown("---")
     st.markdown("### 🔎 Search / Filter Leads")
 
     s1, s2 = st.columns(2)
     with s1:
-        lead_search = st.text_input("Search by Name / Mobile / City", key="lead_search")
+        lead_search = st.text_input("Search by Name / Mobile / City", key="lead_search_v3")
     with s2:
-        stage_filter = st.selectbox("Filter by Lead Stage", ["All", "Prospect", "Qualified", "Proposal Shared", "Negotiation", "Converted"], key="stage_filter")
+        stage_filter = st.selectbox("Filter by Lead Stage", ["All", "Prospect", "Qualified", "Proposal Shared", "Negotiation", "Converted"], key="stage_filter_v3")
 
     lead_view = st.session_state.lead_db.copy()
 
     if lead_search:
         search_lower = lead_search.lower()
         lead_view = lead_view[
-            lead_view["Client Name"].astype(str).str.lower().str.contains(search_lower) |
-            lead_view["Mobile"].astype(str).str.lower().str.contains(search_lower) |
-            lead_view["City"].astype(str).str.lower().str.contains(search_lower)
+            lead_view["Client Name"].astype(str).str.lower().str.contains(search_lower, na=False) |
+            lead_view["Mobile"].astype(str).str.lower().str.contains(search_lower, na=False) |
+            lead_view["City"].astype(str).str.lower().str.contains(search_lower, na=False)
         ]
 
     if stage_filter != "All":
-        lead_view = lead_view[lead_view["Lead Stage"] == stage_filter]
+        lead_view = lead_view[lead_view["Lead Stage"].astype(str) == stage_filter]
 
     st.dataframe(lead_view, use_container_width=True, hide_index=True)
 
     st.download_button(
         "⬇️ Download Leads CSV",
         data=st.session_state.lead_db.to_csv(index=False).encode("utf-8"),
-        file_name="freedom_leads_v2.csv",
+        file_name="freedom_leads_v3.csv",
         mime="text/csv"
     )
 
@@ -741,44 +835,45 @@ with tab2:
     st.markdown("### 🗑 Delete Lead")
 
     if len(st.session_state.lead_db) > 0:
-        delete_lead_id = st.selectbox("Select Lead ID to Delete", st.session_state.lead_db["Lead ID"].tolist(), key="delete_lead_id")
-        if st.button("Delete Selected Lead"):
-            st.session_state.lead_db = st.session_state.lead_db[st.session_state.lead_db["Lead ID"] != delete_lead_id].reset_index(drop=True)
-            st.success(f"Lead {delete_lead_id} deleted successfully.")
+        delete_lead_id = st.selectbox("Select Lead ID to Delete", st.session_state.lead_db["Lead ID"].astype(str).tolist(), key="delete_lead_id_v3")
+        if st.button("Delete Selected Lead from CSV Database"):
+            st.session_state.lead_db = st.session_state.lead_db[st.session_state.lead_db["Lead ID"].astype(str) != str(delete_lead_id)].reset_index(drop=True)
+            save_leads(st.session_state.lead_db)
+            st.success(f"Lead {delete_lead_id} deleted and leads.csv updated.")
     else:
         st.info("No leads available to delete.")
 
 # =========================================================
-# TAB 3 - CLIENT CRM V2
+# TAB 3 - CLIENT CRM V3
 # =========================================================
 with tab3:
-    st.markdown('<div class="section-title">Client CRM V2 (Add • Search • Delete)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Client CRM V3 (TRUE CSV DB)</div>', unsafe_allow_html=True)
 
     st.markdown("### ➕ Add New Client")
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        new_client_name = st.text_input("Client Name", key="new_client_name")
+        new_client_name = st.text_input("Client Name", key="new_client_name_v3")
     with c2:
-        new_client_mobile = st.text_input("Client Mobile", key="new_client_mobile")
+        new_client_mobile = st.text_input("Client Mobile", key="new_client_mobile_v3")
     with c3:
-        new_client_city = st.text_input("Client City", key="new_client_city", value="Bengaluru")
+        new_client_city = st.text_input("Client City", key="new_client_city_v3", value="Bengaluru")
     with c4:
-        new_client_sip = st.number_input("Monthly SIP (₹)", min_value=0, max_value=5000000, value=5000, step=500, key="new_client_sip")
+        new_client_sip = st.number_input("Monthly SIP (₹)", min_value=0, max_value=5000000, value=5000, step=500, key="new_client_sip_v3")
 
     c5, c6, c7 = st.columns(3)
     with c5:
-        new_client_income = st.number_input("Monthly Income (₹)", min_value=0, max_value=5000000, value=80000, step=5000, key="new_client_income")
+        new_client_income = st.number_input("Monthly Income (₹)", min_value=0, max_value=5000000, value=80000, step=5000, key="new_client_income_v3")
     with c6:
-        new_client_networth = st.number_input("Net Worth (₹)", min_value=0, max_value=500000000, value=1000000, step=50000, key="new_client_networth")
+        new_client_networth = st.number_input("Net Worth (₹)", min_value=0, max_value=500000000, value=1000000, step=50000, key="new_client_networth_v3")
     with c7:
-        new_client_risk = st.selectbox("Risk Category", ["Conservative", "Balanced", "Aggressive"], key="new_client_risk")
+        new_client_risk = st.selectbox("Risk Category", ["Conservative", "Balanced", "Aggressive"], key="new_client_risk_v3")
 
-    if st.button("Add Client"):
+    if st.button("Add Client to CSV Database"):
         temp_surplus = max(new_client_income - (new_client_income * 0.6), 0)
         temp_segment = get_client_segment(new_client_income, temp_surplus, new_client_networth)
 
         new_client_row = pd.DataFrame([{
-            "Client ID": next_client_id(),
+            "Client ID": next_client_id(st.session_state.client_db),
             "Date": datetime.now().strftime("%Y-%m-%d"),
             "Client Name": new_client_name if new_client_name else "Unnamed Client",
             "Mobile": new_client_mobile if new_client_mobile else "",
@@ -787,23 +882,24 @@ with tab3:
             "Risk Category": new_client_risk,
             "Monthly SIP": new_client_sip,
             "Net Worth": new_client_networth
-        }])
+        }], columns=CLIENT_COLUMNS)
 
         st.session_state.client_db = pd.concat([st.session_state.client_db, new_client_row], ignore_index=True)
-        st.success("Client added successfully.")
+        save_clients(st.session_state.client_db)
+        st.success("Client added and saved to clients.csv successfully.")
 
     st.markdown("---")
     st.markdown("### 🔎 Search Clients")
 
-    client_search = st.text_input("Search by Name / Mobile / City", key="client_search")
+    client_search = st.text_input("Search by Name / Mobile / City", key="client_search_v3")
 
     client_view = st.session_state.client_db.copy()
     if client_search:
         search_lower = client_search.lower()
         client_view = client_view[
-            client_view["Client Name"].astype(str).str.lower().str.contains(search_lower) |
-            client_view["Mobile"].astype(str).str.lower().str.contains(search_lower) |
-            client_view["City"].astype(str).str.lower().str.contains(search_lower)
+            client_view["Client Name"].astype(str).str.lower().str.contains(search_lower, na=False) |
+            client_view["Mobile"].astype(str).str.lower().str.contains(search_lower, na=False) |
+            client_view["City"].astype(str).str.lower().str.contains(search_lower, na=False)
         ]
 
     st.dataframe(client_view, use_container_width=True, hide_index=True)
@@ -811,7 +907,7 @@ with tab3:
     st.download_button(
         "⬇️ Download Clients CSV",
         data=st.session_state.client_db.to_csv(index=False).encode("utf-8"),
-        file_name="freedom_clients_v2.csv",
+        file_name="freedom_clients_v3.csv",
         mime="text/csv"
     )
 
@@ -819,10 +915,11 @@ with tab3:
     st.markdown("### 🗑 Delete Client")
 
     if len(st.session_state.client_db) > 0:
-        delete_client_id = st.selectbox("Select Client ID to Delete", st.session_state.client_db["Client ID"].tolist(), key="delete_client_id")
-        if st.button("Delete Selected Client"):
-            st.session_state.client_db = st.session_state.client_db[st.session_state.client_db["Client ID"] != delete_client_id].reset_index(drop=True)
-            st.success(f"Client {delete_client_id} deleted successfully.")
+        delete_client_id = st.selectbox("Select Client ID to Delete", st.session_state.client_db["Client ID"].astype(str).tolist(), key="delete_client_id_v3")
+        if st.button("Delete Selected Client from CSV Database"):
+            st.session_state.client_db = st.session_state.client_db[st.session_state.client_db["Client ID"].astype(str) != str(delete_client_id)].reset_index(drop=True)
+            save_clients(st.session_state.client_db)
+            st.success(f"Client {delete_client_id} deleted and clients.csv updated.")
     else:
         st.info("No clients available to delete.")
 
@@ -830,7 +927,7 @@ with tab3:
 # TAB 4 - SIP PROPOSAL
 # =========================================================
 with tab4:
-    st.markdown('<div class="section-title">ULTRA PRO V2 SIP Proposal</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">ULTRA PRO V3 SIP Proposal</div>', unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -870,7 +967,7 @@ with tab4:
 # TAB 5 - RETIREMENT
 # =========================================================
 with tab5:
-    st.markdown('<div class="section-title">ULTRA PRO V2 Retirement Proposal</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">ULTRA PRO V3 Retirement Proposal</div>', unsafe_allow_html=True)
 
     r1, r2, r3, r4 = st.columns(4)
     r1.metric("Years to Retirement", f"{years_to_retirement} Years")
@@ -981,7 +1078,7 @@ with tab8:
     st.download_button(
         "⬇️ Download RM Leaderboard CSV",
         data=rm_df.to_csv(index=False).encode("utf-8"),
-        file_name="freedom_rm_leaderboard_v2.csv",
+        file_name="freedom_rm_leaderboard_v3.csv",
         mime="text/csv"
     )
 
@@ -992,7 +1089,6 @@ with tab9:
     st.markdown('<div class="section-title">Bulk CSV Upload (Leads / Clients)</div>', unsafe_allow_html=True)
 
     upload_type = st.selectbox("Select Upload Type", ["Lead Master CSV", "Client Master CSV"])
-
     uploaded_file = st.file_uploader("Upload CSV File", type=["csv"])
 
     if uploaded_file is not None:
@@ -1002,13 +1098,25 @@ with tab9:
             st.dataframe(uploaded_df, use_container_width=True)
 
             if upload_type == "Lead Master CSV":
-                if st.button("Append to Lead CRM"):
-                    st.session_state.lead_db = pd.concat([st.session_state.lead_db, uploaded_df], ignore_index=True)
-                    st.success("Uploaded data appended to Lead CRM.")
+                if st.button("Append to Lead CSV Database"):
+                    temp_df = uploaded_df.copy()
+                    for col in LEAD_COLUMNS:
+                        if col not in temp_df.columns:
+                            temp_df[col] = ""
+                    temp_df = temp_df[LEAD_COLUMNS]
+                    st.session_state.lead_db = pd.concat([st.session_state.lead_db, temp_df], ignore_index=True)
+                    save_leads(st.session_state.lead_db)
+                    st.success("Uploaded data appended to leads.csv.")
             else:
-                if st.button("Append to Client CRM"):
-                    st.session_state.client_db = pd.concat([st.session_state.client_db, uploaded_df], ignore_index=True)
-                    st.success("Uploaded data appended to Client CRM.")
+                if st.button("Append to Client CSV Database"):
+                    temp_df = uploaded_df.copy()
+                    for col in CLIENT_COLUMNS:
+                        if col not in temp_df.columns:
+                            temp_df[col] = ""
+                    temp_df = temp_df[CLIENT_COLUMNS]
+                    st.session_state.client_db = pd.concat([st.session_state.client_db, temp_df], ignore_index=True)
+                    save_clients(st.session_state.client_db)
+                    st.success("Uploaded data appended to clients.csv.")
 
         except Exception as e:
             st.error(f"Error reading CSV: {e}")
@@ -1021,9 +1129,9 @@ with tab10:
 
     total_leads = len(st.session_state.lead_db)
     total_clients = len(st.session_state.client_db)
-    hot_leads = len(st.session_state.lead_db[st.session_state.lead_db["Lead Temperature"] == "🔥 Hot Lead"])
-    total_book_sip = st.session_state.client_db["Monthly SIP"].sum() if len(st.session_state.client_db) > 0 else 0
-    total_book_networth = st.session_state.client_db["Net Worth"].sum() if len(st.session_state.client_db) > 0 else 0
+    hot_leads = len(st.session_state.lead_db[st.session_state.lead_db["Lead Temperature"].astype(str) == "🔥 Hot Lead"]) if total_leads > 0 else 0
+    total_book_sip = pd.to_numeric(st.session_state.client_db["Monthly SIP"], errors="coerce").fillna(0).sum() if total_clients > 0 else 0
+    total_book_networth = pd.to_numeric(st.session_state.client_db["Net Worth"], errors="coerce").fillna(0).sum() if total_clients > 0 else 0
 
     mis_df = pd.DataFrame({
         "Metric": [
@@ -1056,21 +1164,21 @@ with tab10:
     st.download_button(
         "⬇️ Download Combined MIS CSV",
         data=combined_report.to_csv(index=False).encode("utf-8"),
-        file_name="freedom_combined_mis_v2.csv",
+        file_name="freedom_combined_mis_v3.csv",
         mime="text/csv"
     )
 
     st.download_button(
         "⬇️ Download Lead CRM CSV",
         data=st.session_state.lead_db.to_csv(index=False).encode("utf-8"),
-        file_name="freedom_lead_crm_v2.csv",
+        file_name="freedom_lead_crm_v3.csv",
         mime="text/csv"
     )
 
     st.download_button(
         "⬇️ Download Client CRM CSV",
         data=st.session_state.client_db.to_csv(index=False).encode("utf-8"),
-        file_name="freedom_client_crm_v2.csv",
+        file_name="freedom_client_crm_v3.csv",
         mime="text/csv"
     )
 
@@ -1078,7 +1186,7 @@ with tab10:
 # TAB 11 - FINAL SUMMARY
 # =========================================================
 with tab11:
-    st.markdown('<div class="section-title">Final ULTRA PRO V2 Summary</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Final ULTRA PRO V3 Summary</div>', unsafe_allow_html=True)
 
     try:
         final_goal_name = goal_name
@@ -1112,8 +1220,11 @@ with tab11:
 
     st.dataframe(final_summary_df, use_container_width=True, hide_index=True)
 
+    total_client_sip_summary = pd.to_numeric(st.session_state.client_db["Monthly SIP"], errors="coerce").fillna(0).sum() if len(st.session_state.client_db) > 0 else 0
+    total_client_nw_summary = pd.to_numeric(st.session_state.client_db["Net Worth"], errors="coerce").fillna(0).sum() if len(st.session_state.client_db) > 0 else 0
+
     summary_text = f"""
-FREEDOM ULTRA PRO V2 SUMMARY
+FREEDOM ULTRA PRO V3 SUMMARY
 
 BUSINESS
 - Advisor / MFD: {advisor_name}
@@ -1169,15 +1280,15 @@ PROTECTION
 - Health Cover Gap: {format_inr(health_cover_gap)}
 - Emergency Fund Need: {format_inr(recommended_emergency_fund)}
 
-CRM DATABASE
-- Total Leads in CRM: {len(st.session_state.lead_db)}
-- Total Clients in CRM: {len(st.session_state.client_db)}
+CSV DATABASE
+- Total Leads in leads.csv: {len(st.session_state.lead_db)}
+- Total Clients in clients.csv: {len(st.session_state.client_db)}
 
 MIS
-- Client Book SIP: {format_inr(st.session_state.client_db["Monthly SIP"].sum() if len(st.session_state.client_db) > 0 else 0)}
-- Client Book Net Worth: {format_inr(st.session_state.client_db["Net Worth"].sum() if len(st.session_state.client_db) > 0 else 0)}
+- Client Book SIP: {format_inr(total_client_sip_summary)}
+- Client Book Net Worth: {format_inr(total_client_nw_summary)}
 """
-    st.text_area("ULTRA PRO V2 Summary", summary_text, height=720)
+    st.text_area("ULTRA PRO V3 Summary", summary_text, height=720)
 
     recommendations = []
     if lead_score >= 75:
@@ -1195,11 +1306,55 @@ MIS
     if health_cover_gap > 0:
         recommendations.append(f"Health cover cross-sell opportunity: {format_inr(health_cover_gap)}.")
     recommendations.append("Use Lead CRM + Client CRM tabs daily for pipeline management.")
-    recommendations.append("Download MIS reports weekly for business review.")
+    recommendations.append("CSV database is now active. Keep backup downloads weekly.")
 
-    st.markdown("### ✅ ULTRA PRO V2 Action Plan")
+    st.markdown("### ✅ ULTRA PRO V3 Action Plan")
     for i, rec in enumerate(recommendations, start=1):
         st.write(f"{i}. {rec}")
+
+# =========================================================
+# TAB 12 - ADMIN TOOLS
+# =========================================================
+with tab12:
+    st.markdown('<div class="section-title">Admin Tools</div>', unsafe_allow_html=True)
+
+    st.info("Use these tools carefully. These actions affect your CSV database files.")
+
+    a1, a2 = st.columns(2)
+
+    with a1:
+        if st.button("🔄 Reload CSV Database"):
+            st.session_state.lead_db = load_leads()
+            st.session_state.client_db = load_clients()
+            st.success("CSV files reloaded into app.")
+
+    with a2:
+        if st.button("💾 Force Save Current Data"):
+            save_leads(st.session_state.lead_db)
+            save_clients(st.session_state.client_db)
+            st.success("Current app data force-saved to CSV files.")
+
+    st.markdown("---")
+    st.markdown("### 🧹 Reset Database to Default Demo Data")
+
+    confirm_reset = st.checkbox("I understand this will overwrite leads.csv and clients.csv")
+    if st.button("Reset CSV Database") and confirm_reset:
+        if os.path.exists(LEADS_FILE):
+            os.remove(LEADS_FILE)
+        if os.path.exists(CLIENTS_FILE):
+            os.remove(CLIENTS_FILE)
+
+        create_default_files()
+        st.session_state.lead_db = load_leads()
+        st.session_state.client_db = load_clients()
+        st.success("CSV database reset to default demo data.")
+
+    st.markdown("---")
+    st.markdown("### 📁 Current Database Files")
+    st.write(f"Leads file: `{LEADS_FILE}`")
+    st.write(f"Clients file: `{CLIENTS_FILE}`")
+    st.write(f"Leads records: {len(st.session_state.lead_db)}")
+    st.write(f"Clients records: {len(st.session_state.client_db)}")
 
 # =========================================================
 # FOOTER
