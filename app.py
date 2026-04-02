@@ -5,65 +5,56 @@ import pandas as pd
 # PAGE CONFIG
 # =========================================================
 st.set_page_config(
-    page_title="Freedom Premium CRM + MFD",
-    page_icon="🌙",
+    page_title="Freedom ULTRA PRO",
+    page_icon="🚀",
     layout="wide"
 )
 
 # =========================================================
-# PREMIUM DARK THEME CSS
+# PREMIUM DARK CSS
 # =========================================================
 st.markdown("""
 <style>
 :root {
     --bg: #0b1220;
     --panel: #111827;
-    --panel-2: #0f172a;
+    --panel2: #0f172a;
     --border: #243244;
     --text: #e5e7eb;
     --muted: #94a3b8;
     --gold: #f59e0b;
-    --gold-soft: #fbbf24;
-    --blue: #2563eb;
+    --gold2: #fbbf24;
     --green: #10b981;
     --red: #ef4444;
-    --purple: #8b5cf6;
+    --blue: #2563eb;
 }
-
 html, body, [data-testid="stAppViewContainer"] {
     background: linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
     color: var(--text);
 }
-
 [data-testid="stHeader"] {
     background: rgba(0,0,0,0);
 }
-
 [data-testid="stSidebar"] {
     background: linear-gradient(180deg, #0a0f1c 0%, #111827 100%);
     border-right: 1px solid var(--border);
 }
-
 .block-container {
     padding-top: 1rem;
     padding-bottom: 2rem;
-    max-width: 1400px;
+    max-width: 1500px;
 }
-
 .main-title {
     font-size: 38px;
     font-weight: 800;
     color: #ffffff;
-    margin-bottom: 6px;
-    letter-spacing: 0.3px;
+    margin-bottom: 4px;
 }
-
 .sub-title {
     font-size: 15px;
     color: var(--muted);
     margin-bottom: 14px;
 }
-
 .brand-bar {
     background: linear-gradient(90deg, rgba(245,158,11,0.15), rgba(37,99,235,0.15));
     border: 1px solid rgba(245,158,11,0.25);
@@ -75,7 +66,6 @@ html, body, [data-testid="stAppViewContainer"] {
     font-weight: 600;
     box-shadow: 0 8px 24px rgba(0,0,0,0.25);
 }
-
 .section-title {
     font-size: 22px;
     font-weight: 700;
@@ -83,16 +73,6 @@ html, body, [data-testid="stAppViewContainer"] {
     margin-top: 8px;
     margin-bottom: 12px;
 }
-
-.card {
-    background: linear-gradient(180deg, rgba(17,24,39,0.95), rgba(15,23,42,0.95));
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 16px;
-    margin-bottom: 12px;
-    box-shadow: 0 10px 28px rgba(0,0,0,0.28);
-}
-
 .kpi {
     background: linear-gradient(180deg, rgba(17,24,39,0.95), rgba(15,23,42,0.95));
     border: 1px solid var(--border);
@@ -100,31 +80,25 @@ html, body, [data-testid="stAppViewContainer"] {
     padding: 12px 14px;
     box-shadow: 0 10px 28px rgba(0,0,0,0.22);
 }
-
 .small-label {
     font-size: 12px;
     color: var(--muted);
     margin-bottom: 4px;
 }
-
 .kpi-value {
     font-size: 24px;
     font-weight: 800;
     color: #ffffff;
 }
-
 .kpi-sub {
     font-size: 12px;
-    color: var(--gold-soft);
+    color: var(--gold2);
 }
-
 .footer-note {
     color: var(--muted);
     font-size: 13px;
     margin-top: 15px;
 }
-
-/* Streamlit elements */
 div[data-testid="stMetric"] {
     background: linear-gradient(180deg, rgba(17,24,39,0.95), rgba(15,23,42,0.95));
     border: 1px solid var(--border);
@@ -132,21 +106,17 @@ div[data-testid="stMetric"] {
     padding: 10px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.20);
 }
-
 div[data-testid="stMetric"] label {
     color: var(--muted) !important;
 }
-
 div[data-testid="stMetricValue"] {
     color: #ffffff !important;
 }
-
 div[data-testid="stDataFrame"], div[data-testid="stTable"] {
     border-radius: 14px;
     overflow: hidden;
     border: 1px solid var(--border);
 }
-
 div.stButton > button {
     background: linear-gradient(90deg, #f59e0b, #fbbf24);
     color: #111827;
@@ -154,7 +124,6 @@ div.stButton > button {
     border-radius: 12px;
     border: none;
 }
-
 hr {
     border-color: rgba(148,163,184,0.15);
 }
@@ -162,15 +131,44 @@ hr {
 """, unsafe_allow_html=True)
 
 # =========================================================
+# SESSION STATE
+# =========================================================
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+# =========================================================
+# LOGIN SCREEN
+# =========================================================
+if not st.session_state.logged_in:
+    st.markdown('<div class="main-title">🚀 Freedom ULTRA PRO</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-title">Premium CRM + MFD Conversion + Client Master + RM Dashboard</div>', unsafe_allow_html=True)
+    st.markdown('<div class="brand-bar">Login to access your premium advisory workspace</div>', unsafe_allow_html=True)
+
+    c1, c2, c3 = st.columns([1, 1.4, 1])
+    with c2:
+        st.markdown("### 🔐 Advisor Login")
+        username = st.text_input("Username", value="admin")
+        password = st.text_input("Password", type="password", value="freedom123")
+        if st.button("Login"):
+            if username == "admin" and password == "freedom123":
+                st.session_state.logged_in = True
+                st.success("Login successful. Please continue.")
+                st.rerun()
+            else:
+                st.error("Invalid username or password.")
+        st.info("Demo login credentials: admin / freedom123")
+    st.stop()
+
+# =========================================================
 # HEADER
 # =========================================================
-st.markdown('<div class="main-title">🌙 Freedom Premium CRM + MFD</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">🚀 Freedom ULTRA PRO</div>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="sub-title">Premium Dark Theme • Lead Conversion • SIP Sales • Retirement • Protection • RM Desk • Target Tracking</div>',
+    '<div class="sub-title">Login • Lead Master • Client Segmentation • SIP Conversion • Retirement • Protection • RM Leaderboard • CSV Reports</div>',
     unsafe_allow_html=True
 )
 st.markdown(
-    '<div class="brand-bar">Freedom Advisory Premium Desk • Luxury Dark UI • Client Demo Ready • Prospect to Client Conversion Engine</div>',
+    '<div class="brand-bar">Freedom Advisory ULTRA PRO Desk • Premium Business OS for MFD / Advisor Growth</div>',
     unsafe_allow_html=True
 )
 
@@ -357,14 +355,27 @@ def get_conversion_probability(score):
         return "Medium"
     return "Low"
 
+def get_client_segment(monthly_income, monthly_surplus, net_worth):
+    if monthly_income >= 300000 or net_worth >= 10000000:
+        return "Premium"
+    elif monthly_income >= 100000 or net_worth >= 2500000:
+        return "Growth"
+    elif monthly_surplus > 0:
+        return "Emerging"
+    return "Starter"
+
 # =========================================================
 # SIDEBAR
 # =========================================================
-st.sidebar.header("🏢 Freedom Premium Setup")
+st.sidebar.header("🏢 Freedom ULTRA PRO Setup")
 
 advisor_name = st.sidebar.text_input("Advisor / MFD Name", "Freedom Advisory")
 branch_name = st.sidebar.text_input("Branch / Location", "Bengaluru")
 rm_name = st.sidebar.text_input("Relationship Manager", "Parvez")
+
+if st.sidebar.button("Logout"):
+    st.session_state.logged_in = False
+    st.rerun()
 
 st.sidebar.markdown("---")
 st.sidebar.header("📞 Lead Details")
@@ -450,6 +461,8 @@ health_cover_gap = max(recommended_health_cover - existing_health_cover, 0.0)
 risk_score, derived_risk_category = risk_score_from_inputs(age, monthly_surplus, monthly_income, risk_profile)
 suggested_allocation = get_allocation(derived_risk_category)
 
+client_segment = get_client_segment(monthly_income, monthly_surplus, net_worth)
+
 # CRM Scoring
 lead_score = 0
 lead_score += {"Referral": 25, "Existing Client": 20, "Corporate Reference": 18, "Walk-in": 12, "Digital": 10, "Other": 8}.get(lead_source, 8)
@@ -505,112 +518,173 @@ if existing_life_cover == 0:
 cross_sell_score = max(min(cross_sell_score, 100), 0)
 
 # =========================================================
-# TOP PREMIUM KPI STRIP
+# TOP KPI STRIP
 # =========================================================
-k1, k2, k3, k4, k5 = st.columns(5)
+k1, k2, k3, k4, k5, k6 = st.columns(6)
 with k1:
     st.markdown(f'<div class="kpi"><div class="small-label">Lead Score</div><div class="kpi-value">{lead_score}/100</div><div class="kpi-sub">{lead_temperature}</div></div>', unsafe_allow_html=True)
 with k2:
-    st.markdown(f'<div class="kpi"><div class="small-label">SIP Opportunity</div><div class="kpi-value">{format_inr(existing_sip + retirement_sip)}</div><div class="kpi-sub">Base Pitch</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="kpi"><div class="small-label">SIP Score</div><div class="kpi-value">{sip_conversion_score}/100</div><div class="kpi-sub">Conversion</div></div>', unsafe_allow_html=True)
 with k3:
-    st.markdown(f'<div class="kpi"><div class="small-label">Protection Gap</div><div class="kpi-value">{format_inr(life_cover_gap + health_cover_gap)}</div><div class="kpi-sub">Cross-Sell</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="kpi"><div class="small-label">Cross-Sell</div><div class="kpi-value">{cross_sell_score}/100</div><div class="kpi-sub">Protection</div></div>', unsafe_allow_html=True)
 with k4:
-    st.markdown(f'<div class="kpi"><div class="small-label">Monthly Surplus</div><div class="kpi-value">{format_inr(monthly_surplus)}</div><div class="kpi-sub">Cashflow Strength</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="kpi"><div class="small-label">Monthly Surplus</div><div class="kpi-value">{format_inr(monthly_surplus)}</div><div class="kpi-sub">Cashflow</div></div>', unsafe_allow_html=True)
 with k5:
-    st.markdown(f'<div class="kpi"><div class="small-label">Investor Style</div><div class="kpi-value">{derived_risk_category}</div><div class="kpi-sub">{conversion_probability} Conv.</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="kpi"><div class="small-label">Client Segment</div><div class="kpi-value">{client_segment}</div><div class="kpi-sub">{derived_risk_category}</div></div>', unsafe_allow_html=True)
+with k6:
+    st.markdown(f'<div class="kpi"><div class="small-label">Net Worth</div><div class="kpi-value">{format_inr(net_worth)}</div><div class="kpi-sub">{conversion_probability}</div></div>', unsafe_allow_html=True)
 
 st.markdown("")
 
 # =========================================================
 # TABS
 # =========================================================
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
-    "🎯 Premium Dashboard",
-    "📞 Lead CRM",
-    "📈 SIP Pitch",
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
+    "🎯 ULTRA Dashboard",
+    "📞 Lead Master",
+    "📂 Client Master Upload",
+    "👥 Client Segmentation",
+    "📈 SIP Proposal",
     "🏖 Retirement",
     "🛡 Protection",
     "🏦 EMI + Tax",
-    "🎯 Target Desk",
-    "🤝 Referral Script",
-    "🧾 Premium Summary"
+    "🏆 RM Leaderboard",
+    "🎯 Targets + Reports",
+    "🧾 Final ULTRA Summary"
 ])
 
 # =========================================================
 # TAB 1 - DASHBOARD
 # =========================================================
 with tab1:
-    st.markdown('<div class="section-title">Premium Conversion Dashboard</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">ULTRA PRO Business Dashboard</div>', unsafe_allow_html=True)
 
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Lead Temperature", lead_temperature)
     c2.metric("Conversion Probability", conversion_probability)
-    c3.metric("SIP Conversion Score", f"{sip_conversion_score}/100")
-    c4.metric("Cross-Sell Score", f"{cross_sell_score}/100")
+    c3.metric("Retirement SIP", format_inr(retirement_sip))
+    c4.metric("Protection Gap", format_inr(life_cover_gap + health_cover_gap))
 
-    st.markdown("---")
-
-    score_df = pd.DataFrame({
+    dash_df = pd.DataFrame({
         "Score": [lead_score, sip_conversion_score, cross_sell_score, risk_score]
-    }, index=["Lead Score", "SIP Score", "Cross-Sell", "Risk Score"])
-    st.bar_chart(score_df, use_container_width=True)
+    }, index=["Lead", "SIP", "Cross-Sell", "Risk"])
+    st.bar_chart(dash_df, use_container_width=True)
 
-    summary_df = pd.DataFrame({
+    overview_df = pd.DataFrame({
         "Metric": [
-            "Monthly Income",
-            "Monthly Expenses",
-            "Monthly Surplus",
-            "Existing SIP",
-            "Retirement SIP Opportunity",
-            "Net Worth"
+            "Monthly Income", "Monthly Expenses", "Monthly Surplus", "Existing SIP",
+            "Net Worth", "Client Segment", "Risk Category"
         ],
         "Value": [
-            format_inr(monthly_income),
-            format_inr(monthly_expenses),
-            format_inr(monthly_surplus),
-            format_inr(existing_sip),
-            format_inr(retirement_sip),
-            format_inr(net_worth)
+            format_inr(monthly_income), format_inr(monthly_expenses), format_inr(monthly_surplus),
+            format_inr(existing_sip), format_inr(net_worth), client_segment, derived_risk_category
         ]
     })
-    st.dataframe(summary_df, use_container_width=True, hide_index=True)
+    st.dataframe(overview_df, use_container_width=True, hide_index=True)
 
 # =========================================================
-# TAB 2 - LEAD CRM
+# TAB 2 - LEAD MASTER
 # =========================================================
 with tab2:
-    st.markdown('<div class="section-title">Lead CRM + RM Follow-up Desk</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Lead Master Entry</div>', unsafe_allow_html=True)
 
-    lead_df = pd.DataFrame({
+    lead_master_df = pd.DataFrame({
         "Field": [
-            "Meeting Type", "Lead Source", "Lead Stage", "Follow-up Status",
-            "Days Since Last Meeting", "Client Name", "Mobile", "City"
+            "Advisor / MFD", "RM", "Meeting Type", "Lead Source", "Lead Stage",
+            "Follow-up Status", "Days Since Last Meeting", "Client Name", "Mobile",
+            "City", "Lead Score", "Lead Temperature", "Conversion Probability"
         ],
         "Value": [
-            meeting_type, lead_source, lead_stage, follow_up_status,
-            days_since_last_meeting, client_name, mobile_no, city_name
+            advisor_name, rm_name, meeting_type, lead_source, lead_stage,
+            follow_up_status, days_since_last_meeting, client_name, mobile_no,
+            city_name, lead_score, lead_temperature, conversion_probability
         ]
     })
-    st.dataframe(lead_df, use_container_width=True, hide_index=True)
 
-    if lead_stage == "Prospect":
-        next_action = "Schedule discovery call and understand goals."
-    elif lead_stage == "Qualified":
-        next_action = "Present need analysis and begin SIP discussion."
-    elif lead_stage == "Proposal Shared":
-        next_action = "Follow-up within 48 hours and handle objections."
-    elif lead_stage == "Negotiation":
-        next_action = "Push for closure, KYC, mandate and first SIP."
-    else:
-        next_action = "Focus on SIP top-up, cross-sell and referrals."
+    st.dataframe(lead_master_df, use_container_width=True, hide_index=True)
 
-    st.success(f"RM Next Best Action: {next_action}")
+    lead_csv = lead_master_df.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        "⬇️ Download Lead Master CSV",
+        data=lead_csv,
+        file_name="freedom_lead_master.csv",
+        mime="text/csv"
+    )
 
 # =========================================================
-# TAB 3 - SIP PITCH
+# TAB 3 - CLIENT MASTER UPLOAD
 # =========================================================
 with tab3:
-    st.markdown('<div class="section-title">Premium Goal-Based SIP Pitch</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Client Master CSV Upload</div>', unsafe_allow_html=True)
+    st.info("Upload a CSV file of your client master. Example columns: Client Name, Mobile, City, SIP, Income, Segment")
+
+    uploaded_file = st.file_uploader("Upload Client Master CSV", type=["csv"])
+
+    if uploaded_file is not None:
+        try:
+            uploaded_df = pd.read_csv(uploaded_file)
+            st.success("CSV uploaded successfully.")
+            st.dataframe(uploaded_df, use_container_width=True)
+
+            st.download_button(
+                "⬇️ Download Uploaded CSV Copy",
+                data=uploaded_df.to_csv(index=False).encode("utf-8"),
+                file_name="uploaded_client_master_copy.csv",
+                mime="text/csv"
+            )
+        except Exception as e:
+            st.error(f"Error reading CSV: {e}")
+    else:
+        sample_df = pd.DataFrame({
+            "Client Name": ["Client A", "Client B", "Client C"],
+            "Mobile": ["9999999991", "9999999992", "9999999993"],
+            "City": ["Bengaluru", "Mumbai", "Delhi"],
+            "SIP": [5000, 12000, 25000],
+            "Income": [80000, 150000, 350000],
+            "Segment": ["Emerging", "Growth", "Premium"]
+        })
+        st.dataframe(sample_df, use_container_width=True)
+
+# =========================================================
+# TAB 4 - CLIENT SEGMENTATION
+# =========================================================
+with tab4:
+    st.markdown('<div class="section-title">Client Segmentation Engine</div>', unsafe_allow_html=True)
+
+    seg1, seg2, seg3, seg4 = st.columns(4)
+    seg1.metric("Client Segment", client_segment)
+    seg2.metric("Risk Category", derived_risk_category)
+    seg3.metric("SIP Score", f"{sip_conversion_score}/100")
+    seg4.metric("Cross-Sell Score", f"{cross_sell_score}/100")
+
+    segment_strategy = {
+        "Premium": "Focus on wealth creation, retirement, PMS-style positioning (without mis-selling), family office feel, and premium retention.",
+        "Growth": "Focus on SIP scale-up, goal planning, retirement buckets, tax optimization discussion and protection review.",
+        "Emerging": "Focus on disciplined SIP start, emergency fund, term + health gap, and referral-based trust building.",
+        "Starter": "Focus on budgeting, emergency reserve, small SIP start and long-term habit creation."
+    }
+
+    segment_df = pd.DataFrame({
+        "Area": [
+            "Client Segment",
+            "Suggested Strategy",
+            "Investor Style",
+            "Suggested Allocation"
+        ],
+        "Value": [
+            client_segment,
+            segment_strategy.get(client_segment, "Goal-based planning"),
+            derived_risk_category,
+            f"Equity {suggested_allocation['Equity']}% | Debt {suggested_allocation['Debt']}% | Gold {suggested_allocation['Gold']}% | Cash {suggested_allocation['Cash']}%"
+        ]
+    })
+    st.dataframe(segment_df, use_container_width=True, hide_index=True)
+
+# =========================================================
+# TAB 5 - SIP PROPOSAL
+# =========================================================
+with tab5:
+    st.markdown('<div class="section-title">ULTRA PRO SIP Proposal</div>', unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -647,10 +721,10 @@ with tab3:
         st.dataframe(show_df, use_container_width=True, hide_index=True)
 
 # =========================================================
-# TAB 4 - RETIREMENT
+# TAB 6 - RETIREMENT
 # =========================================================
-with tab4:
-    st.markdown('<div class="section-title">Premium Retirement Proposal</div>', unsafe_allow_html=True)
+with tab6:
+    st.markdown('<div class="section-title">ULTRA PRO Retirement Proposal</div>', unsafe_allow_html=True)
 
     r1, r2, r3, r4 = st.columns(4)
     r1.metric("Years to Retirement", f"{years_to_retirement} Years")
@@ -675,9 +749,9 @@ with tab4:
     st.dataframe(ret_df, use_container_width=True, hide_index=True)
 
 # =========================================================
-# TAB 5 - PROTECTION
+# TAB 7 - PROTECTION
 # =========================================================
-with tab5:
+with tab7:
     st.markdown('<div class="section-title">Protection + Cross-Sell Engine</div>', unsafe_allow_html=True)
 
     p1, p2, p3, p4 = st.columns(4)
@@ -696,9 +770,9 @@ with tab5:
     st.bar_chart(protection_df, use_container_width=True)
 
 # =========================================================
-# TAB 6 - EMI + TAX
+# TAB 8 - EMI + TAX
 # =========================================================
-with tab6:
+with tab8:
     st.markdown('<div class="section-title">EMI + Tax Review</div>', unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns(3)
@@ -735,10 +809,41 @@ with tab6:
     tx3.metric("Better Option", best_regime)
 
 # =========================================================
-# TAB 7 - TARGET DESK
+# TAB 9 - RM LEADERBOARD
 # =========================================================
-with tab7:
-    st.markdown('<div class="section-title">Monthly Target Desk</div>', unsafe_allow_html=True)
+with tab9:
+    st.markdown('<div class="section-title">RM Leaderboard (Manual Entry)</div>', unsafe_allow_html=True)
+
+    rm_df = pd.DataFrame({
+        "RM Name": ["Parvez", "Aman", "Rohit", "Nisha", "Sara"],
+        "SIP Achieved (₹)": [250000, 180000, 320000, 210000, 150000],
+        "Clients Converted": [5, 3, 6, 4, 2],
+        "Referrals": [4, 2, 5, 3, 1]
+    })
+
+    rm_df["Leaderboard Score"] = (
+        rm_df["SIP Achieved (₹)"] / 10000
+        + rm_df["Clients Converted"] * 10
+        + rm_df["Referrals"] * 5
+    ).round(1)
+
+    rm_df = rm_df.sort_values("Leaderboard Score", ascending=False).reset_index(drop=True)
+    rm_df.index = rm_df.index + 1
+
+    st.dataframe(rm_df, use_container_width=True)
+
+    st.download_button(
+        "⬇️ Download RM Leaderboard CSV",
+        data=rm_df.to_csv(index=False).encode("utf-8"),
+        file_name="freedom_rm_leaderboard.csv",
+        mime="text/csv"
+    )
+
+# =========================================================
+# TAB 10 - TARGETS + REPORTS
+# =========================================================
+with tab10:
+    st.markdown('<div class="section-title">Monthly Targets + Reports</div>', unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -757,44 +862,23 @@ with tab7:
     t3.metric("Achievement %", f"{achievement_pct:.1f}%")
 
     target_df = pd.DataFrame({
-        "Amount": [monthly_sip_target, monthly_sip_achieved, target_balance]
-    }, index=["Target", "Achieved", "Balance"])
-    st.bar_chart(target_df, use_container_width=True)
+        "Metric": ["Monthly SIP Target", "Monthly SIP Achieved", "Balance", "Clients Converted"],
+        "Value": [monthly_sip_target, monthly_sip_achieved, target_balance, clients_converted]
+    })
+    st.dataframe(target_df, use_container_width=True, hide_index=True)
+
+    st.download_button(
+        "⬇️ Download Monthly Target Report CSV",
+        data=target_df.to_csv(index=False).encode("utf-8"),
+        file_name="freedom_monthly_target_report.csv",
+        mime="text/csv"
+    )
 
 # =========================================================
-# TAB 8 - REFERRAL SCRIPT
+# TAB 11 - FINAL SUMMARY
 # =========================================================
-with tab8:
-    st.markdown('<div class="section-title">Premium Referral Script</div>', unsafe_allow_html=True)
-
-    referral_target = st.number_input("Referral Target", min_value=1, max_value=100, value=5, step=1)
-    referral_achieved = st.number_input("Referrals Achieved", min_value=0, max_value=100, value=2, step=1)
-    referral_balance = max(referral_target - referral_achieved, 0)
-
-    rf1, rf2, rf3 = st.columns(3)
-    rf1.metric("Target", referral_target)
-    rf2.metric("Achieved", referral_achieved)
-    rf3.metric("Balance", referral_balance)
-
-    referral_script = f"""
-Thank you {client_name} for your trust and support.
-
-At Freedom Advisory, we help families build disciplined SIP investing, protection planning and long-term wealth creation.
-
-If you know 2-3 friends, family members or colleagues who may benefit from financial planning, I would truly appreciate an introduction.
-
-Current Referral Progress:
-- Target: {referral_target}
-- Achieved: {referral_achieved}
-- Balance: {referral_balance}
-"""
-    st.text_area("Premium Referral Script", referral_script, height=240)
-
-# =========================================================
-# TAB 9 - PREMIUM SUMMARY
-# =========================================================
-with tab9:
-    st.markdown('<div class="section-title">Premium Client Summary</div>', unsafe_allow_html=True)
+with tab11:
+    st.markdown('<div class="section-title">Final ULTRA PRO Summary</div>', unsafe_allow_html=True)
 
     # Safe defaults if SIP tab not touched
     try:
@@ -816,8 +900,27 @@ with tab9:
     })
     st.dataframe(allocation_df, use_container_width=True, hide_index=True)
 
+    final_summary_df = pd.DataFrame({
+        "Field": [
+            "Advisor / MFD", "RM", "Client Name", "City", "Client Segment",
+            "Lead Score", "Lead Temperature", "Conversion Probability",
+            "Monthly Income", "Monthly Expenses", "Monthly Surplus", "Net Worth",
+            "Existing SIP", "Goal", "Goal SIP", "Retirement SIP",
+            "Life Cover Gap", "Health Cover Gap", "Monthly SIP Target", "Monthly SIP Achieved"
+        ],
+        "Value": [
+            advisor_name, rm_name, client_name, city_name, client_segment,
+            lead_score, lead_temperature, conversion_probability,
+            format_inr(monthly_income), format_inr(monthly_expenses), format_inr(monthly_surplus), format_inr(net_worth),
+            format_inr(existing_sip), final_goal_name, format_inr(final_goal_sip), format_inr(retirement_sip),
+            format_inr(life_cover_gap), format_inr(health_cover_gap), format_inr(monthly_sip_target), format_inr(monthly_sip_achieved)
+        ]
+    })
+
+    st.dataframe(final_summary_df, use_container_width=True, hide_index=True)
+
     summary_text = f"""
-FREEDOM PREMIUM CRM + MFD SUMMARY
+FREEDOM ULTRA PRO SUMMARY
 
 BUSINESS
 - Advisor / MFD: {advisor_name}
@@ -841,6 +944,7 @@ CLIENT
 - Retirement Age: {retirement_age}
 - Dependents: {dependents}
 - Risk Profile: {risk_profile}
+- Client Segment: {client_segment}
 - Derived Risk: {derived_risk_category}
 - Risk Score: {risk_score}/100
 
@@ -859,7 +963,6 @@ SIP PROPOSAL
 - Goal Lumpsum: {format_inr(final_goal_lumpsum)}
 - Retirement SIP: {format_inr(retirement_sip)}
 - Total SIP Pitch: {format_inr(final_total_sip_pitch)}
-- SIP Conversion Score: {sip_conversion_score}/100
 
 RETIREMENT
 - Retirement Corpus: {format_inr(ret_corpus)}
@@ -871,7 +974,6 @@ PROTECTION
 - Life Cover Gap: {format_inr(life_cover_gap)}
 - Recommended Health Cover: {format_inr(recommended_health_cover)}
 - Health Cover Gap: {format_inr(health_cover_gap)}
-- Cross-Sell Score: {cross_sell_score}/100
 - Emergency Fund Need: {format_inr(recommended_emergency_fund)}
 
 TARGETS
@@ -879,19 +981,8 @@ TARGETS
 - Monthly SIP Achieved: {format_inr(monthly_sip_achieved)}
 - Achievement %: {achievement_pct:.1f}%
 - Clients Converted: {clients_converted}
-
-REFERRALS
-- Referral Target: {referral_target}
-- Referral Achieved: {referral_achieved}
-- Referral Balance: {referral_balance}
-
-SUGGESTED ALLOCATION
-- Equity: {suggested_allocation.get("Equity", 0)}%
-- Debt: {suggested_allocation.get("Debt", 0)}%
-- Gold: {suggested_allocation.get("Gold", 0)}%
-- Cash: {suggested_allocation.get("Cash", 0)}%
 """
-    st.text_area("Premium Summary", summary_text, height=650)
+    st.text_area("ULTRA PRO Summary", summary_text, height=700)
 
     recommendations = []
     if lead_score >= 75:
@@ -899,17 +990,18 @@ SUGGESTED ALLOCATION
     elif lead_score >= 50:
         recommendations.append("Warm lead. Strong follow-up within 48 hours.")
     else:
-        recommendations.append("Cold lead. Build trust and schedule structured follow-up.")
+        recommendations.append("Cold lead. Build trust and educate before aggressive closure.")
 
+    recommendations.append(f"Client segment is {client_segment}. Use segment-based advisory pitch.")
     recommendations.append(f"Primary SIP opportunity around {format_inr(final_total_sip_pitch)}.")
     recommendations.append(f"Retirement SIP opportunity around {format_inr(retirement_sip)}.")
     if life_cover_gap > 0:
         recommendations.append(f"Life cover cross-sell opportunity: {format_inr(life_cover_gap)}.")
     if health_cover_gap > 0:
         recommendations.append(f"Health cover cross-sell opportunity: {format_inr(health_cover_gap)}.")
-    recommendations.append("Ask for 2-3 referrals after proposal closure.")
+    recommendations.append("Use CSV downloads for lead master, target report and RM review.")
 
-    st.markdown("### ✅ Premium Advisor Action Plan")
+    st.markdown("### ✅ ULTRA PRO Action Plan")
     for i, rec in enumerate(recommendations, start=1):
         st.write(f"{i}. {rec}")
 
@@ -918,6 +1010,6 @@ SUGGESTED ALLOCATION
 # =========================================================
 st.markdown("---")
 st.markdown(
-    '<div class="footer-note">⚠️ Disclaimer: This premium dashboard is for business presentation, client engagement and planning support only. It is not investment advice, insurance advice, tax advice or a regulated recommendation. Final suitability must be based on full risk profiling, product suitability, disclosures, underwriting, taxation and applicable regulations.</div>',
+    '<div class="footer-note">⚠️ Disclaimer: This tool is for business presentation, client engagement and planning support only. It is not investment advice, insurance advice, tax advice or a regulated recommendation. Final suitability must be based on full risk profiling, product suitability, disclosures, underwriting, taxation and applicable regulations.</div>',
     unsafe_allow_html=True
 )
