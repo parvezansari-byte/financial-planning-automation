@@ -1,11 +1,12 @@
 import streamlit as st
 import pandas as pd
+from datetime import datetime
 
 # =========================================================
 # PAGE CONFIG
 # =========================================================
 st.set_page_config(
-    page_title="Freedom ULTRA PRO",
+    page_title="Freedom ULTRA PRO V2",
     page_icon="🚀",
     layout="wide"
 )
@@ -131,17 +132,75 @@ hr {
 """, unsafe_allow_html=True)
 
 # =========================================================
-# SESSION STATE
+# SESSION STATE INIT
 # =========================================================
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
+
+if "lead_db" not in st.session_state:
+    st.session_state.lead_db = pd.DataFrame([
+        {
+            "Lead ID": "L001",
+            "Date": datetime.now().strftime("%Y-%m-%d"),
+            "Client Name": "Rahul Sharma",
+            "Mobile": "9999999991",
+            "City": "Bengaluru",
+            "Lead Source": "Referral",
+            "Lead Stage": "Qualified",
+            "Follow-up Status": "Today",
+            "Monthly Income": 120000,
+            "Monthly Surplus": 35000,
+            "Lead Score": 78,
+            "Lead Temperature": "🔥 Hot Lead"
+        },
+        {
+            "Lead ID": "L002",
+            "Date": datetime.now().strftime("%Y-%m-%d"),
+            "Client Name": "Amit Verma",
+            "Mobile": "9999999992",
+            "City": "Mumbai",
+            "Lead Source": "Digital",
+            "Lead Stage": "Prospect",
+            "Follow-up Status": "Pending",
+            "Monthly Income": 70000,
+            "Monthly Surplus": 15000,
+            "Lead Score": 46,
+            "Lead Temperature": "🔵 Cold Lead"
+        }
+    ])
+
+if "client_db" not in st.session_state:
+    st.session_state.client_db = pd.DataFrame([
+        {
+            "Client ID": "C001",
+            "Date": datetime.now().strftime("%Y-%m-%d"),
+            "Client Name": "Sneha Patel",
+            "Mobile": "9999999993",
+            "City": "Delhi",
+            "Segment": "Growth",
+            "Risk Category": "Balanced",
+            "Monthly SIP": 12000,
+            "Net Worth": 2800000
+        },
+        {
+            "Client ID": "C002",
+            "Date": datetime.now().strftime("%Y-%m-%d"),
+            "Client Name": "Karan Mehta",
+            "Mobile": "9999999994",
+            "City": "Hyderabad",
+            "Segment": "Premium",
+            "Risk Category": "Aggressive",
+            "Monthly SIP": 30000,
+            "Net Worth": 12500000
+        }
+    ])
 
 # =========================================================
 # LOGIN SCREEN
 # =========================================================
 if not st.session_state.logged_in:
-    st.markdown('<div class="main-title">🚀 Freedom ULTRA PRO</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-title">Premium CRM + MFD Conversion + Client Master + RM Dashboard</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-title">🚀 Freedom ULTRA PRO V2</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-title">Persistent CRM • Lead Master • Client Master • Search • Filter • Delete • MIS Reports</div>', unsafe_allow_html=True)
     st.markdown('<div class="brand-bar">Login to access your premium advisory workspace</div>', unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns([1, 1.4, 1])
@@ -162,13 +221,13 @@ if not st.session_state.logged_in:
 # =========================================================
 # HEADER
 # =========================================================
-st.markdown('<div class="main-title">🚀 Freedom ULTRA PRO</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">🚀 Freedom ULTRA PRO V2</div>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="sub-title">Login • Lead Master • Client Segmentation • SIP Conversion • Retirement • Protection • RM Leaderboard • CSV Reports</div>',
+    '<div class="sub-title">Persistent CRM • Add Lead • Add Client • Search • Filter • Delete • SIP Conversion • Reports</div>',
     unsafe_allow_html=True
 )
 st.markdown(
-    '<div class="brand-bar">Freedom Advisory ULTRA PRO Desk • Premium Business OS for MFD / Advisor Growth</div>',
+    '<div class="brand-bar">Freedom Advisory ULTRA PRO V2 • Business Operating System for MFD / Advisor Growth</div>',
     unsafe_allow_html=True
 )
 
@@ -364,10 +423,18 @@ def get_client_segment(monthly_income, monthly_surplus, net_worth):
         return "Emerging"
     return "Starter"
 
+def next_lead_id():
+    count = len(st.session_state.lead_db) + 1
+    return f"L{str(count).zfill(3)}"
+
+def next_client_id():
+    count = len(st.session_state.client_db) + 1
+    return f"C{str(count).zfill(3)}"
+
 # =========================================================
 # SIDEBAR
 # =========================================================
-st.sidebar.header("🏢 Freedom ULTRA PRO Setup")
+st.sidebar.header("🏢 Freedom ULTRA PRO V2 Setup")
 
 advisor_name = st.sidebar.text_input("Advisor / MFD Name", "Freedom Advisory")
 branch_name = st.sidebar.text_input("Branch / Location", "Bengaluru")
@@ -460,10 +527,9 @@ health_cover_gap = max(recommended_health_cover - existing_health_cover, 0.0)
 
 risk_score, derived_risk_category = risk_score_from_inputs(age, monthly_surplus, monthly_income, risk_profile)
 suggested_allocation = get_allocation(derived_risk_category)
-
 client_segment = get_client_segment(monthly_income, monthly_surplus, net_worth)
 
-# CRM Scoring
+# CRM scoring
 lead_score = 0
 lead_score += {"Referral": 25, "Existing Client": 20, "Corporate Reference": 18, "Walk-in": 12, "Digital": 10, "Other": 8}.get(lead_source, 8)
 lead_score += {"Prospect": 10, "Qualified": 25, "Proposal Shared": 45, "Negotiation": 65, "Converted": 100}.get(lead_stage, 0)
@@ -540,151 +606,231 @@ st.markdown("")
 # TABS
 # =========================================================
 tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
-    "🎯 ULTRA Dashboard",
-    "📞 Lead Master",
-    "📂 Client Master Upload",
-    "👥 Client Segmentation",
+    "🎯 Dashboard",
+    "📞 Lead CRM V2",
+    "👥 Client CRM V2",
     "📈 SIP Proposal",
     "🏖 Retirement",
     "🛡 Protection",
     "🏦 EMI + Tax",
     "🏆 RM Leaderboard",
-    "🎯 Targets + Reports",
-    "🧾 Final ULTRA Summary"
+    "📂 CSV Upload",
+    "📊 MIS Reports",
+    "🧾 Final Summary"
 ])
 
 # =========================================================
 # TAB 1 - DASHBOARD
 # =========================================================
 with tab1:
-    st.markdown('<div class="section-title">ULTRA PRO Business Dashboard</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">ULTRA PRO V2 Business Dashboard</div>', unsafe_allow_html=True)
 
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Lead Temperature", lead_temperature)
-    c2.metric("Conversion Probability", conversion_probability)
-    c3.metric("Retirement SIP", format_inr(retirement_sip))
-    c4.metric("Protection Gap", format_inr(life_cover_gap + health_cover_gap))
+    total_leads = len(st.session_state.lead_db)
+    total_clients = len(st.session_state.client_db)
+    hot_leads = len(st.session_state.lead_db[st.session_state.lead_db["Lead Temperature"] == "🔥 Hot Lead"])
+    total_client_sip = st.session_state.client_db["Monthly SIP"].sum() if len(st.session_state.client_db) > 0 else 0
+
+    d1, d2, d3, d4 = st.columns(4)
+    d1.metric("Total Leads", total_leads)
+    d2.metric("Total Clients", total_clients)
+    d3.metric("Hot Leads", hot_leads)
+    d4.metric("Client Book SIP", format_inr(total_client_sip))
 
     dash_df = pd.DataFrame({
         "Score": [lead_score, sip_conversion_score, cross_sell_score, risk_score]
     }, index=["Lead", "SIP", "Cross-Sell", "Risk"])
     st.bar_chart(dash_df, use_container_width=True)
 
-    overview_df = pd.DataFrame({
-        "Metric": [
-            "Monthly Income", "Monthly Expenses", "Monthly Surplus", "Existing SIP",
-            "Net Worth", "Client Segment", "Risk Category"
-        ],
-        "Value": [
-            format_inr(monthly_income), format_inr(monthly_expenses), format_inr(monthly_surplus),
-            format_inr(existing_sip), format_inr(net_worth), client_segment, derived_risk_category
-        ]
-    })
-    st.dataframe(overview_df, use_container_width=True, hide_index=True)
+    pipeline_summary = st.session_state.lead_db.groupby("Lead Stage").size().reset_index(name="Count")
+    if len(pipeline_summary) > 0:
+        st.markdown("### 📌 Lead Pipeline Summary")
+        st.dataframe(pipeline_summary, use_container_width=True, hide_index=True)
 
 # =========================================================
-# TAB 2 - LEAD MASTER
+# TAB 2 - LEAD CRM V2
 # =========================================================
 with tab2:
-    st.markdown('<div class="section-title">Lead Master Entry</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Lead CRM V2 (Add • Search • Filter • Delete)</div>', unsafe_allow_html=True)
 
-    lead_master_df = pd.DataFrame({
-        "Field": [
-            "Advisor / MFD", "RM", "Meeting Type", "Lead Source", "Lead Stage",
-            "Follow-up Status", "Days Since Last Meeting", "Client Name", "Mobile",
-            "City", "Lead Score", "Lead Temperature", "Conversion Probability"
-        ],
-        "Value": [
-            advisor_name, rm_name, meeting_type, lead_source, lead_stage,
-            follow_up_status, days_since_last_meeting, client_name, mobile_no,
-            city_name, lead_score, lead_temperature, conversion_probability
+    st.markdown("### ➕ Add New Lead")
+    l1, l2, l3, l4 = st.columns(4)
+    with l1:
+        new_lead_name = st.text_input("Lead Name", key="new_lead_name")
+    with l2:
+        new_lead_mobile = st.text_input("Lead Mobile", key="new_lead_mobile")
+    with l3:
+        new_lead_city = st.text_input("Lead City", key="new_lead_city", value="Bengaluru")
+    with l4:
+        new_lead_source = st.selectbox("Lead Source", ["Referral", "Walk-in", "Existing Client", "Digital", "Corporate Reference", "Other"], key="new_lead_source")
+
+    l5, l6, l7, l8 = st.columns(4)
+    with l5:
+        new_lead_stage = st.selectbox("Lead Stage", ["Prospect", "Qualified", "Proposal Shared", "Negotiation", "Converted"], key="new_lead_stage")
+    with l6:
+        new_followup = st.selectbox("Follow-up Status", ["Pending", "Today", "This Week", "Completed"], key="new_followup")
+    with l7:
+        new_income = st.number_input("Monthly Income (₹)", min_value=0, max_value=5000000, value=50000, step=5000, key="new_income")
+    with l8:
+        new_surplus = st.number_input("Monthly Surplus (₹)", min_value=-500000, max_value=5000000, value=10000, step=5000, key="new_surplus")
+
+    if st.button("Add Lead"):
+        temp_score = 0
+        temp_score += {"Referral": 25, "Existing Client": 20, "Corporate Reference": 18, "Walk-in": 12, "Digital": 10, "Other": 8}.get(new_lead_source, 8)
+        temp_score += {"Prospect": 10, "Qualified": 25, "Proposal Shared": 45, "Negotiation": 65, "Converted": 100}.get(new_lead_stage, 0)
+        temp_score += {"Completed": 10, "Today": 8, "This Week": 5, "Pending": 2}.get(new_followup, 2)
+        if new_surplus >= 30000:
+            temp_score += 20
+        elif new_surplus >= 15000:
+            temp_score += 14
+        elif new_surplus > 0:
+            temp_score += 8
+        else:
+            temp_score += 2
+        temp_score = max(min(temp_score, 100), 0)
+
+        new_row = pd.DataFrame([{
+            "Lead ID": next_lead_id(),
+            "Date": datetime.now().strftime("%Y-%m-%d"),
+            "Client Name": new_lead_name if new_lead_name else "Unnamed Lead",
+            "Mobile": new_lead_mobile if new_lead_mobile else "",
+            "City": new_lead_city,
+            "Lead Source": new_lead_source,
+            "Lead Stage": new_lead_stage,
+            "Follow-up Status": new_followup,
+            "Monthly Income": new_income,
+            "Monthly Surplus": new_surplus,
+            "Lead Score": temp_score,
+            "Lead Temperature": get_lead_temperature(temp_score)
+        }])
+
+        st.session_state.lead_db = pd.concat([st.session_state.lead_db, new_row], ignore_index=True)
+        st.success("Lead added successfully.")
+
+    st.markdown("---")
+    st.markdown("### 🔎 Search / Filter Leads")
+
+    s1, s2 = st.columns(2)
+    with s1:
+        lead_search = st.text_input("Search by Name / Mobile / City", key="lead_search")
+    with s2:
+        stage_filter = st.selectbox("Filter by Lead Stage", ["All", "Prospect", "Qualified", "Proposal Shared", "Negotiation", "Converted"], key="stage_filter")
+
+    lead_view = st.session_state.lead_db.copy()
+
+    if lead_search:
+        search_lower = lead_search.lower()
+        lead_view = lead_view[
+            lead_view["Client Name"].astype(str).str.lower().str.contains(search_lower) |
+            lead_view["Mobile"].astype(str).str.lower().str.contains(search_lower) |
+            lead_view["City"].astype(str).str.lower().str.contains(search_lower)
         ]
-    })
 
-    st.dataframe(lead_master_df, use_container_width=True, hide_index=True)
+    if stage_filter != "All":
+        lead_view = lead_view[lead_view["Lead Stage"] == stage_filter]
 
-    lead_csv = lead_master_df.to_csv(index=False).encode("utf-8")
+    st.dataframe(lead_view, use_container_width=True, hide_index=True)
+
     st.download_button(
-        "⬇️ Download Lead Master CSV",
-        data=lead_csv,
-        file_name="freedom_lead_master.csv",
+        "⬇️ Download Leads CSV",
+        data=st.session_state.lead_db.to_csv(index=False).encode("utf-8"),
+        file_name="freedom_leads_v2.csv",
         mime="text/csv"
     )
 
+    st.markdown("---")
+    st.markdown("### 🗑 Delete Lead")
+
+    if len(st.session_state.lead_db) > 0:
+        delete_lead_id = st.selectbox("Select Lead ID to Delete", st.session_state.lead_db["Lead ID"].tolist(), key="delete_lead_id")
+        if st.button("Delete Selected Lead"):
+            st.session_state.lead_db = st.session_state.lead_db[st.session_state.lead_db["Lead ID"] != delete_lead_id].reset_index(drop=True)
+            st.success(f"Lead {delete_lead_id} deleted successfully.")
+    else:
+        st.info("No leads available to delete.")
+
 # =========================================================
-# TAB 3 - CLIENT MASTER UPLOAD
+# TAB 3 - CLIENT CRM V2
 # =========================================================
 with tab3:
-    st.markdown('<div class="section-title">Client Master CSV Upload</div>', unsafe_allow_html=True)
-    st.info("Upload a CSV file of your client master. Example columns: Client Name, Mobile, City, SIP, Income, Segment")
+    st.markdown('<div class="section-title">Client CRM V2 (Add • Search • Delete)</div>', unsafe_allow_html=True)
 
-    uploaded_file = st.file_uploader("Upload Client Master CSV", type=["csv"])
+    st.markdown("### ➕ Add New Client")
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        new_client_name = st.text_input("Client Name", key="new_client_name")
+    with c2:
+        new_client_mobile = st.text_input("Client Mobile", key="new_client_mobile")
+    with c3:
+        new_client_city = st.text_input("Client City", key="new_client_city", value="Bengaluru")
+    with c4:
+        new_client_sip = st.number_input("Monthly SIP (₹)", min_value=0, max_value=5000000, value=5000, step=500, key="new_client_sip")
 
-    if uploaded_file is not None:
-        try:
-            uploaded_df = pd.read_csv(uploaded_file)
-            st.success("CSV uploaded successfully.")
-            st.dataframe(uploaded_df, use_container_width=True)
+    c5, c6, c7 = st.columns(3)
+    with c5:
+        new_client_income = st.number_input("Monthly Income (₹)", min_value=0, max_value=5000000, value=80000, step=5000, key="new_client_income")
+    with c6:
+        new_client_networth = st.number_input("Net Worth (₹)", min_value=0, max_value=500000000, value=1000000, step=50000, key="new_client_networth")
+    with c7:
+        new_client_risk = st.selectbox("Risk Category", ["Conservative", "Balanced", "Aggressive"], key="new_client_risk")
 
-            st.download_button(
-                "⬇️ Download Uploaded CSV Copy",
-                data=uploaded_df.to_csv(index=False).encode("utf-8"),
-                file_name="uploaded_client_master_copy.csv",
-                mime="text/csv"
-            )
-        except Exception as e:
-            st.error(f"Error reading CSV: {e}")
+    if st.button("Add Client"):
+        temp_surplus = max(new_client_income - (new_client_income * 0.6), 0)
+        temp_segment = get_client_segment(new_client_income, temp_surplus, new_client_networth)
+
+        new_client_row = pd.DataFrame([{
+            "Client ID": next_client_id(),
+            "Date": datetime.now().strftime("%Y-%m-%d"),
+            "Client Name": new_client_name if new_client_name else "Unnamed Client",
+            "Mobile": new_client_mobile if new_client_mobile else "",
+            "City": new_client_city,
+            "Segment": temp_segment,
+            "Risk Category": new_client_risk,
+            "Monthly SIP": new_client_sip,
+            "Net Worth": new_client_networth
+        }])
+
+        st.session_state.client_db = pd.concat([st.session_state.client_db, new_client_row], ignore_index=True)
+        st.success("Client added successfully.")
+
+    st.markdown("---")
+    st.markdown("### 🔎 Search Clients")
+
+    client_search = st.text_input("Search by Name / Mobile / City", key="client_search")
+
+    client_view = st.session_state.client_db.copy()
+    if client_search:
+        search_lower = client_search.lower()
+        client_view = client_view[
+            client_view["Client Name"].astype(str).str.lower().str.contains(search_lower) |
+            client_view["Mobile"].astype(str).str.lower().str.contains(search_lower) |
+            client_view["City"].astype(str).str.lower().str.contains(search_lower)
+        ]
+
+    st.dataframe(client_view, use_container_width=True, hide_index=True)
+
+    st.download_button(
+        "⬇️ Download Clients CSV",
+        data=st.session_state.client_db.to_csv(index=False).encode("utf-8"),
+        file_name="freedom_clients_v2.csv",
+        mime="text/csv"
+    )
+
+    st.markdown("---")
+    st.markdown("### 🗑 Delete Client")
+
+    if len(st.session_state.client_db) > 0:
+        delete_client_id = st.selectbox("Select Client ID to Delete", st.session_state.client_db["Client ID"].tolist(), key="delete_client_id")
+        if st.button("Delete Selected Client"):
+            st.session_state.client_db = st.session_state.client_db[st.session_state.client_db["Client ID"] != delete_client_id].reset_index(drop=True)
+            st.success(f"Client {delete_client_id} deleted successfully.")
     else:
-        sample_df = pd.DataFrame({
-            "Client Name": ["Client A", "Client B", "Client C"],
-            "Mobile": ["9999999991", "9999999992", "9999999993"],
-            "City": ["Bengaluru", "Mumbai", "Delhi"],
-            "SIP": [5000, 12000, 25000],
-            "Income": [80000, 150000, 350000],
-            "Segment": ["Emerging", "Growth", "Premium"]
-        })
-        st.dataframe(sample_df, use_container_width=True)
+        st.info("No clients available to delete.")
 
 # =========================================================
-# TAB 4 - CLIENT SEGMENTATION
+# TAB 4 - SIP PROPOSAL
 # =========================================================
 with tab4:
-    st.markdown('<div class="section-title">Client Segmentation Engine</div>', unsafe_allow_html=True)
-
-    seg1, seg2, seg3, seg4 = st.columns(4)
-    seg1.metric("Client Segment", client_segment)
-    seg2.metric("Risk Category", derived_risk_category)
-    seg3.metric("SIP Score", f"{sip_conversion_score}/100")
-    seg4.metric("Cross-Sell Score", f"{cross_sell_score}/100")
-
-    segment_strategy = {
-        "Premium": "Focus on wealth creation, retirement, PMS-style positioning (without mis-selling), family office feel, and premium retention.",
-        "Growth": "Focus on SIP scale-up, goal planning, retirement buckets, tax optimization discussion and protection review.",
-        "Emerging": "Focus on disciplined SIP start, emergency fund, term + health gap, and referral-based trust building.",
-        "Starter": "Focus on budgeting, emergency reserve, small SIP start and long-term habit creation."
-    }
-
-    segment_df = pd.DataFrame({
-        "Area": [
-            "Client Segment",
-            "Suggested Strategy",
-            "Investor Style",
-            "Suggested Allocation"
-        ],
-        "Value": [
-            client_segment,
-            segment_strategy.get(client_segment, "Goal-based planning"),
-            derived_risk_category,
-            f"Equity {suggested_allocation['Equity']}% | Debt {suggested_allocation['Debt']}% | Gold {suggested_allocation['Gold']}% | Cash {suggested_allocation['Cash']}%"
-        ]
-    })
-    st.dataframe(segment_df, use_container_width=True, hide_index=True)
-
-# =========================================================
-# TAB 5 - SIP PROPOSAL
-# =========================================================
-with tab5:
-    st.markdown('<div class="section-title">ULTRA PRO SIP Proposal</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">ULTRA PRO V2 SIP Proposal</div>', unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -721,10 +867,10 @@ with tab5:
         st.dataframe(show_df, use_container_width=True, hide_index=True)
 
 # =========================================================
-# TAB 6 - RETIREMENT
+# TAB 5 - RETIREMENT
 # =========================================================
-with tab6:
-    st.markdown('<div class="section-title">ULTRA PRO Retirement Proposal</div>', unsafe_allow_html=True)
+with tab5:
+    st.markdown('<div class="section-title">ULTRA PRO V2 Retirement Proposal</div>', unsafe_allow_html=True)
 
     r1, r2, r3, r4 = st.columns(4)
     r1.metric("Years to Retirement", f"{years_to_retirement} Years")
@@ -749,9 +895,9 @@ with tab6:
     st.dataframe(ret_df, use_container_width=True, hide_index=True)
 
 # =========================================================
-# TAB 7 - PROTECTION
+# TAB 6 - PROTECTION
 # =========================================================
-with tab7:
+with tab6:
     st.markdown('<div class="section-title">Protection + Cross-Sell Engine</div>', unsafe_allow_html=True)
 
     p1, p2, p3, p4 = st.columns(4)
@@ -770,9 +916,9 @@ with tab7:
     st.bar_chart(protection_df, use_container_width=True)
 
 # =========================================================
-# TAB 8 - EMI + TAX
+# TAB 7 - EMI + TAX
 # =========================================================
-with tab8:
+with tab7:
     st.markdown('<div class="section-title">EMI + Tax Review</div>', unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns(3)
@@ -809,9 +955,9 @@ with tab8:
     tx3.metric("Better Option", best_regime)
 
 # =========================================================
-# TAB 9 - RM LEADERBOARD
+# TAB 8 - RM LEADERBOARD
 # =========================================================
-with tab9:
+with tab8:
     st.markdown('<div class="section-title">RM Leaderboard (Manual Entry)</div>', unsafe_allow_html=True)
 
     rm_df = pd.DataFrame({
@@ -835,42 +981,96 @@ with tab9:
     st.download_button(
         "⬇️ Download RM Leaderboard CSV",
         data=rm_df.to_csv(index=False).encode("utf-8"),
-        file_name="freedom_rm_leaderboard.csv",
+        file_name="freedom_rm_leaderboard_v2.csv",
         mime="text/csv"
     )
 
 # =========================================================
-# TAB 10 - TARGETS + REPORTS
+# TAB 9 - CSV UPLOAD
+# =========================================================
+with tab9:
+    st.markdown('<div class="section-title">Bulk CSV Upload (Leads / Clients)</div>', unsafe_allow_html=True)
+
+    upload_type = st.selectbox("Select Upload Type", ["Lead Master CSV", "Client Master CSV"])
+
+    uploaded_file = st.file_uploader("Upload CSV File", type=["csv"])
+
+    if uploaded_file is not None:
+        try:
+            uploaded_df = pd.read_csv(uploaded_file)
+            st.success("CSV uploaded successfully.")
+            st.dataframe(uploaded_df, use_container_width=True)
+
+            if upload_type == "Lead Master CSV":
+                if st.button("Append to Lead CRM"):
+                    st.session_state.lead_db = pd.concat([st.session_state.lead_db, uploaded_df], ignore_index=True)
+                    st.success("Uploaded data appended to Lead CRM.")
+            else:
+                if st.button("Append to Client CRM"):
+                    st.session_state.client_db = pd.concat([st.session_state.client_db, uploaded_df], ignore_index=True)
+                    st.success("Uploaded data appended to Client CRM.")
+
+        except Exception as e:
+            st.error(f"Error reading CSV: {e}")
+
+# =========================================================
+# TAB 10 - MIS REPORTS
 # =========================================================
 with tab10:
-    st.markdown('<div class="section-title">Monthly Targets + Reports</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">MIS Reports + Download Center</div>', unsafe_allow_html=True)
 
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        monthly_sip_target = st.number_input("Monthly SIP Target (₹)", min_value=10000, max_value=10000000, value=500000, step=10000)
-    with c2:
-        monthly_sip_achieved = st.number_input("SIP Achieved This Month (₹)", min_value=0, max_value=10000000, value=150000, step=10000)
-    with c3:
-        clients_converted = st.number_input("Clients Converted This Month", min_value=0, max_value=1000, value=3, step=1)
+    total_leads = len(st.session_state.lead_db)
+    total_clients = len(st.session_state.client_db)
+    hot_leads = len(st.session_state.lead_db[st.session_state.lead_db["Lead Temperature"] == "🔥 Hot Lead"])
+    total_book_sip = st.session_state.client_db["Monthly SIP"].sum() if len(st.session_state.client_db) > 0 else 0
+    total_book_networth = st.session_state.client_db["Net Worth"].sum() if len(st.session_state.client_db) > 0 else 0
 
-    achievement_pct = safe_ratio(monthly_sip_achieved, monthly_sip_target)
-    target_balance = max(monthly_sip_target - monthly_sip_achieved, 0)
-
-    t1, t2, t3 = st.columns(3)
-    t1.metric("Target", format_inr(monthly_sip_target))
-    t2.metric("Achieved", format_inr(monthly_sip_achieved))
-    t3.metric("Achievement %", f"{achievement_pct:.1f}%")
-
-    target_df = pd.DataFrame({
-        "Metric": ["Monthly SIP Target", "Monthly SIP Achieved", "Balance", "Clients Converted"],
-        "Value": [monthly_sip_target, monthly_sip_achieved, target_balance, clients_converted]
+    mis_df = pd.DataFrame({
+        "Metric": [
+            "Total Leads",
+            "Hot Leads",
+            "Total Clients",
+            "Client Book SIP",
+            "Client Book Net Worth"
+        ],
+        "Value": [
+            total_leads,
+            hot_leads,
+            total_clients,
+            total_book_sip,
+            total_book_networth
+        ]
     })
-    st.dataframe(target_df, use_container_width=True, hide_index=True)
+
+    display_mis_df = mis_df.copy()
+    display_mis_df.loc[display_mis_df["Metric"] == "Client Book SIP", "Value"] = format_inr(total_book_sip)
+    display_mis_df.loc[display_mis_df["Metric"] == "Client Book Net Worth", "Value"] = format_inr(total_book_networth)
+
+    st.dataframe(display_mis_df, use_container_width=True, hide_index=True)
+
+    combined_report = pd.concat([
+        st.session_state.lead_db.assign(Record_Type="Lead"),
+        st.session_state.client_db.assign(Record_Type="Client")
+    ], ignore_index=True, sort=False)
 
     st.download_button(
-        "⬇️ Download Monthly Target Report CSV",
-        data=target_df.to_csv(index=False).encode("utf-8"),
-        file_name="freedom_monthly_target_report.csv",
+        "⬇️ Download Combined MIS CSV",
+        data=combined_report.to_csv(index=False).encode("utf-8"),
+        file_name="freedom_combined_mis_v2.csv",
+        mime="text/csv"
+    )
+
+    st.download_button(
+        "⬇️ Download Lead CRM CSV",
+        data=st.session_state.lead_db.to_csv(index=False).encode("utf-8"),
+        file_name="freedom_lead_crm_v2.csv",
+        mime="text/csv"
+    )
+
+    st.download_button(
+        "⬇️ Download Client CRM CSV",
+        data=st.session_state.client_db.to_csv(index=False).encode("utf-8"),
+        file_name="freedom_client_crm_v2.csv",
         mime="text/csv"
     )
 
@@ -878,9 +1078,8 @@ with tab10:
 # TAB 11 - FINAL SUMMARY
 # =========================================================
 with tab11:
-    st.markdown('<div class="section-title">Final ULTRA PRO Summary</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Final ULTRA PRO V2 Summary</div>', unsafe_allow_html=True)
 
-    # Safe defaults if SIP tab not touched
     try:
         final_goal_name = goal_name
         final_goal_value = inflated_goal_value
@@ -894,40 +1093,34 @@ with tab11:
         final_goal_lumpsum = calculate_lumpsum_required(final_goal_value, goal_return, 10)
         final_total_sip_pitch = existing_sip + final_goal_sip + retirement_sip
 
-    allocation_df = pd.DataFrame({
-        "Asset Class": list(suggested_allocation.keys()),
-        "Suggested Allocation (%)": list(suggested_allocation.values())
-    })
-    st.dataframe(allocation_df, use_container_width=True, hide_index=True)
-
     final_summary_df = pd.DataFrame({
         "Field": [
             "Advisor / MFD", "RM", "Client Name", "City", "Client Segment",
             "Lead Score", "Lead Temperature", "Conversion Probability",
             "Monthly Income", "Monthly Expenses", "Monthly Surplus", "Net Worth",
             "Existing SIP", "Goal", "Goal SIP", "Retirement SIP",
-            "Life Cover Gap", "Health Cover Gap", "Monthly SIP Target", "Monthly SIP Achieved"
+            "Life Cover Gap", "Health Cover Gap", "Lead DB Count", "Client DB Count"
         ],
         "Value": [
             advisor_name, rm_name, client_name, city_name, client_segment,
             lead_score, lead_temperature, conversion_probability,
             format_inr(monthly_income), format_inr(monthly_expenses), format_inr(monthly_surplus), format_inr(net_worth),
             format_inr(existing_sip), final_goal_name, format_inr(final_goal_sip), format_inr(retirement_sip),
-            format_inr(life_cover_gap), format_inr(health_cover_gap), format_inr(monthly_sip_target), format_inr(monthly_sip_achieved)
+            format_inr(life_cover_gap), format_inr(health_cover_gap), len(st.session_state.lead_db), len(st.session_state.client_db)
         ]
     })
 
     st.dataframe(final_summary_df, use_container_width=True, hide_index=True)
 
     summary_text = f"""
-FREEDOM ULTRA PRO SUMMARY
+FREEDOM ULTRA PRO V2 SUMMARY
 
 BUSINESS
 - Advisor / MFD: {advisor_name}
 - RM: {rm_name}
 - Branch: {branch_name}
 
-LEAD
+CURRENT LEAD
 - Meeting Type: {meeting_type}
 - Lead Source: {lead_source}
 - Lead Stage: {lead_stage}
@@ -936,7 +1129,7 @@ LEAD
 - Lead Temperature: {lead_temperature}
 - Conversion Probability: {conversion_probability}
 
-CLIENT
+CURRENT CLIENT
 - Client Name: {client_name}
 - Mobile: {mobile_no}
 - City: {city_name}
@@ -976,13 +1169,15 @@ PROTECTION
 - Health Cover Gap: {format_inr(health_cover_gap)}
 - Emergency Fund Need: {format_inr(recommended_emergency_fund)}
 
-TARGETS
-- Monthly SIP Target: {format_inr(monthly_sip_target)}
-- Monthly SIP Achieved: {format_inr(monthly_sip_achieved)}
-- Achievement %: {achievement_pct:.1f}%
-- Clients Converted: {clients_converted}
+CRM DATABASE
+- Total Leads in CRM: {len(st.session_state.lead_db)}
+- Total Clients in CRM: {len(st.session_state.client_db)}
+
+MIS
+- Client Book SIP: {format_inr(st.session_state.client_db["Monthly SIP"].sum() if len(st.session_state.client_db) > 0 else 0)}
+- Client Book Net Worth: {format_inr(st.session_state.client_db["Net Worth"].sum() if len(st.session_state.client_db) > 0 else 0)}
 """
-    st.text_area("ULTRA PRO Summary", summary_text, height=700)
+    st.text_area("ULTRA PRO V2 Summary", summary_text, height=720)
 
     recommendations = []
     if lead_score >= 75:
@@ -999,9 +1194,10 @@ TARGETS
         recommendations.append(f"Life cover cross-sell opportunity: {format_inr(life_cover_gap)}.")
     if health_cover_gap > 0:
         recommendations.append(f"Health cover cross-sell opportunity: {format_inr(health_cover_gap)}.")
-    recommendations.append("Use CSV downloads for lead master, target report and RM review.")
+    recommendations.append("Use Lead CRM + Client CRM tabs daily for pipeline management.")
+    recommendations.append("Download MIS reports weekly for business review.")
 
-    st.markdown("### ✅ ULTRA PRO Action Plan")
+    st.markdown("### ✅ ULTRA PRO V2 Action Plan")
     for i, rec in enumerate(recommendations, start=1):
         st.write(f"{i}. {rec}")
 
