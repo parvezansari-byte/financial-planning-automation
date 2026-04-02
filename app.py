@@ -5,8 +5,8 @@ import pandas as pd
 # PAGE CONFIG
 # =========================================================
 st.set_page_config(
-    page_title="Freedom MFD Planner",
-    page_icon="💼",
+    page_title="Freedom MFD Sales Planner",
+    page_icon="🚀",
     layout="wide"
 )
 
@@ -28,14 +28,14 @@ st.markdown("""
 .sub-title {
     font-size: 15px;
     color: #475569;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 .brand-bar {
     background: linear-gradient(90deg, #0f172a, #1e3a8a);
     color: white;
     padding: 12px 16px;
     border-radius: 14px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     font-size: 14px;
     font-weight: 600;
 }
@@ -45,10 +45,6 @@ st.markdown("""
     color: #0f172a;
     margin-top: 8px;
     margin-bottom: 10px;
-}
-.small-note {
-    color: #64748b;
-    font-size: 13px;
 }
 .footer-note {
     color: #64748b;
@@ -61,9 +57,9 @@ st.markdown("""
 # =========================================================
 # HEADER
 # =========================================================
-st.markdown('<div class="main-title">💼 Freedom MFD Business Planner</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">Mutual Fund Distributor | Client Onboarding • SIP Proposal • Retirement • Protection • EMI • Tax • Advisor Summary</div>', unsafe_allow_html=True)
-st.markdown('<div class="brand-bar">Freedom Advisory Desk • Goal-Based Planning • SIP First Approach • Client-Centric Recommendations</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">🚀 Freedom MFD Sales Planner</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">Lead Capture • Client Onboarding • SIP Proposal • Retirement • Insurance Cross-Sell • Tax Snapshot • Referral Growth</div>', unsafe_allow_html=True)
+st.markdown('<div class="brand-bar">Freedom Advisory Growth Desk • Goal-Based Sales • SIP First • Client Retention • Referral Engine</div>', unsafe_allow_html=True)
 
 # =========================================================
 # HELPER FUNCTIONS
@@ -132,6 +128,7 @@ def calculate_life_cover(monthly_expense, years_support, liabilities_amt, existi
 def emi_calculator(principal, annual_rate, years):
     n = years * 12
     r = annual_rate / 100 / 12
+
     if n <= 0:
         return 0.0, 0.0, 0.0
     if r == 0:
@@ -245,17 +242,22 @@ def get_allocation(category):
     return allocation_map.get(category, allocation_map["Balanced"])
 
 # =========================================================
-# SIDEBAR - ADVISOR / CLIENT INPUTS
+# SIDEBAR - BUSINESS + CLIENT INPUTS
 # =========================================================
-st.sidebar.header("🏢 Advisor / Client Setup")
+st.sidebar.header("🏢 Freedom MFD Setup")
 
 advisor_name = st.sidebar.text_input("Advisor / MFD Name", "Freedom Advisory")
 branch_name = st.sidebar.text_input("Branch / Location", "Bengaluru")
-client_name = st.sidebar.text_input("Client Name", "Freedom Client")
-mobile_no = st.sidebar.text_input("Client Mobile", "9999999999")
+rm_name = st.sidebar.text_input("Relationship Manager", "Parvez")
+meeting_type = st.sidebar.selectbox("Meeting Type", ["New Lead", "Existing Client Review", "SIP Upgrade", "Retirement Review", "Insurance Review"])
 
 st.sidebar.markdown("---")
-st.sidebar.header("👤 Client Profile")
+st.sidebar.header("👤 Lead / Client Details")
+
+client_name = st.sidebar.text_input("Client Name", "Freedom Client")
+mobile_no = st.sidebar.text_input("Client Mobile", "9999999999")
+city_name = st.sidebar.text_input("City", "Bengaluru")
+lead_source = st.sidebar.selectbox("Lead Source", ["Referral", "Walk-in", "Existing Client", "Digital", "Corporate Reference", "Other"])
 
 age = st.sidebar.number_input("Current Age", min_value=18, max_value=80, value=30, step=1)
 retirement_age = st.sidebar.number_input("Retirement Age", min_value=40, max_value=80, value=60, step=1)
@@ -270,6 +272,8 @@ monthly_expenses = st.sidebar.number_input("Monthly Expenses (₹)", min_value=5
 existing_savings = st.sidebar.number_input("Existing Savings (₹)", min_value=0, max_value=100000000, value=300000, step=10000)
 existing_investments = st.sidebar.number_input("Existing Investments (₹)", min_value=0, max_value=100000000, value=500000, step=10000)
 liabilities = st.sidebar.number_input("Total Liabilities / Loans (₹)", min_value=0, max_value=100000000, value=200000, step=10000)
+
+existing_sip = st.sidebar.number_input("Existing SIP (₹/month)", min_value=0, max_value=500000, value=5000, step=500)
 existing_life_cover = st.sidebar.number_input("Existing Life Cover (₹)", min_value=0, max_value=500000000, value=1000000, step=50000)
 existing_health_cover = st.sidebar.number_input("Existing Health Cover (₹)", min_value=0, max_value=50000000, value=500000, step=50000)
 
@@ -323,112 +327,143 @@ suggested_allocation = get_allocation(derived_risk_category)
 # =========================================================
 # TABS
 # =========================================================
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
-    "🏠 Client Dashboard",
-    "🧾 Onboarding",
-    "🎯 SIP Proposal",
-    "📈 SIP vs Lumpsum",
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs([
+    "🎯 Sales Dashboard",
+    "🧾 Lead Capture",
+    "👤 Client Onboarding",
+    "📈 SIP Proposal",
     "🏖 Retirement Proposal",
-    "🛡 Protection Review",
-    "🏦 EMI & Cashflow",
+    "🛡 Insurance Cross-Sell",
+    "🏦 EMI Review",
     "🧾 Tax Snapshot",
-    "📋 MFD Summary"
+    "🤝 Referral Engine",
+    "📋 Final Sales Summary"
 ])
 
 # =========================================================
-# TAB 1 - CLIENT DASHBOARD
+# TAB 1 - SALES DASHBOARD
 # =========================================================
 with tab1:
-    st.markdown('<div class="section-title">Client Financial Dashboard</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Sales Opportunity Dashboard</div>', unsafe_allow_html=True)
 
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Monthly Income", format_inr(monthly_income))
-    c2.metric("Monthly Expenses", format_inr(monthly_expenses))
-    c3.metric("Monthly Surplus", format_inr(monthly_surplus))
-    c4.metric("Savings Ratio", f"{savings_ratio:.1f}%")
+    d1, d2, d3, d4 = st.columns(4)
+    d1.metric("Monthly Surplus", format_inr(monthly_surplus))
+    d2.metric("Existing SIP", format_inr(existing_sip))
+    d3.metric("Retirement SIP Potential", format_inr(retirement_sip))
+    d4.metric("Life Cover Gap", format_inr(life_cover_gap))
 
-    c5, c6, c7, c8 = st.columns(4)
-    c5.metric("Existing Savings", format_inr(existing_savings))
-    c6.metric("Existing Investments", format_inr(existing_investments))
-    c7.metric("Liabilities", format_inr(liabilities))
-    c8.metric("Net Worth", format_inr(net_worth))
-
-    st.markdown("---")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        health_df = pd.DataFrame({
-            "Metric": [
-                "Savings Ratio",
-                "Expense Ratio",
-                "Emergency Fund Need",
-                "Life Cover Gap",
-                "Health Cover Gap",
-                "Net Worth"
-            ],
-            "Value": [
-                f"{savings_ratio:.1f}%",
-                f"{expense_ratio:.1f}%",
-                format_inr(recommended_emergency_fund),
-                format_inr(life_cover_gap),
-                format_inr(health_cover_gap),
-                format_inr(net_worth)
-            ]
-        })
-        st.dataframe(health_df, use_container_width=True, hide_index=True)
-
-    with col2:
-        cashflow_df = pd.DataFrame({
-            "Amount": [monthly_income, monthly_expenses, max(monthly_surplus, 0)]
-        }, index=["Income", "Expenses", "Surplus"])
-        st.bar_chart(cashflow_df, use_container_width=True)
+    d5, d6, d7, d8 = st.columns(4)
+    d5.metric("Health Cover Gap", format_inr(health_cover_gap))
+    d6.metric("Net Worth", format_inr(net_worth))
+    d7.metric("Risk Score", f"{risk_score}/100")
+    d8.metric("Investor Style", derived_risk_category)
 
     st.markdown("---")
-    r1, r2 = st.columns(2)
-    r1.metric("Risk Score", f"{risk_score}/100")
-    r2.metric("Derived Investor Style", derived_risk_category)
+
+    sales_potential = existing_sip + retirement_sip
+    protection_potential = life_cover_gap + health_cover_gap
+
+    s1, s2, s3 = st.columns(3)
+    s1.metric("Potential SIP Upgrade", format_inr(sales_potential))
+    s2.metric("Protection Opportunity", format_inr(protection_potential))
+    s3.metric("Lead Source", lead_source)
+
+    sales_df = pd.DataFrame({
+        "Amount": [
+            max(monthly_surplus, 0),
+            existing_sip,
+            retirement_sip,
+            life_cover_gap,
+            health_cover_gap
+        ]
+    }, index=[
+        "Monthly Surplus",
+        "Existing SIP",
+        "Retirement SIP",
+        "Life Cover Gap",
+        "Health Cover Gap"
+    ])
+    st.bar_chart(sales_df, use_container_width=True)
 
 # =========================================================
-# TAB 2 - ONBOARDING
+# TAB 2 - LEAD CAPTURE
 # =========================================================
 with tab2:
+    st.markdown('<div class="section-title">Lead Capture Sheet</div>', unsafe_allow_html=True)
+
+    lead_df = pd.DataFrame({
+        "Field": [
+            "Meeting Type",
+            "Lead Source",
+            "Advisor / MFD",
+            "Relationship Manager",
+            "Branch / Location",
+            "Client Name",
+            "Mobile Number",
+            "City",
+            "Age",
+            "Declared Risk Profile"
+        ],
+        "Value": [
+            meeting_type,
+            lead_source,
+            advisor_name,
+            rm_name,
+            branch_name,
+            client_name,
+            mobile_no,
+            city_name,
+            age,
+            risk_profile
+        ]
+    })
+
+    st.dataframe(lead_df, use_container_width=True, hide_index=True)
+
+    st.info("Use this as your first-level lead qualification page during prospect meetings.")
+
+# =========================================================
+# TAB 3 - CLIENT ONBOARDING
+# =========================================================
+with tab3:
     st.markdown('<div class="section-title">Client Onboarding Snapshot</div>', unsafe_allow_html=True)
 
     onboarding_df = pd.DataFrame({
         "Field": [
-            "Advisor / MFD",
-            "Branch / Location",
             "Client Name",
-            "Client Mobile",
+            "Mobile",
+            "City",
             "Age",
             "Retirement Age",
             "Dependents",
-            "Declared Risk Profile",
-            "Derived Investor Style"
+            "Monthly Income",
+            "Monthly Expenses",
+            "Monthly Surplus",
+            "Savings Ratio",
+            "Existing SIP"
         ],
         "Value": [
-            advisor_name,
-            branch_name,
             client_name,
             mobile_no,
+            city_name,
             age,
             retirement_age,
             dependents,
-            risk_profile,
-            derived_risk_category
+            format_inr(monthly_income),
+            format_inr(monthly_expenses),
+            format_inr(monthly_surplus),
+            f"{savings_ratio:.1f}%",
+            format_inr(existing_sip)
         ]
     })
 
     st.dataframe(onboarding_df, use_container_width=True, hide_index=True)
 
-    st.info("Use this section as a first-meeting onboarding sheet before proposal discussion.")
-
 # =========================================================
-# TAB 3 - SIP PROPOSAL
+# TAB 4 - SIP PROPOSAL
 # =========================================================
-with tab3:
-    st.markdown('<div class="section-title">Goal-Based SIP Proposal</div>', unsafe_allow_html=True)
+with tab4:
+    st.markdown('<div class="section-title">Goal-Based SIP Sales Proposal</div>', unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
 
@@ -455,21 +490,18 @@ with tab3:
     goal_lumpsum = calculate_lumpsum_required(inflated_goal_value, goal_return, goal_years)
 
     g1, g2, g3, g4 = st.columns(4)
-    g1.metric("Current Cost", format_inr(current_goal_cost))
+    g1.metric("Current Goal Cost", format_inr(current_goal_cost))
     g2.metric("Future Goal Value", format_inr(inflated_goal_value))
-    g3.metric("Monthly SIP Needed", format_inr(goal_sip))
+    g3.metric("Required Goal SIP", format_inr(goal_sip))
     g4.metric("Lumpsum Needed Today", format_inr(goal_lumpsum))
 
+    total_sip_pitch = existing_sip + goal_sip + retirement_sip
+
     st.markdown("---")
-
-    if monthly_surplus > 0:
-        sip_affordability = safe_ratio(goal_sip, monthly_surplus)
-    else:
-        sip_affordability = 0.0
-
-    p1, p2 = st.columns(2)
-    p1.metric("SIP as % of Monthly Surplus", f"{sip_affordability:.1f}%")
-    p2.metric("Available Monthly Surplus", format_inr(max(monthly_surplus, 0)))
+    p1, p2, p3 = st.columns(3)
+    p1.metric("Current SIP", format_inr(existing_sip))
+    p2.metric("Suggested Additional Goal SIP", format_inr(goal_sip))
+    p3.metric("Total SIP Pitch (incl. retirement)", format_inr(total_sip_pitch))
 
     years_list = list(range(1, goal_years + 1))
     projected_values = [future_value_with_inflation(current_goal_cost, inflation_rate, y) for y in years_list]
@@ -488,57 +520,16 @@ with tab3:
         st.dataframe(show_df, use_container_width=True, hide_index=True)
 
 # =========================================================
-# TAB 4 - SIP VS LUMPSUM
-# =========================================================
-with tab4:
-    st.markdown('<div class="section-title">SIP vs Lumpsum Comparison</div>', unsafe_allow_html=True)
-
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        target_corpus = st.number_input("Target Corpus (₹)", min_value=10000, max_value=500000000, value=5000000, step=50000)
-    with col2:
-        invest_years = st.slider("Investment Horizon (Years)", 1, 40, 15)
-    with col3:
-        invest_return = st.slider("Expected Return (%)", 1, 20, 12, key="compare_return")
-
-    sip_needed = calculate_sip(target_corpus, invest_return, invest_years)
-    lumpsum_needed = calculate_lumpsum_required(target_corpus, invest_return, invest_years)
-
-    s1, s2, s3 = st.columns(3)
-    s1.metric("Target Corpus", format_inr(target_corpus))
-    s2.metric("Monthly SIP", format_inr(sip_needed))
-    s3.metric("Lumpsum Today", format_inr(lumpsum_needed))
-
-    year_range = list(range(1, invest_years + 1))
-    sip_growth = [future_value_of_sip(sip_needed, invest_return, y) for y in year_range]
-    lumpsum_growth = [future_value_of_lumpsum(lumpsum_needed, invest_return, y) for y in year_range]
-
-    compare_df = pd.DataFrame({
-        "Year": year_range,
-        "SIP Future Value": sip_growth,
-        "Lumpsum Future Value": lumpsum_growth
-    })
-
-    c1, c2 = st.columns(2)
-    with c1:
-        st.line_chart(compare_df.set_index("Year"), use_container_width=True)
-    with c2:
-        show_df = compare_df.copy()
-        show_df["SIP Future Value"] = show_df["SIP Future Value"].apply(format_inr)
-        show_df["Lumpsum Future Value"] = show_df["Lumpsum Future Value"].apply(format_inr)
-        st.dataframe(show_df, use_container_width=True, hide_index=True)
-
-# =========================================================
 # TAB 5 - RETIREMENT PROPOSAL
 # =========================================================
 with tab5:
-    st.markdown('<div class="section-title">Retirement Proposal</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Retirement Sales Proposal</div>', unsafe_allow_html=True)
 
     r1, r2, r3, r4 = st.columns(4)
     r1.metric("Years to Retirement", f"{years_to_retirement} Years")
     r2.metric("Expense at Retirement", format_inr(expense_at_retirement))
-    r3.metric("Corpus Needed", format_inr(ret_corpus))
-    r4.metric("Retirement SIP", format_inr(retirement_sip))
+    r3.metric("Retirement Corpus Needed", format_inr(ret_corpus))
+    r4.metric("Retirement SIP Pitch", format_inr(retirement_sip))
 
     st.markdown("---")
 
@@ -547,9 +538,7 @@ with tab5:
             "Current Age",
             "Retirement Age",
             "Life Expectancy",
-            "Years to Retirement",
-            "Years Post Retirement",
-            "Current Assets",
+            "Current Total Assets",
             "Future Value of Existing Assets",
             "Additional Corpus Needed",
             "Retirement SIP Required"
@@ -558,8 +547,6 @@ with tab5:
             age,
             retirement_age,
             life_expectancy,
-            years_to_retirement,
-            years_post_retirement,
             format_inr(current_total_assets),
             format_inr(future_existing_assets),
             format_inr(additional_corpus_needed),
@@ -573,20 +560,20 @@ with tab5:
     with c2:
         corpus_df = pd.DataFrame({
             "Amount": [future_existing_assets, additional_corpus_needed]
-        }, index=["Existing Asset Future Value", "New Corpus Required"])
+        }, index=["Existing Asset FV", "New Retirement Corpus"])
         st.bar_chart(corpus_df, use_container_width=True)
 
 # =========================================================
-# TAB 6 - PROTECTION REVIEW
+# TAB 6 - INSURANCE CROSS-SELL
 # =========================================================
 with tab6:
-    st.markdown('<div class="section-title">Protection Review (Insurance Need Analysis)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Insurance Cross-Sell Opportunity</div>', unsafe_allow_html=True)
 
     i1, i2, i3, i4 = st.columns(4)
     i1.metric("Recommended Life Cover", format_inr(recommended_life_cover))
     i2.metric("Existing Life Cover", format_inr(existing_life_cover))
     i3.metric("Life Cover Gap", format_inr(life_cover_gap))
-    i4.metric("Emergency Fund Target", format_inr(recommended_emergency_fund))
+    i4.metric("Emergency Fund Need", format_inr(recommended_emergency_fund))
 
     i5, i6, i7 = st.columns(3)
     i5.metric("Recommended Health Cover", format_inr(recommended_health_cover))
@@ -594,14 +581,13 @@ with tab6:
     i7.metric("Health Cover Gap", format_inr(health_cover_gap))
 
     protection_df = pd.DataFrame({
-        "Protection Area": [
-            "Life Insurance Need",
+        "Opportunity": [
+            "Life Cover Requirement",
             "Existing Life Cover",
             "Life Cover Gap",
-            "Health Cover Suggestion",
+            "Health Cover Requirement",
             "Existing Health Cover",
-            "Health Cover Gap",
-            "Emergency Fund Need"
+            "Health Cover Gap"
         ],
         "Amount": [
             format_inr(recommended_life_cover),
@@ -609,19 +595,18 @@ with tab6:
             format_inr(life_cover_gap),
             format_inr(recommended_health_cover),
             format_inr(existing_health_cover),
-            format_inr(health_cover_gap),
-            format_inr(recommended_emergency_fund)
+            format_inr(health_cover_gap)
         ]
     })
     st.dataframe(protection_df, use_container_width=True, hide_index=True)
 
-    st.warning("Protection recommendations are indicative and must be aligned with policy features, underwriting, age, disclosures, exclusions and actual client suitability.")
+    st.warning("Use this page only for need-based discussion and proper suitability. Final policy recommendation must follow underwriting and disclosure norms.")
 
 # =========================================================
-# TAB 7 - EMI & CASHFLOW
+# TAB 7 - EMI REVIEW
 # =========================================================
 with tab7:
-    st.markdown('<div class="section-title">EMI & Cashflow Review</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">EMI & Cashflow Pressure Review</div>', unsafe_allow_html=True)
 
     e1, e2, e3 = st.columns(3)
     with e1:
@@ -633,29 +618,30 @@ with tab7:
 
     emi, total_interest, total_payment = emi_calculator(loan_amount, loan_rate, loan_years)
     emi_to_income = safe_ratio(emi, monthly_income)
+    post_emi_surplus = monthly_surplus - emi
 
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Monthly EMI", format_inr(emi))
-    m2.metric("Total Interest", format_inr(total_interest))
-    m3.metric("Total Payment", format_inr(total_payment))
-    m4.metric("EMI / Income Ratio", f"{emi_to_income:.1f}%")
+    em1, em2, em3, em4 = st.columns(4)
+    em1.metric("Monthly EMI", format_inr(emi))
+    em2.metric("EMI / Income Ratio", f"{emi_to_income:.1f}%")
+    em3.metric("Post EMI Surplus", format_inr(post_emi_surplus))
+    em4.metric("Total Interest", format_inr(total_interest))
 
     emi_df = pd.DataFrame({
         "Amount": [loan_amount, total_interest, total_payment]
-    }, index=["Principal", "Total Interest", "Total Payment"])
+    }, index=["Principal", "Interest", "Total Payment"])
     st.bar_chart(emi_df, use_container_width=True)
 
 # =========================================================
 # TAB 8 - TAX SNAPSHOT
 # =========================================================
 with tab8:
-    st.markdown('<div class="section-title">Tax Snapshot (Indicative)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Tax Snapshot (Indicative Sales Discussion)</div>', unsafe_allow_html=True)
 
     t1, t2 = st.columns(2)
     with t1:
         tax_annual_income = st.number_input("Annual Gross Income (₹)", min_value=0, max_value=50000000, value=int(annual_income), step=50000)
     with t2:
-        old_regime_deductions = st.number_input("Old Regime Eligible Deductions (₹)", min_value=0, max_value=5000000, value=150000, step=10000)
+        old_regime_deductions = st.number_input("Old Regime Deductions (₹)", min_value=0, max_value=5000000, value=150000, step=10000)
 
     old_taxable, old_tax = tax_regime_old(tax_annual_income, old_regime_deductions)
     new_taxable, new_tax = tax_regime_new(tax_annual_income)
@@ -670,27 +656,53 @@ with tab8:
 
     tax_df = pd.DataFrame({
         "Regime": ["Old Regime", "New Regime"],
-        "Taxable Income": [old_taxable, new_taxable],
         "Estimated Tax": [old_tax, new_tax]
     })
-
-    c1, c2 = st.columns(2)
-    with c1:
-        show_df = tax_df.copy()
-        show_df["Taxable Income"] = show_df["Taxable Income"].apply(format_inr)
-        show_df["Estimated Tax"] = show_df["Estimated Tax"].apply(format_inr)
-        st.dataframe(show_df, use_container_width=True, hide_index=True)
-    with c2:
-        st.bar_chart(tax_df[["Regime", "Estimated Tax"]].set_index("Regime"), use_container_width=True)
-
+    st.bar_chart(tax_df.set_index("Regime"), use_container_width=True)
     st.success(f"Indicative tax difference: {format_inr(tax_saved)}")
-    st.info("This is a basic planning snapshot only. Final tax should be validated with current rules and a qualified CA/tax professional.")
 
 # =========================================================
-# TAB 9 - MFD SUMMARY
+# TAB 9 - REFERRAL ENGINE
 # =========================================================
 with tab9:
-    st.markdown('<div class="section-title">MFD Proposal Summary (Client Meeting Ready)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Referral Conversation Engine</div>', unsafe_allow_html=True)
+
+    referral_target = st.number_input("Referral Target (No. of Referrals)", min_value=1, max_value=100, value=5, step=1)
+    referral_achieved = st.number_input("Referrals Achieved", min_value=0, max_value=100, value=2, step=1)
+    referral_balance = max(referral_target - referral_achieved, 0)
+
+    rf1, rf2, rf3 = st.columns(3)
+    rf1.metric("Referral Target", referral_target)
+    rf2.metric("Referrals Achieved", referral_achieved)
+    rf3.metric("Balance to Target", referral_balance)
+
+    referral_df = pd.DataFrame({
+        "Count": [referral_target, referral_achieved, referral_balance]
+    }, index=["Target", "Achieved", "Balance"])
+    st.bar_chart(referral_df, use_container_width=True)
+
+    referral_script = f"""
+Thank you {client_name} for your trust and support.
+
+At Freedom Advisory, our goal is to help more families start disciplined financial planning through SIPs, protection and long-term wealth creation.
+
+If you know 2-3 friends, family members or colleagues who may benefit from financial planning, I would be grateful for an introduction.
+
+Current Referral Progress:
+- Target: {referral_target}
+- Achieved: {referral_achieved}
+- Balance: {referral_balance}
+
+Your referral can truly help someone begin the right financial journey.
+"""
+
+    st.text_area("Referral Conversation Script", referral_script, height=220)
+
+# =========================================================
+# TAB 10 - FINAL SALES SUMMARY
+# =========================================================
+with tab10:
+    st.markdown('<div class="section-title">Final Freedom MFD Sales Summary</div>', unsafe_allow_html=True)
 
     allocation_df = pd.DataFrame({
         "Asset Class": list(suggested_allocation.keys()),
@@ -700,38 +712,48 @@ with tab9:
     st.markdown("### 🎯 Suggested Allocation")
     st.dataframe(allocation_df, use_container_width=True, hide_index=True)
 
+    total_sip_pitch = existing_sip + goal_sip + retirement_sip
+    total_protection_gap = life_cover_gap + health_cover_gap
+
     recommendations = []
 
-    if savings_ratio < 20:
-        recommendations.append("Increase monthly savings ratio to 20%+ through disciplined SIP commitments.")
+    if monthly_surplus > 0:
+        recommendations.append(f"Available monthly surplus of {format_inr(monthly_surplus)} can support structured SIP planning.")
     else:
-        recommendations.append("Current savings discipline is healthy. Continue SIP-led long-term investing.")
+        recommendations.append("Cashflow is tight. Start with emergency reserve and budget correction before aggressive SIP pitch.")
 
-    if goal_sip > 0:
-        recommendations.append(f"Start goal-based SIP of approximately {format_inr(goal_sip)} for {goal_name}.")
-    if retirement_sip > 0:
-        recommendations.append(f"Start/continue retirement SIP of approximately {format_inr(retirement_sip)}.")
+    recommendations.append(f"Current SIP is {format_inr(existing_sip)}. Proposed total SIP opportunity is around {format_inr(total_sip_pitch)}.")
+    recommendations.append(f"Goal-based SIP for {goal_name}: approx {format_inr(goal_sip)} per month.")
+    recommendations.append(f"Retirement SIP opportunity: approx {format_inr(retirement_sip)} per month.")
+
     if life_cover_gap > 0:
-        recommendations.append(f"Review life cover gap of around {format_inr(life_cover_gap)}.")
+        recommendations.append(f"Life cover gap exists: approx {format_inr(life_cover_gap)}.")
     if health_cover_gap > 0:
-        recommendations.append(f"Review health cover enhancement of around {format_inr(health_cover_gap)}.")
+        recommendations.append(f"Health cover enhancement opportunity: approx {format_inr(health_cover_gap)}.")
+
     recommendations.append(f"Indicative tax comparison currently favors {best_regime}.")
-    recommendations.append(f"Recommended investor positioning appears {derived_risk_category}, subject to suitability and risk profiling norms.")
+    recommendations.append(f"Derived investor style: {derived_risk_category}. Recommended allocation should follow suitability and product selection norms.")
+    recommendations.append("Request at least 2-3 quality referrals after successful proposal discussion.")
 
     summary_text = f"""
-FREEDOM MFD CLIENT PROPOSAL SUMMARY
+FREEDOM MFD SALES SUMMARY
 
-Advisor / MFD: {advisor_name}
-Branch / Location: {branch_name}
+BUSINESS DETAILS
+- Advisor / MFD: {advisor_name}
+- Relationship Manager: {rm_name}
+- Branch / Location: {branch_name}
+- Meeting Type: {meeting_type}
 
-CLIENT DETAILS
+LEAD DETAILS
 - Client Name: {client_name}
 - Mobile: {mobile_no}
+- City: {city_name}
+- Lead Source: {lead_source}
+
+CLIENT PROFILE
 - Age: {age}
 - Retirement Age: {retirement_age}
 - Dependents: {dependents}
-
-RISK PROFILE
 - Declared Risk Profile: {risk_profile}
 - Derived Investor Style: {derived_risk_category}
 - Risk Score: {risk_score}/100
@@ -743,37 +765,44 @@ CASH FLOW
 - Savings Ratio: {savings_ratio:.1f}%
 - Net Worth: {format_inr(net_worth)}
 
-GOAL SIP PROPOSAL
+SIP SALES OPPORTUNITY
+- Existing SIP: {format_inr(existing_sip)}
 - Goal: {goal_name}
 - Current Goal Cost: {format_inr(current_goal_cost)}
 - Future Goal Value: {format_inr(inflated_goal_value)}
-- Monthly SIP Required: {format_inr(goal_sip)}
-- Lumpsum Required Today: {format_inr(goal_lumpsum)}
+- Goal SIP Required: {format_inr(goal_sip)}
+- Retirement SIP Opportunity: {format_inr(retirement_sip)}
+- Total SIP Pitch: {format_inr(total_sip_pitch)}
 
 RETIREMENT PROPOSAL
 - Retirement Corpus Needed: {format_inr(ret_corpus)}
 - Future Value of Existing Assets: {format_inr(future_existing_assets)}
 - Additional Corpus Needed: {format_inr(additional_corpus_needed)}
-- Retirement SIP Required: {format_inr(retirement_sip)}
 
-PROTECTION REVIEW
+PROTECTION CROSS-SELL
 - Recommended Life Cover: {format_inr(recommended_life_cover)}
 - Existing Life Cover: {format_inr(existing_life_cover)}
 - Life Cover Gap: {format_inr(life_cover_gap)}
 - Recommended Health Cover: {format_inr(recommended_health_cover)}
 - Existing Health Cover: {format_inr(existing_health_cover)}
 - Health Cover Gap: {format_inr(health_cover_gap)}
-- Emergency Fund Need: {format_inr(recommended_emergency_fund)}
+- Total Protection Opportunity: {format_inr(total_protection_gap)}
 
 EMI REVIEW
 - Loan Amount: {format_inr(loan_amount)}
 - EMI: {format_inr(emi)}
 - EMI / Income Ratio: {emi_to_income:.1f}%
+- Post EMI Surplus: {format_inr(post_emi_surplus)}
 
 TAX SNAPSHOT
 - Old Regime Tax: {format_inr(old_tax)}
 - New Regime Tax: {format_inr(new_tax)}
 - Better Regime (Indicative): {best_regime}
+
+REFERRAL STATUS
+- Referral Target: {referral_target}
+- Referrals Achieved: {referral_achieved}
+- Balance: {referral_balance}
 
 SUGGESTED ALLOCATION
 - Equity: {suggested_allocation.get("Equity", 0)}%
@@ -782,9 +811,9 @@ SUGGESTED ALLOCATION
 - Cash: {suggested_allocation.get("Cash", 0)}%
 """
 
-    st.text_area("Freedom Proposal Summary", summary_text, height=500)
+    st.text_area("Freedom Sales Summary", summary_text, height=560)
 
-    st.markdown("### ✅ Advisor Recommendations")
+    st.markdown("### ✅ Action Plan for This Client")
     for idx, rec in enumerate(recommendations, start=1):
         st.write(f"{idx}. {rec}")
 
@@ -793,6 +822,6 @@ SUGGESTED ALLOCATION
 # =========================================================
 st.markdown("---")
 st.markdown(
-    '<div class="footer-note">⚠️ Disclaimer: This tool is for educational and business presentation purposes only. It is not investment advice, insurance advice, tax advice, or a regulated recommendation. Final suitability must be based on full risk profiling, product suitability, disclosure standards, taxation, underwriting, and applicable regulatory requirements.</div>',
+    '<div class="footer-note">⚠️ Disclaimer: This tool is for educational, business presentation and client discussion purposes only. It is not investment advice, insurance advice, tax advice or a regulated recommendation. Final suitability must be based on complete risk profiling, product suitability, disclosures, underwriting, taxation and applicable regulatory requirements.</div>',
     unsafe_allow_html=True
 )
