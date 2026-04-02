@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
@@ -84,7 +83,6 @@ existing_investments = st.sidebar.number_input("Existing Investments (₹)", min
 liabilities = st.sidebar.number_input("Total Liabilities / Loans (₹)", min_value=0, max_value=100000000, value=200000, step=10000)
 
 dependents = st.sidebar.number_input("Number of Dependents", min_value=0, max_value=10, value=2)
-
 risk_profile = st.sidebar.selectbox("Risk Profile", ["Low", "Moderate", "High"])
 
 st.sidebar.markdown("---")
@@ -158,11 +156,9 @@ with tab1:
 
     st.markdown("---")
 
-    colA, colB = st.columns([1.1, 1])
+    colA, colB = st.columns(2)
 
     with colA:
-        st.markdown("### 📌 Financial Health Summary")
-
         if savings_ratio >= 30:
             savings_status = "Excellent"
         elif savings_ratio >= 20:
@@ -189,26 +185,16 @@ with tab1:
             ]
         })
 
+        st.markdown("### 📌 Financial Health Summary")
         st.dataframe(summary_df, use_container_width=True, hide_index=True)
         st.info(f"📍 Savings Health Status: **{savings_status}**")
 
     with colB:
         st.markdown("### 📈 Monthly Cash Flow")
         cashflow_df = pd.DataFrame({
-            "Category": ["Income", "Expenses", "Surplus"],
             "Amount": [monthly_income, monthly_expenses, max(monthly_surplus, 0)]
-        })
-
-        fig_cash = px.bar(
-            cashflow_df,
-            x="Category",
-            y="Amount",
-            text="Amount",
-            title="Monthly Cash Flow Overview"
-        )
-        fig_cash.update_traces(texttemplate='₹%{text:,.0f}', textposition='outside')
-        fig_cash.update_layout(height=420)
-        st.plotly_chart(fig_cash, use_container_width=True)
+        }, index=["Income", "Expenses", "Surplus"])
+        st.bar_chart(cashflow_df)
 
 # =========================================================
 # TAB 2 - GOAL PLANNER
@@ -250,19 +236,15 @@ with tab2:
         "Projected Goal Value": growth_values
     })
 
-    colx, coly = st.columns([1, 1])
+    colx, coly = st.columns(2)
 
     with colx:
-        fig_goal = px.line(
-            goal_growth_df,
-            x="Year",
-            y="Projected Goal Value",
-            markers=True,
-            title=f"{goal_name} Value Growth with Inflation"
-        )
-        st.plotly_chart(fig_goal, use_container_width=True)
+        st.markdown(f"### 📈 {goal_name} Growth")
+        chart_df = goal_growth_df.set_index("Year")
+        st.line_chart(chart_df)
 
     with coly:
+        st.markdown("### 📋 Goal Projection Table")
         st.dataframe(goal_growth_df.style.format({"Projected Goal Value": "₹{:,.0f}"}), use_container_width=True)
 
 # =========================================================
@@ -279,7 +261,7 @@ with tab3:
 
     st.markdown("---")
 
-    colr1, colr2 = st.columns([1.1, 1])
+    colr1, colr2 = st.columns(2)
 
     with colr1:
         retirement_summary = pd.DataFrame({
@@ -310,18 +292,11 @@ with tab3:
         st.dataframe(retirement_summary, use_container_width=True, hide_index=True)
 
     with colr2:
+        st.markdown("### 📊 Retirement Corpus Split")
         corpus_df = pd.DataFrame({
-            "Source": ["Future Existing Assets", "Additional Corpus Needed"],
             "Amount": [future_existing_assets, additional_corpus_needed]
-        })
-
-        fig_corpus = px.pie(
-            corpus_df,
-            names="Source",
-            values="Amount",
-            title="Retirement Corpus Composition"
-        )
-        st.plotly_chart(fig_corpus, use_container_width=True)
+        }, index=["Future Existing Assets", "Additional Corpus Needed"])
+        st.bar_chart(corpus_df)
 
 # =========================================================
 # TAB 4 - INSURANCE NEEDS
@@ -371,42 +346,25 @@ with tab5:
 
     alloc = allocation_map[risk_profile]
 
-    coln1, coln2 = st.columns([1, 1])
+    coln1, coln2 = st.columns(2)
 
     with coln1:
+        st.markdown("### 📈 Assets vs Liabilities")
         networth_df = pd.DataFrame({
-            "Category": ["Savings", "Investments", "Liabilities"],
             "Amount": [existing_savings, existing_investments, liabilities]
-        })
-
-        fig_net = px.bar(
-            networth_df,
-            x="Category",
-            y="Amount",
-            text="Amount",
-            title="Assets vs Liabilities"
-        )
-        fig_net.update_traces(texttemplate='₹%{text:,.0f}', textposition='outside')
-        fig_net.update_layout(height=420)
-        st.plotly_chart(fig_net, use_container_width=True)
+        }, index=["Savings", "Investments", "Liabilities"])
+        st.bar_chart(networth_df)
 
     with coln2:
+        st.markdown("### 📋 Suggested Allocation")
         alloc_df = pd.DataFrame({
             "Asset Class": list(alloc.keys()),
             "Allocation (%)": list(alloc.values())
         })
+        st.dataframe(alloc_df, use_container_width=True, hide_index=True)
 
-        fig_alloc = px.pie(
-            alloc_df,
-            names="Asset Class",
-            values="Allocation (%)",
-            title=f"Suggested Allocation ({risk_profile} Risk)"
-        )
-        st.plotly_chart(fig_alloc, use_container_width=True)
-
-    st.markdown("---")
-    st.markdown("### 📋 Suggested Asset Allocation Table")
-    st.dataframe(alloc_df, use_container_width=True, hide_index=True)
+        alloc_chart_df = alloc_df.set_index("Asset Class")
+        st.bar_chart(alloc_chart_df)
 
 # ---------------- FOOTER ----------------
 st.markdown("---")
