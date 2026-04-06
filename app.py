@@ -1,7 +1,7 @@
 # app.py
 # ============================================================
-# FINAL Freedom ULTRA PRO V10 ULTIMATE
-# CLIENT MEETING MASTERPIECE VERSION
+# FINAL Freedom ULTRA PRO V10.1 ULTIMATE
+# CLIENT MEETING MASTERPIECE VERSION + OVERALL CASHFLOW MASTER
 # Single-file Streamlit app | No Sidebar | Premium MFD UI
 # GitHub / Streamlit Cloud Ready
 # Run: streamlit run app.py
@@ -32,7 +32,7 @@ except Exception:
 # PAGE CONFIG
 # ============================================================
 st.set_page_config(
-    page_title="Freedom ULTRA PRO V10 ULTIMATE",
+    page_title="Freedom ULTRA PRO V10.1 ULTIMATE",
     page_icon="💼",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -528,7 +528,7 @@ def build_pdf(df, client_info, advisor_notes):
     normal = styles["BodyText"]
     story = []
 
-    story.append(Paragraph("Freedom ULTRA PRO V10 ULTIMATE - Client Financial Planning Report", title_style))
+    story.append(Paragraph("Freedom ULTRA PRO V10.1 ULTIMATE - Client Financial Planning Report", title_style))
     story.append(Spacer(1, 10))
 
     client_lines = [
@@ -650,12 +650,12 @@ def module_card(title, desc, page_key, tag="Planner"):
 # ============================================================
 st.markdown("""
 <div class="header-hero">
-    <div class="brand-title">💼 Freedom ULTRA PRO V10 ULTIMATE</div>
-    <div class="brand-sub">CLIENT MEETING MASTERPIECE VERSION • Premium MFD Financial Planning Super App • Button UI • No Sidebar • Single File</div>
+    <div class="brand-title">💼 Freedom ULTRA PRO V10.1 ULTIMATE</div>
+    <div class="brand-sub">CLIENT MEETING MASTERPIECE VERSION • Premium MFD Financial Planning Super App • Overall Cashflow Master • Button UI • No Sidebar • Single File</div>
     <div class="badge-row">
         <span class="badge-pill">Single-file app.py</span>
         <span class="badge-pill">Premium Dark Luxury UI</span>
-        <span class="badge-pill">Client Presentation Ready</span>
+        <span class="badge-pill">Overall Cashflow Master</span>
         <span class="badge-pill">CSV + PDF Report Center</span>
     </div>
 </div>
@@ -665,22 +665,25 @@ st.markdown("""
 # TOP ACTION BAR
 # ============================================================
 st.markdown('<div class="action-bar">', unsafe_allow_html=True)
-a1, a2, a3, a4, a5 = st.columns([1.3, 1.4, 1.4, 1.3, 1.6])
+a1, a2, a3, a4, a5, a6 = st.columns([1.25, 1.35, 1.45, 1.35, 1.2, 1.6])
 
 with a1:
     if st.button("🏠 Dashboard Home"):
         reroute("Dashboard")
 with a2:
+    if st.button("💵 Overall Cashflow"):
+        reroute("Overall Cashflow Master")
+with a3:
     if st.button("📄 Report Center"):
         reroute("Report Center")
-with a3:
+with a4:
     if st.button("📝 Advisor Notes"):
         reroute("Advisor Notes")
-with a4:
+with a5:
     if st.button("🧹 Clear Report"):
         st.session_state.report_rows = []
         st.success("Report cleared.")
-with a5:
+with a6:
     st.session_state.presentation_mode = st.toggle("🎤 Presentation Mode", value=st.session_state.presentation_mode)
 
 st.markdown('</div>', unsafe_allow_html=True)
@@ -692,16 +695,16 @@ if not st.session_state.presentation_mode:
     st.markdown('<div class="ribbon">', unsafe_allow_html=True)
     c1, c2, c3, c4, c5 = st.columns(5)
     with c1:
-        st.session_state.client_name = st.text_input("Client Name", value=st.session_state.client_name, key="global_name_v10")
+        st.session_state.client_name = st.text_input("Client Name", value=st.session_state.client_name, key="global_name_v101")
     with c2:
-        st.session_state.client_age = st.number_input("Age", min_value=0, max_value=100, value=int(st.session_state.client_age), key="global_age_v10")
+        st.session_state.client_age = st.number_input("Age", min_value=0, max_value=100, value=int(st.session_state.client_age), key="global_age_v101")
     with c3:
-        st.session_state.client_income = st.number_input("Monthly Income (₹)", min_value=0.0, value=float(st.session_state.client_income), step=1000.0, key="global_income_v10")
+        st.session_state.client_income = st.number_input("Monthly Income (₹)", min_value=0.0, value=float(st.session_state.client_income), step=1000.0, key="global_income_v101")
     with c4:
-        st.session_state.client_city = st.text_input("City", value=st.session_state.client_city, key="global_city_v10")
+        st.session_state.client_city = st.text_input("City", value=st.session_state.client_city, key="global_city_v101")
     with c5:
         risk_index = ["Conservative", "Moderate", "Aggressive"].index(st.session_state.client_risk)
-        st.session_state.client_risk = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"], index=risk_index, key="global_risk_v10")
+        st.session_state.client_risk = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"], index=risk_index, key="global_risk_v101")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ============================================================
@@ -729,7 +732,6 @@ page = st.session_state.page
 if page == "Dashboard":
     st.subheader("🏠 Executive Dashboard")
 
-    # Dashboard tabs for more premium feel
     tab1, tab2, tab3 = st.tabs(["📊 Overview", "🎯 Goal Buckets", "🚀 All Modules"])
 
     with tab1:
@@ -764,7 +766,6 @@ if page == "Dashboard":
             st.write(f"**PDF Ready:** {'Yes' if PDF_AVAILABLE else 'No'}")
             st.markdown('</div>', unsafe_allow_html=True)
 
-        # Mini chart
         alloc_df = pd.DataFrame({
             "Asset Class": ["Equity", "Debt", "Gold"],
             "Allocation %": [eq_alloc, debt_alloc, gold_alloc]
@@ -772,6 +773,20 @@ if page == "Dashboard":
         st.markdown('<div class="section-card">', unsafe_allow_html=True)
         st.markdown("### 📈 Allocation Snapshot")
         st.bar_chart(alloc_df.set_index("Asset Class"))
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown('<div class="section-card">', unsafe_allow_html=True)
+        st.markdown("### 💵 Quick Overall Cashflow Access")
+        q1, q2, q3 = st.columns([1.2, 1.2, 4])
+        with q1:
+            if st.button("Open Overall Cashflow Master", key="quick_overall_cf"):
+                reroute("Overall Cashflow Master")
+        with q2:
+            if st.button("Open Cashflow Planner", key="quick_cf_planner"):
+                reroute("Cashflow Planner")
+        with q3:
+            st.info("Use **Overall Cashflow Master** for complete income vs outflow analysis with financial health signal.")
+
         st.markdown('</div>', unsafe_allow_html=True)
 
     with tab2:
@@ -822,6 +837,7 @@ if page == "Dashboard":
 
         modules = [
             ("👤 Client Profile", "Capture client details, liabilities, surplus and risk profile.", "Client Profile", "Client Discovery"),
+            ("💵 Overall Cashflow Master", "Full income vs outflow engine with financial health signal.", "Overall Cashflow Master", "Master Cashflow"),
             ("📈 SIP Calculator", "Monthly SIP projection with yearly table and growth chart.", "SIP Calculator", "Investment Planning"),
             ("💰 Lumpsum Calculator", "One-time investment future value planning.", "Lumpsum Calculator", "Investment Planning"),
             ("💸 SWP Calculator", "Corpus withdrawal sustainability analysis.", "SWP Calculator", "Retirement Income"),
@@ -835,7 +851,7 @@ if page == "Dashboard":
             ("🛡️ Insurance Need", "Life cover and health cover guidance.", "Insurance Planner", "Protection Planning"),
             ("🚨 Emergency Fund", "Emergency reserve gap analysis.", "Emergency Fund", "Protection Planning"),
             ("📊 Net Worth", "Assets vs liabilities dashboard.", "Net Worth", "Wealth Snapshot"),
-            ("💵 Cashflow Planner", "Income, expenses, EMI and savings ratio.", "Cashflow Planner", "Cashflow Planning"),
+            ("💵 Cashflow Planner", "Simple monthly income, expenses, EMI and savings ratio.", "Cashflow Planner", "Cashflow Planning"),
             ("🔥 FIRE Calculator", "Financial freedom target and timeline.", "FIRE Calculator", "Freedom Planning"),
             ("📉 Inflation Calculator", "Future cost impact of inflation.", "Inflation Calculator", "Reality Check"),
             ("📈 Step-up SIP", "Step-up SIP planning with projection table.", "Step-up SIP", "Advanced SIP"),
@@ -846,7 +862,8 @@ if page == "Dashboard":
         ]
 
         idx = 0
-        for _ in range(6):
+        rows_needed = math.ceil(len(modules) / 4)
+        for _ in range(rows_needed):
             cols = st.columns(4)
             for col in cols:
                 if idx < len(modules):
@@ -866,16 +883,16 @@ elif page == "Client Profile":
     col1, col2, col3 = st.columns(3)
     with col1:
         name = st.text_input("Client Name", value=st.session_state.client_name)
-        age = st.number_input("Age", 0, 100, value=int(st.session_state.client_age), key="cp_age_v10")
+        age = st.number_input("Age", 0, 100, value=int(st.session_state.client_age), key="cp_age_v101")
         spouse_age = st.number_input("Spouse Age", 0, 100, value=max(int(st.session_state.client_age)-2, 0))
         dependents = st.number_input("No. of Dependents", 0, 10, value=2)
     with col2:
-        monthly_income = st.number_input("Monthly Income (₹)", 0.0, value=float(st.session_state.client_income), step=1000.0, key="cp_income_v10")
+        monthly_income = st.number_input("Monthly Income (₹)", 0.0, value=float(st.session_state.client_income), step=1000.0, key="cp_income_v101")
         monthly_expense = st.number_input("Monthly Expense (₹)", 0.0, value=float(st.session_state.client_income * 0.7), step=1000.0)
         current_savings = st.number_input("Current Savings / Investments (₹)", 0.0, value=500000.0, step=10000.0)
         liabilities = st.number_input("Total Liabilities (₹)", 0.0, value=1000000.0, step=10000.0)
     with col3:
-        risk = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"], index=["Conservative", "Moderate", "Aggressive"].index(st.session_state.client_risk), key="cp_risk_v10")
+        risk = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"], index=["Conservative", "Moderate", "Aggressive"].index(st.session_state.client_risk), key="cp_risk_v101")
         city = st.text_input("City", value=st.session_state.client_city)
         occupation = st.text_input("Occupation", value="Salaried")
         annual_increment = st.number_input("Expected Annual Income Growth (%)", 0.0, 50.0, value=8.0)
@@ -897,6 +914,112 @@ elif page == "Client Profile":
         {"title": "Dependents", "value": str(dependents)},
         {"title": "Annual Income Growth", "value": f"{annual_increment:.1f}%"},
     ])
+
+# ============================================================
+# OVERALL CASHFLOW MASTER
+# ============================================================
+elif page == "Overall Cashflow Master":
+    back_button()
+    st.subheader("💵 Overall Cashflow Master")
+
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.markdown("### 💼 Income Inputs")
+    i1, i2, i3, i4 = st.columns(4)
+    with i1:
+        salary_income = st.number_input("Salary Income (₹/month)", 0.0, value=float(st.session_state.client_income), step=1000.0)
+    with i2:
+        business_income = st.number_input("Business Income (₹/month)", 0.0, value=0.0, step=1000.0)
+    with i3:
+        rental_income = st.number_input("Rental Income (₹/month)", 0.0, value=0.0, step=1000.0)
+    with i4:
+        other_income = st.number_input("Other Income (₹/month)", 0.0, value=5000.0, step=500.0)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.markdown("### 💸 Outflow Inputs")
+    o1, o2, o3, o4, o5 = st.columns(5)
+    with o1:
+        fixed_exp = st.number_input("Fixed Expenses (₹/month)", 0.0, value=30000.0, step=1000.0)
+    with o2:
+        variable_exp = st.number_input("Variable Expenses (₹/month)", 0.0, value=15000.0, step=1000.0)
+    with o3:
+        emi_outflow = st.number_input("EMI Outflow (₹/month)", 0.0, value=10000.0, step=1000.0)
+    with o4:
+        insurance_outflow = st.number_input("Insurance Premium (₹/month)", 0.0, value=3000.0, step=500.0)
+    with o5:
+        sip_outflow = st.number_input("SIP / Investments (₹/month)", 0.0, value=10000.0, step=1000.0)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    total_income = salary_income + business_income + rental_income + other_income
+    total_expenses = fixed_exp + variable_exp + emi_outflow + insurance_outflow + sip_outflow
+    surplus = total_income - total_expenses
+
+    savings_ratio = safe_div(max(surplus, 0) + sip_outflow, max(total_income, 1)) * 100
+    emi_ratio = safe_div(emi_outflow, max(total_income, 1)) * 100
+    expense_ratio = safe_div(fixed_exp + variable_exp, max(total_income, 1)) * 100
+
+    suggested_investable_surplus = max(surplus * 0.7, 0)
+
+    if surplus < 0:
+        health_signal = "Critical"
+    elif savings_ratio < 15 or emi_ratio > 40:
+        health_signal = "Weak"
+    elif savings_ratio < 30 or emi_ratio > 25:
+        health_signal = "Moderate"
+    else:
+        health_signal = "Strong"
+
+    render_kpi_cards([
+        {"title": "Total Monthly Income", "value": fmt_inr(total_income)},
+        {"title": "Total Monthly Outflow", "value": fmt_inr(total_expenses)},
+        {"title": "Surplus / Deficit", "value": fmt_inr(surplus)},
+        {"title": "Financial Health Signal", "value": health_signal},
+    ])
+
+    render_kpi_cards([
+        {"title": "Savings Ratio", "value": f"{savings_ratio:.1f}%"},
+        {"title": "EMI Ratio", "value": f"{emi_ratio:.1f}%"},
+        {"title": "Expense Ratio", "value": f"{expense_ratio:.1f}%"},
+        {"title": "Investable Surplus Suggestion", "value": fmt_inr(suggested_investable_surplus)},
+    ])
+
+    cf_breakdown = pd.DataFrame({
+        "Category": [
+            "Salary Income", "Business Income", "Rental Income", "Other Income",
+            "Fixed Expenses", "Variable Expenses", "EMI", "Insurance", "SIP/Investments"
+        ],
+        "Amount": [
+            salary_income, business_income, rental_income, other_income,
+            fixed_exp, variable_exp, emi_outflow, insurance_outflow, sip_outflow
+        ]
+    })
+
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.markdown("### 📊 Cashflow Breakdown")
+    st.dataframe(cf_breakdown, use_container_width=True)
+    st.bar_chart(cf_breakdown.set_index("Category"))
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.markdown("### 🧠 Advisor Interpretation")
+    if health_signal == "Strong":
+        st.success("Excellent cashflow structure. Client can increase goal-based investments or accelerate retirement planning.")
+    elif health_signal == "Moderate":
+        st.warning("Cashflow is workable but needs optimization. Focus on improving savings ratio and keeping EMI under control.")
+    elif health_signal == "Weak":
+        st.warning("Cashflow stress visible. Reduce discretionary expenses and avoid additional EMI burden before new goals.")
+    else:
+        st.error("Cashflow deficit. Immediate action required: reduce expenses, restructure liabilities, and pause non-essential spending.")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    if st.button("➕ Add Overall Cashflow Master to Report"):
+        add_report(
+            "Overall Cashflow Master",
+            "Monthly Surplus / Deficit",
+            fmt_inr(surplus),
+            f"Savings {savings_ratio:.1f}% | EMI {emi_ratio:.1f}% | Expense {expense_ratio:.1f}% | Health {health_signal}"
+        )
+        st.success("Added to report.")
 
 # ============================================================
 # SIP CALCULATOR
@@ -1668,7 +1791,7 @@ elif page == "Report Center":
             st.download_button(
                 "⬇️ Download Summary CSV",
                 data=to_csv_download(df),
-                file_name="freedom_ultra_pro_v10_summary.csv",
+                file_name="freedom_ultra_pro_v10_1_summary.csv",
                 mime="text/csv"
             )
     with c2:
@@ -1688,7 +1811,7 @@ elif page == "Report Center":
                 st.download_button(
                     "⬇️ Download PDF Report",
                     data=pdf_buffer,
-                    file_name="freedom_ultra_pro_v10_report.pdf",
+                    file_name="freedom_ultra_pro_v10_1_report.pdf",
                     mime="application/pdf"
                 )
         else:
@@ -1706,15 +1829,18 @@ st.markdown('<div class="report-center">', unsafe_allow_html=True)
 st.markdown("### 📌 Quick Report Center")
 
 df_bottom = report_df()
-r1, r2, r3, r4 = st.columns(4)
+r1, r2, r3, r4, r5 = st.columns(5)
 with r1:
     st.metric("Saved Report Items", len(df_bottom))
 with r2:
     st.metric("PDF Ready", "Yes" if PDF_AVAILABLE else "No")
 with r3:
+    if st.button("💵 Overall Cashflow", key="bottom_overall_cf"):
+        reroute("Overall Cashflow Master")
+with r4:
     if st.button("📄 Open Full Report Center"):
         reroute("Report Center")
-with r4:
+with r5:
     if st.button("🏠 Go Dashboard Now"):
         reroute("Dashboard")
 
@@ -1726,7 +1852,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.markdown("---")
 st.markdown("""
 <div class="footer-note">
-<b>Freedom ULTRA PRO V10 ULTIMATE</b> • Professional MFD Financial Planning Super App •
+<b>Freedom ULTRA PRO V10.1 ULTIMATE</b> • Professional MFD Financial Planning Super App •
 For education / planning assistance only. Final recommendations should be validated by a qualified advisor and applicable regulations.
 </div>
 """, unsafe_allow_html=True)
