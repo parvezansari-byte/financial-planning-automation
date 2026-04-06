@@ -1,7 +1,11 @@
 # app.py
-# FINAL Freedom ULTRA PRO V9
-# BUTTON UI + NO SIDEBAR + ULTRA ATTRACTIVE PROFESSIONAL MFD VERSION
-# Single-file Streamlit app | GitHub / Streamlit Cloud ready
+# ============================================================
+# FINAL Freedom ULTRA PRO V10 ULTIMATE
+# CLIENT MEETING MASTERPIECE VERSION
+# Single-file Streamlit app | No Sidebar | Premium MFD UI
+# GitHub / Streamlit Cloud Ready
+# Run: streamlit run app.py
+# ============================================================
 
 import streamlit as st
 import pandas as pd
@@ -10,200 +14,277 @@ import math
 from datetime import datetime
 from io import BytesIO
 
-# -------------------------------
+# ============================================================
 # OPTIONAL PDF SUPPORT
-# -------------------------------
+# ============================================================
 PDF_AVAILABLE = True
 try:
     from reportlab.lib.pagesizes import A4
     from reportlab.lib import colors
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.platypus import (
+        SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    )
 except Exception:
     PDF_AVAILABLE = False
 
-# -------------------------------
+# ============================================================
 # PAGE CONFIG
-# -------------------------------
+# ============================================================
 st.set_page_config(
-    page_title="Freedom ULTRA PRO V9",
+    page_title="Freedom ULTRA PRO V10 ULTIMATE",
     page_icon="💼",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# -------------------------------
+# ============================================================
 # PREMIUM CSS
-# -------------------------------
+# ============================================================
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
-:root {
-    --bg1: #07111f;
-    --bg2: #0b1324;
-    --bg3: #111827;
-    --card: rgba(17, 24, 39, 0.72);
-    --card2: rgba(15, 23, 42, 0.78);
-    --border: rgba(255,255,255,0.08);
-    --text: #f8fafc;
-    --muted: #94a3b8;
-    --green: #22c55e;
-    --blue: #3b82f6;
-    --amber: #f59e0b;
-    --rose: #fb7185;
-    --shadow: 0 12px 28px rgba(0,0,0,0.30);
+:root{
+    --bg1:#060b17;
+    --bg2:#0b1324;
+    --bg3:#111827;
+    --glass:rgba(17,24,39,0.74);
+    --glass2:rgba(15,23,42,0.82);
+    --line:rgba(255,255,255,0.08);
+    --line2:rgba(255,255,255,0.12);
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --green:#22c55e;
+    --blue:#3b82f6;
+    --amber:#f59e0b;
+    --pink:#ec4899;
+    --red:#ef4444;
+    --shadow:0 16px 40px rgba(0,0,0,0.30);
 }
+
 html, body, [class*="css"] {
     font-family: 'Inter', sans-serif;
 }
 .stApp {
     background:
-        radial-gradient(circle at 10% 20%, rgba(59,130,246,0.12), transparent 30%),
-        radial-gradient(circle at 90% 10%, rgba(34,197,94,0.12), transparent 28%),
-        radial-gradient(circle at 80% 80%, rgba(245,158,11,0.08), transparent 25%),
-        linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 35%, var(--bg3) 100%);
+        radial-gradient(circle at 8% 12%, rgba(59,130,246,0.16), transparent 28%),
+        radial-gradient(circle at 88% 8%, rgba(34,197,94,0.14), transparent 24%),
+        radial-gradient(circle at 84% 84%, rgba(236,72,153,0.08), transparent 22%),
+        radial-gradient(circle at 16% 82%, rgba(245,158,11,0.08), transparent 22%),
+        linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 42%, var(--bg3) 100%);
     color: var(--text);
 }
-[data-testid="stSidebar"] {display: none !important;}
-.block-container {
-    padding-top: 1rem;
+
+[data-testid="stSidebar"] {display:none !important;}
+
+.block-container{
+    max-width: 1500px;
+    padding-top: 0.9rem;
     padding-bottom: 2rem;
-    max-width: 1450px;
-}
-.main .block-container {
     padding-left: 1.2rem;
     padding-right: 1.2rem;
 }
-.header-wrap {
-    background: linear-gradient(135deg, rgba(34,197,94,0.14), rgba(59,130,246,0.14));
-    border: 1px solid rgba(255,255,255,0.08);
-    backdrop-filter: blur(14px);
-    border-radius: 24px;
+
+.header-hero{
+    position: relative;
+    overflow: hidden;
+    background:
+      linear-gradient(135deg, rgba(34,197,94,0.12), rgba(59,130,246,0.14), rgba(236,72,153,0.08));
+    border: 1px solid var(--line);
+    border-radius: 26px;
     padding: 22px 24px;
     box-shadow: var(--shadow);
-    margin-bottom: 16px;
+    margin-bottom: 14px;
+    backdrop-filter: blur(14px);
 }
-.brand-title {
-    font-size: 34px;
-    font-weight: 800;
+.header-hero:before{
+    content:'';
+    position:absolute;
+    top:-60px; right:-40px;
+    width:180px; height:180px;
+    background: radial-gradient(circle, rgba(255,255,255,0.10), transparent 60%);
+    border-radius:50%;
+}
+.brand-title{
+    font-size: 38px;
+    font-weight: 900;
     color: #ffffff;
     letter-spacing: 0.2px;
+    margin-bottom: 4px;
 }
-.brand-sub {
+.brand-sub{
     font-size: 13px;
-    color: #cbd5e1;
-    margin-top: 6px;
+    color: #dbe4f0;
+    margin-bottom: 10px;
 }
-.ribbon {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 18px;
-    padding: 14px 16px;
-    margin-bottom: 14px;
+.badge-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+.badge-pill{
+    display:inline-block;
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    background: rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.08);
+    color:#e2e8f0;
+}
+
+.action-bar{
+    background: rgba(255,255,255,0.035);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:12px 14px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+}
+
+.ribbon{
+    background: rgba(255,255,255,0.035);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:14px;
+    margin-bottom:14px;
     backdrop-filter: blur(10px);
 }
-.kpi-card {
-    background: linear-gradient(180deg, rgba(17,24,39,0.78), rgba(15,23,42,0.82));
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 18px;
+
+.kpi-card{
+    background: linear-gradient(180deg, rgba(17,24,39,0.78), rgba(15,23,42,0.84));
+    border: 1px solid var(--line);
+    border-radius: 20px;
     padding: 16px;
     box-shadow: var(--shadow);
-    min-height: 110px;
+    min-height: 112px;
+    backdrop-filter: blur(10px);
 }
-.kpi-title {
-    font-size: 12px;
-    color: #94a3b8;
-    margin-bottom: 8px;
+.kpi-title{
+    font-size:12px;
+    color: var(--muted);
+    margin-bottom:8px;
 }
-.kpi-value {
-    font-size: 24px;
-    font-weight: 800;
-    color: #f8fafc;
-    line-height: 1.2;
+.kpi-value{
+    font-size:24px;
+    font-weight:900;
+    color:#ffffff;
+    line-height:1.15;
 }
-.section-card {
-    background: linear-gradient(180deg, rgba(17,24,39,0.78), rgba(15,23,42,0.82));
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 22px;
-    padding: 18px;
+.kpi-sub{
+    font-size:11px;
+    color:#cbd5e1;
+    margin-top:6px;
+}
+
+.section-card{
+    background: linear-gradient(180deg, rgba(17,24,39,0.78), rgba(15,23,42,0.84));
+    border:1px solid var(--line);
+    border-radius:24px;
+    padding:18px;
     box-shadow: var(--shadow);
-    margin-bottom: 14px;
+    margin-bottom:14px;
     backdrop-filter: blur(12px);
 }
-.module-box {
-    background: linear-gradient(180deg, rgba(17,24,39,0.72), rgba(15,23,42,0.80));
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 20px;
-    padding: 14px;
+
+.module-card{
+    background: linear-gradient(180deg, rgba(17,24,39,0.74), rgba(15,23,42,0.84));
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:14px;
+    min-height:165px;
     box-shadow: var(--shadow);
-    min-height: 145px;
+    transition: all 0.2s ease;
 }
-.module-title {
-    font-weight: 700;
-    font-size: 16px;
-    margin-bottom: 6px;
+.module-title{
+    font-size:16px;
+    font-weight:800;
+    margin-bottom:8px;
 }
-.module-desc {
-    color: #94a3b8;
-    font-size: 12px;
-    min-height: 42px;
+.module-desc{
+    font-size:12px;
+    color: var(--muted);
+    min-height: 44px;
 }
-.report-center {
-    background: linear-gradient(180deg, rgba(34,197,94,0.08), rgba(59,130,246,0.08));
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 22px;
-    padding: 18px;
-    box-shadow: var(--shadow);
-    margin-top: 16px;
+.module-tag{
+    font-size:11px;
+    color:#dbeafe;
+    font-weight:700;
+    margin-top:10px;
 }
-.small-note {
-    color: #94a3b8;
-    font-size: 12px;
-}
-.stButton > button {
-    width: 100%;
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: linear-gradient(135deg, rgba(34,197,94,0.14), rgba(59,130,246,0.14));
-    color: white;
-    font-weight: 700;
-    padding: 0.7rem 1rem;
-    transition: 0.2s ease-in-out;
-}
-.stButton > button:hover {
-    transform: translateY(-1px);
-    border-color: rgba(255,255,255,0.18);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.18);
-}
-div[data-testid="stMetric"] {
+
+.goal-bucket{
     background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 14px;
-    padding: 10px;
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:14px;
+    min-height:120px;
 }
-.stTabs [data-baseweb="tab-list"] {
-    gap: 8px;
+
+.report-center{
+    background: linear-gradient(180deg, rgba(34,197,94,0.08), rgba(59,130,246,0.08));
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:16px;
+    margin-top:16px;
+    box-shadow: var(--shadow);
 }
-.stTabs [data-baseweb="tab"] {
+
+.footer-note{
+    color:#94a3b8;
+    font-size:12px;
+}
+
+.stButton > button{
+    width:100%;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background: linear-gradient(135deg, rgba(34,197,94,0.16), rgba(59,130,246,0.16));
+    color:#ffffff;
+    font-weight:800;
+    padding:0.72rem 1rem;
+    transition: all 0.2s ease-in-out;
+}
+.stButton > button:hover{
+    transform: translateY(-1px);
+    border-color: var(--line2);
+    box-shadow: 0 10px 22px rgba(0,0,0,0.22);
+}
+
+div[data-testid="stMetric"]{
+    background: rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:14px;
+    padding:10px;
+}
+
+.stTabs [data-baseweb="tab-list"]{
+    gap:8px;
+}
+.stTabs [data-baseweb="tab"]{
     background: rgba(255,255,255,0.04);
-    border-radius: 12px;
-    padding: 8px 14px;
+    border-radius:12px;
+    padding:8px 14px;
 }
-.stTabs [aria-selected="true"] {
+.stTabs [aria-selected="true"]{
     background: rgba(34,197,94,0.18) !important;
 }
-hr {
+
+hr{
     border-color: rgba(255,255,255,0.08);
 }
 </style>
 """, unsafe_allow_html=True)
 
-# -------------------------------
+# ============================================================
 # SESSION STATE INIT
-# -------------------------------
+# ============================================================
+DEFAULT_PAGE = "Dashboard"
+
 if "page" not in st.session_state:
-    st.session_state.page = "Dashboard"
+    st.session_state.page = DEFAULT_PAGE
 
 if "report_rows" not in st.session_state:
     st.session_state.report_rows = []
@@ -226,11 +307,18 @@ if "client_city" not in st.session_state:
 if "client_risk" not in st.session_state:
     st.session_state.client_risk = "Moderate"
 
-# -------------------------------
+if "presentation_mode" not in st.session_state:
+    st.session_state.presentation_mode = False
+
+# ============================================================
 # HELPERS
-# -------------------------------
-def go(page_name):
+# ============================================================
+def go(page_name: str):
     st.session_state.page = page_name
+
+def reroute(page_name: str):
+    st.session_state.page = page_name
+    st.rerun()
 
 def safe_div(a, b):
     return a / b if b not in [0, None] else 0
@@ -259,6 +347,8 @@ def future_value_lumpsum(pv, annual_rate, years):
 def future_value_sip(monthly_investment, annual_rate, years):
     r = annual_to_monthly(annual_rate)
     n = int(years * 12)
+    if n <= 0:
+        return 0
     if r == 0:
         return monthly_investment * n
     return monthly_investment * (((1 + r) ** n - 1) / r) * (1 + r)
@@ -420,8 +510,13 @@ def to_csv_download(df):
 def build_pdf(df, client_info, advisor_notes):
     if not PDF_AVAILABLE:
         return None
+
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=24, leftMargin=24, topMargin=24, bottomMargin=24)
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=24, leftMargin=24, topMargin=24, bottomMargin=24
+    )
     styles = getSampleStyleSheet()
     title_style = ParagraphStyle(
         'TitleX',
@@ -433,7 +528,7 @@ def build_pdf(df, client_info, advisor_notes):
     normal = styles["BodyText"]
     story = []
 
-    story.append(Paragraph("Freedom ULTRA PRO V9 - Client Financial Planning Report", title_style))
+    story.append(Paragraph("Freedom ULTRA PRO V10 ULTIMATE - Client Financial Planning Report", title_style))
     story.append(Spacer(1, 10))
 
     client_lines = [
@@ -441,6 +536,7 @@ def build_pdf(df, client_info, advisor_notes):
         f"Age: {client_info.get('age', '')}",
         f"Monthly Income: {client_info.get('income', '')}",
         f"City: {client_info.get('city', '')}",
+        f"Risk Profile: {client_info.get('risk', '')}",
         f"Generated On: {datetime.now().strftime('%d-%m-%Y %H:%M')}"
     ]
     for line in client_lines:
@@ -477,10 +573,12 @@ def render_kpi_cards(cards):
     cols = st.columns(len(cards))
     for i, card in enumerate(cards):
         with cols[i]:
+            subtitle = f"<div class='kpi-sub'>{card.get('sub','')}</div>" if card.get("sub") else ""
             st.markdown(f"""
             <div class="kpi-card">
                 <div class="kpi-title">{card['title']}</div>
                 <div class="kpi-value">{card['value']}</div>
+                {subtitle}
             </div>
             """, unsafe_allow_html=True)
 
@@ -531,152 +629,236 @@ def stepup_projection_table(monthly_sip, annual_rate, years, stepup_percent):
     return pd.DataFrame(rows)
 
 def back_button():
-    c1, c2 = st.columns([1, 6])
+    c1, c2 = st.columns([1.1, 6])
     with c1:
         if st.button("⬅️ Dashboard"):
-            go("Dashboard")
-            st.rerun()
+            reroute("Dashboard")
 
-# -------------------------------
-# HEADER
-# -------------------------------
+def module_card(title, desc, page_key, tag="Planner"):
+    st.markdown(f"""
+    <div class="module-card">
+        <div class="module-title">{title}</div>
+        <div class="module-desc">{desc}</div>
+        <div class="module-tag">{tag}</div>
+    </div>
+    """, unsafe_allow_html=True)
+    if st.button("Open Module", key=f"open_{page_key}"):
+        reroute(page_key)
+
+# ============================================================
+# HEADER HERO
+# ============================================================
 st.markdown("""
-<div class="header-wrap">
-    <div class="brand-title">💼 Freedom ULTRA PRO V9</div>
-    <div class="brand-sub">BUTTON UI + NO SIDEBAR + ULTRA ATTRACTIVE PROFESSIONAL MFD VERSION • Premium Client-Meeting Ready Financial Planning Super App</div>
+<div class="header-hero">
+    <div class="brand-title">💼 Freedom ULTRA PRO V10 ULTIMATE</div>
+    <div class="brand-sub">CLIENT MEETING MASTERPIECE VERSION • Premium MFD Financial Planning Super App • Button UI • No Sidebar • Single File</div>
+    <div class="badge-row">
+        <span class="badge-pill">Single-file app.py</span>
+        <span class="badge-pill">Premium Dark Luxury UI</span>
+        <span class="badge-pill">Client Presentation Ready</span>
+        <span class="badge-pill">CSV + PDF Report Center</span>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
-# -------------------------------
-# CLIENT RIBBON (GLOBAL TOP)
-# -------------------------------
-with st.container():
+# ============================================================
+# TOP ACTION BAR
+# ============================================================
+st.markdown('<div class="action-bar">', unsafe_allow_html=True)
+a1, a2, a3, a4, a5 = st.columns([1.3, 1.4, 1.4, 1.3, 1.6])
+
+with a1:
+    if st.button("🏠 Dashboard Home"):
+        reroute("Dashboard")
+with a2:
+    if st.button("📄 Report Center"):
+        reroute("Report Center")
+with a3:
+    if st.button("📝 Advisor Notes"):
+        reroute("Advisor Notes")
+with a4:
+    if st.button("🧹 Clear Report"):
+        st.session_state.report_rows = []
+        st.success("Report cleared.")
+with a5:
+    st.session_state.presentation_mode = st.toggle("🎤 Presentation Mode", value=st.session_state.presentation_mode)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ============================================================
+# CLIENT RIBBON
+# ============================================================
+if not st.session_state.presentation_mode:
     st.markdown('<div class="ribbon">', unsafe_allow_html=True)
     c1, c2, c3, c4, c5 = st.columns(5)
     with c1:
-        st.session_state.client_name = st.text_input("Client Name", value=st.session_state.client_name, key="global_name")
+        st.session_state.client_name = st.text_input("Client Name", value=st.session_state.client_name, key="global_name_v10")
     with c2:
-        st.session_state.client_age = st.number_input("Age", min_value=0, max_value=100, value=int(st.session_state.client_age), key="global_age")
+        st.session_state.client_age = st.number_input("Age", min_value=0, max_value=100, value=int(st.session_state.client_age), key="global_age_v10")
     with c3:
-        st.session_state.client_income = st.number_input("Monthly Income (₹)", min_value=0.0, value=float(st.session_state.client_income), step=1000.0, key="global_income")
+        st.session_state.client_income = st.number_input("Monthly Income (₹)", min_value=0.0, value=float(st.session_state.client_income), step=1000.0, key="global_income_v10")
     with c4:
-        st.session_state.client_city = st.text_input("City", value=st.session_state.client_city, key="global_city")
+        st.session_state.client_city = st.text_input("City", value=st.session_state.client_city, key="global_city_v10")
     with c5:
-        st.session_state.client_risk = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"], index=["Conservative", "Moderate", "Aggressive"].index(st.session_state.client_risk), key="global_risk")
+        risk_index = ["Conservative", "Moderate", "Aggressive"].index(st.session_state.client_risk)
+        st.session_state.client_risk = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"], index=risk_index, key="global_risk_v10")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# -------------------------------
+# ============================================================
 # GLOBAL KPIs
-# -------------------------------
+# ============================================================
 global_monthly_income = st.session_state.client_income
 estimated_savings = global_monthly_income * 0.25
-estimated_expense = global_monthly_income - estimated_savings
-eq, debt, gold = asset_allocation(st.session_state.client_age, st.session_state.client_risk)
+eq_alloc, debt_alloc, gold_alloc = asset_allocation(st.session_state.client_age, st.session_state.client_risk)
 
 render_kpi_cards([
-    {"title": "Client", "value": st.session_state.client_name or "Not Set"},
-    {"title": "Monthly Income", "value": fmt_inr(global_monthly_income)},
-    {"title": "Suggested Savings", "value": fmt_inr(estimated_savings)},
-    {"title": "Risk Profile", "value": st.session_state.client_risk},
+    {"title": "Client", "value": st.session_state.client_name or "Not Set", "sub": f"City: {st.session_state.client_city}"},
+    {"title": "Monthly Income", "value": fmt_inr(global_monthly_income), "sub": "Primary earning snapshot"},
+    {"title": "Suggested Savings", "value": fmt_inr(estimated_savings), "sub": "25% planning benchmark"},
+    {"title": "Risk Profile", "value": st.session_state.client_risk, "sub": f"Suggested Equity {eq_alloc}%"},
 ])
 
-st.markdown("")
-
-# -------------------------------
-# DASHBOARD MODULE GRID
-# -------------------------------
-def module_card(title, desc, page_key, button_label="Open Module"):
-    st.markdown(f"""
-    <div class="module-box">
-        <div class="module-title">{title}</div>
-        <div class="module-desc">{desc}</div>
-    </div>
-    """, unsafe_allow_html=True)
-    if st.button(button_label, key=f"btn_{page_key}"):
-        go(page_key)
-        st.rerun()
-
-# -------------------------------
-# PAGE ROUTER
-# -------------------------------
+# ============================================================
+# ROUTER
+# ============================================================
 page = st.session_state.page
 
+# ============================================================
+# DASHBOARD
+# ============================================================
 if page == "Dashboard":
     st.subheader("🏠 Executive Dashboard")
 
-    c1, c2, c3 = st.columns(3)
-    with c1:
+    # Dashboard tabs for more premium feel
+    tab1, tab2, tab3 = st.tabs(["📊 Overview", "🎯 Goal Buckets", "🚀 All Modules"])
+
+    with tab1:
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.markdown('<div class="section-card">', unsafe_allow_html=True)
+            st.markdown("### 📌 Client Snapshot")
+            st.write(f"**Client:** {st.session_state.client_name or 'Not Set'}")
+            st.write(f"**Age:** {st.session_state.client_age}")
+            st.write(f"**City:** {st.session_state.client_city}")
+            st.write(f"**Monthly Income:** {fmt_inr(st.session_state.client_income)}")
+            st.write(f"**Risk Profile:** {st.session_state.client_risk}")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        with c2:
+            st.markdown('<div class="section-card">', unsafe_allow_html=True)
+            st.markdown("### 💚 Financial Health Score")
+            savings_ratio = safe_div(estimated_savings, max(global_monthly_income, 1)) * 100
+            score = min(100, round(40 + savings_ratio * 1.8))
+            st.metric("Health Score", f"{score}/100")
+            st.progress(score / 100)
+            st.write(f"**Interpretation:** {'Strong' if score >= 75 else 'Moderate' if score >= 55 else 'Needs Action'}")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        with c3:
+            st.markdown('<div class="section-card">', unsafe_allow_html=True)
+            st.markdown("### 🧩 Suggested Allocation")
+            st.write(f"**Equity:** {eq_alloc}%")
+            st.write(f"**Debt:** {debt_alloc}%")
+            st.write(f"**Gold:** {gold_alloc}%")
+            st.write(f"**Saved Report Items:** {len(report_df())}")
+            st.write(f"**PDF Ready:** {'Yes' if PDF_AVAILABLE else 'No'}")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        # Mini chart
+        alloc_df = pd.DataFrame({
+            "Asset Class": ["Equity", "Debt", "Gold"],
+            "Allocation %": [eq_alloc, debt_alloc, gold_alloc]
+        })
         st.markdown('<div class="section-card">', unsafe_allow_html=True)
-        st.markdown("### 📌 Financial Snapshot")
-        st.write(f"**Client:** {st.session_state.client_name or 'Not Set'}")
-        st.write(f"**Age:** {st.session_state.client_age}")
-        st.write(f"**City:** {st.session_state.client_city}")
-        st.write(f"**Monthly Income:** {fmt_inr(st.session_state.client_income)}")
-        st.write(f"**Suggested Monthly Savings (25%):** {fmt_inr(st.session_state.client_income * 0.25)}")
+        st.markdown("### 📈 Allocation Snapshot")
+        st.bar_chart(alloc_df.set_index("Asset Class"))
         st.markdown('</div>', unsafe_allow_html=True)
 
-    with c2:
+    with tab2:
         st.markdown('<div class="section-card">', unsafe_allow_html=True)
-        st.markdown("### 📊 Health Score")
-        savings_ratio = safe_div(estimated_savings, max(global_monthly_income, 1)) * 100
-        score = min(100, round(40 + savings_ratio * 1.8))
-        st.metric("Financial Health Score", f"{score}/100")
-        st.progress(score / 100)
+        st.markdown("### 🎯 Goal Buckets (Quick Client Conversation Starters)")
+        g1, g2, g3, g4 = st.columns(4)
+        with g1:
+            st.markdown("""
+            <div class="goal-bucket">
+                <h4>🧒 Child Future</h4>
+                <p style="color:#94a3b8;font-size:12px;">Education • Marriage • Protection</p>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("Open Child Planner"):
+                reroute("Child Planner")
+        with g2:
+            st.markdown("""
+            <div class="goal-bucket">
+                <h4>🧓 Retirement</h4>
+                <p style="color:#94a3b8;font-size:12px;">Corpus • Income • SWP • FIRE</p>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("Open Retirement Suite"):
+                reroute("Retirement Planner")
+        with g3:
+            st.markdown("""
+            <div class="goal-bucket">
+                <h4>🏠 Lifestyle Goals</h4>
+                <p style="color:#94a3b8;font-size:12px;">Car • Gadget • Travel • Major Purchases</p>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("Open Lifestyle Planner"):
+                reroute("Car Planner")
+        with g4:
+            st.markdown("""
+            <div class="goal-bucket">
+                <h4>🛡️ Protection & Stability</h4>
+                <p style="color:#94a3b8;font-size:12px;">Insurance • Emergency Fund • Cashflow</p>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("Open Protection Suite"):
+                reroute("Insurance Planner")
         st.markdown('</div>', unsafe_allow_html=True)
 
-    with c3:
+    with tab3:
         st.markdown('<div class="section-card">', unsafe_allow_html=True)
-        st.markdown("### 🧩 Allocation Snapshot")
-        st.write(f"**Equity:** {eq}%")
-        st.write(f"**Debt:** {debt}%")
-        st.write(f"**Gold:** {gold}%")
-        st.write(f"**Report Items:** {len(report_df())}")
+        st.markdown("### 🚀 All Modules")
+
+        modules = [
+            ("👤 Client Profile", "Capture client details, liabilities, surplus and risk profile.", "Client Profile", "Client Discovery"),
+            ("📈 SIP Calculator", "Monthly SIP projection with yearly table and growth chart.", "SIP Calculator", "Investment Planning"),
+            ("💰 Lumpsum Calculator", "One-time investment future value planning.", "Lumpsum Calculator", "Investment Planning"),
+            ("💸 SWP Calculator", "Corpus withdrawal sustainability analysis.", "SWP Calculator", "Retirement Income"),
+            ("🎯 Goal Planner", "Inflated goal cost + required SIP or lumpsum.", "Goal Planner", "Goal Planning"),
+            ("🧓 Retirement Planner", "Retirement corpus and SIP requirement.", "Retirement Planner", "Retirement Planning"),
+            ("👶 Child Planner", "Education and marriage planning for children.", "Child Planner", "Family Goals"),
+            ("🏦 EMI / Loan Planner", "EMI calculator and loan eligibility.", "EMI Planner", "Liability Planning"),
+            ("🚗 Car Purchase Planner", "Car affordability and EMI check.", "Car Planner", "Lifestyle Goal"),
+            ("📱 Gadget Planner", "iPhone / gadget saving plan.", "Gadget Planner", "Lifestyle Goal"),
+            ("✈️ Vacation Planner", "Travel savings planner.", "Vacation Planner", "Lifestyle Goal"),
+            ("🛡️ Insurance Need", "Life cover and health cover guidance.", "Insurance Planner", "Protection Planning"),
+            ("🚨 Emergency Fund", "Emergency reserve gap analysis.", "Emergency Fund", "Protection Planning"),
+            ("📊 Net Worth", "Assets vs liabilities dashboard.", "Net Worth", "Wealth Snapshot"),
+            ("💵 Cashflow Planner", "Income, expenses, EMI and savings ratio.", "Cashflow Planner", "Cashflow Planning"),
+            ("🔥 FIRE Calculator", "Financial freedom target and timeline.", "FIRE Calculator", "Freedom Planning"),
+            ("📉 Inflation Calculator", "Future cost impact of inflation.", "Inflation Calculator", "Reality Check"),
+            ("📈 Step-up SIP", "Step-up SIP planning with projection table.", "Step-up SIP", "Advanced SIP"),
+            ("🧩 Asset Allocation", "Age and risk based asset allocation.", "Asset Allocation", "Portfolio Strategy"),
+            ("🧾 Tax Projection", "Basic old vs new regime view.", "Tax Projection", "Tax Planning"),
+            ("📝 Advisor Notes", "Save professional advisor recommendations.", "Advisor Notes", "Consultation"),
+            ("📄 Report Center", "Client summary, CSV and PDF export.", "Report Center", "Output Center"),
+        ]
+
+        idx = 0
+        for _ in range(6):
+            cols = st.columns(4)
+            for col in cols:
+                if idx < len(modules):
+                    title, desc, key, tag = modules[idx]
+                    with col:
+                        module_card(title, desc, key, tag)
+                    idx += 1
         st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="section-card">', unsafe_allow_html=True)
-    st.markdown("### 🚀 Module Navigation")
-    st.caption("Click any module button below to open it in the main page. No sidebar needed.")
-
-    modules = [
-        ("👤 Client Profile", "Capture full client profile, surplus, liabilities and risk.", "Client Profile"),
-        ("📈 SIP Calculator", "Monthly SIP growth with yearly projection and charts.", "SIP Calculator"),
-        ("💰 Lumpsum Calculator", "One-time investment growth planner.", "Lumpsum Calculator"),
-        ("💸 SWP Calculator", "Corpus withdrawal sustainability analysis.", "SWP Calculator"),
-        ("🎯 Goal Planner", "Goal cost inflation + required SIP / lumpsum.", "Goal Planner"),
-        ("🧓 Retirement Planner", "Retirement corpus and required SIP planning.", "Retirement Planner"),
-        ("👶 Child Planner", "Education / marriage future planning.", "Child Planner"),
-        ("🏦 EMI / Loan Planner", "EMI calculator + eligibility check.", "EMI Planner"),
-        ("🚗 Car Purchase Planner", "Car affordability and EMI planning.", "Car Planner"),
-        ("📱 Gadget Planner", "iPhone / gadget savings planner.", "Gadget Planner"),
-        ("✈️ Vacation Planner", "Travel goal savings planner.", "Vacation Planner"),
-        ("🛡️ Insurance Need", "Life + health cover estimation.", "Insurance Planner"),
-        ("🚨 Emergency Fund", "Emergency reserve planning.", "Emergency Fund"),
-        ("📊 Net Worth", "Assets, liabilities and net worth dashboard.", "Net Worth"),
-        ("💵 Cashflow Planner", "Income, expenses, EMIs and savings rate.", "Cashflow Planner"),
-        ("🔥 FIRE Calculator", "Financial freedom target and timeline.", "FIRE Calculator"),
-        ("📉 Inflation Calculator", "Future cost impact of inflation.", "Inflation Calculator"),
-        ("📈 Step-up SIP", "Step-up SIP planning with growth table.", "Step-up SIP"),
-        ("🧩 Asset Allocation", "Age + risk based allocation suggestion.", "Asset Allocation"),
-        ("🧾 Tax Projection", "Basic old vs new regime comparison.", "Tax Projection"),
-        ("📝 Advisor Notes", "Save advisor recommendations.", "Advisor Notes"),
-        ("📄 Report Center", "Client summary, CSV and PDF downloads.", "Report Center"),
-    ]
-
-    idx = 0
-    for _ in range(6):
-        cols = st.columns(4)
-        for col in cols:
-            if idx < len(modules):
-                title, desc, key = modules[idx]
-                with col:
-                    module_card(title, desc, key)
-                idx += 1
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# -------------------------------
+# ============================================================
 # CLIENT PROFILE
-# -------------------------------
+# ============================================================
 elif page == "Client Profile":
     back_button()
     st.subheader("👤 Client Profile")
@@ -684,16 +866,16 @@ elif page == "Client Profile":
     col1, col2, col3 = st.columns(3)
     with col1:
         name = st.text_input("Client Name", value=st.session_state.client_name)
-        age = st.number_input("Age", 0, 100, value=int(st.session_state.client_age), key="cp_age")
+        age = st.number_input("Age", 0, 100, value=int(st.session_state.client_age), key="cp_age_v10")
         spouse_age = st.number_input("Spouse Age", 0, 100, value=max(int(st.session_state.client_age)-2, 0))
         dependents = st.number_input("No. of Dependents", 0, 10, value=2)
     with col2:
-        monthly_income = st.number_input("Monthly Income (₹)", 0.0, value=float(st.session_state.client_income), step=1000.0, key="cp_income")
+        monthly_income = st.number_input("Monthly Income (₹)", 0.0, value=float(st.session_state.client_income), step=1000.0, key="cp_income_v10")
         monthly_expense = st.number_input("Monthly Expense (₹)", 0.0, value=float(st.session_state.client_income * 0.7), step=1000.0)
         current_savings = st.number_input("Current Savings / Investments (₹)", 0.0, value=500000.0, step=10000.0)
         liabilities = st.number_input("Total Liabilities (₹)", 0.0, value=1000000.0, step=10000.0)
     with col3:
-        risk = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"], index=["Conservative", "Moderate", "Aggressive"].index(st.session_state.client_risk), key="cp_risk")
+        risk = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"], index=["Conservative", "Moderate", "Aggressive"].index(st.session_state.client_risk), key="cp_risk_v10")
         city = st.text_input("City", value=st.session_state.client_city)
         occupation = st.text_input("Occupation", value="Salaried")
         annual_increment = st.number_input("Expected Annual Income Growth (%)", 0.0, 50.0, value=8.0)
@@ -704,7 +886,7 @@ elif page == "Client Profile":
         st.session_state.client_income = monthly_income
         st.session_state.client_city = city
         st.session_state.client_risk = risk
-        add_report("Client Profile", "Net Surplus", fmt_inr(monthly_income - monthly_expense), f"Risk: {risk}, City: {city}")
+        add_report("Client Profile", "Net Surplus", fmt_inr(monthly_income - monthly_expense), f"Risk: {risk}, City: {city}, Occupation: {occupation}")
         st.success("Client profile saved.")
 
     networth = current_savings - liabilities
@@ -713,12 +895,12 @@ elif page == "Client Profile":
         {"title": "Monthly Surplus", "value": fmt_inr(surplus)},
         {"title": "Current Net Worth", "value": fmt_inr(networth)},
         {"title": "Dependents", "value": str(dependents)},
-        {"title": "Occupation", "value": occupation},
+        {"title": "Annual Income Growth", "value": f"{annual_increment:.1f}%"},
     ])
 
-# -------------------------------
+# ============================================================
 # SIP CALCULATOR
-# -------------------------------
+# ============================================================
 elif page == "SIP Calculator":
     back_button()
     st.subheader("📈 SIP Calculator")
@@ -751,9 +933,9 @@ elif page == "SIP Calculator":
         add_report("SIP Calculator", "Future Value", fmt_inr(fv), f"SIP {fmt_inr(sip)} for {years} years @ {rate}%")
         st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # LUMPSUM CALCULATOR
-# -------------------------------
+# ============================================================
 elif page == "Lumpsum Calculator":
     back_button()
     st.subheader("💰 Lumpsum Calculator")
@@ -786,9 +968,9 @@ elif page == "Lumpsum Calculator":
         add_report("Lumpsum Calculator", "Future Value", fmt_inr(fv), f"Lumpsum {fmt_inr(lumpsum)} for {years} years @ {rate}%")
         st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # SWP CALCULATOR
-# -------------------------------
+# ============================================================
 elif page == "SWP Calculator":
     back_button()
     st.subheader("💸 SWP Calculator")
@@ -821,6 +1003,7 @@ elif page == "SWP Calculator":
             break
         if m % 12 == 0:
             rows.append({"Year": m // 12, "Balance": round(balance, 2)})
+
     sim_df = pd.DataFrame(rows)
     if not sim_df.empty:
         st.dataframe(sim_df, use_container_width=True)
@@ -831,14 +1014,15 @@ elif page == "SWP Calculator":
         add_report("SWP Calculator", "SWP Sustainability", "Sustainable" if years == float("inf") else f"{years:.2f} Years", f"Corpus {fmt_inr(corpus)}, SWP {fmt_inr(withdrawal)}")
         st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # GOAL PLANNER
-# -------------------------------
+# ============================================================
 elif page == "Goal Planner":
     back_button()
     st.subheader("🎯 Goal Planner")
 
     tabs = st.tabs(["Future Goal Cost", "Required SIP", "Required Lumpsum"])
+
     with tabs[0]:
         c1, c2, c3 = st.columns(3)
         with c1:
@@ -847,6 +1031,7 @@ elif page == "Goal Planner":
             inflation = st.number_input("Inflation (%)", 0.0, value=7.0, step=0.1)
         with c3:
             years = st.number_input("Years to Goal", 0.0, value=10.0, step=1.0)
+
         future_cost = inflated_goal(current_cost, inflation, years)
         render_kpi_cards([
             {"title": "Current Cost", "value": fmt_inr(current_cost)},
@@ -874,9 +1059,9 @@ elif page == "Goal Planner":
             add_report("Goal Planner", "Required Lumpsum", fmt_inr(req_lumpsum), f"Target {fmt_inr(target)} in {years} years")
             st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # RETIREMENT PLANNER
-# -------------------------------
+# ============================================================
 elif page == "Retirement Planner":
     back_button()
     st.subheader("🧓 Retirement Planner")
@@ -914,9 +1099,9 @@ elif page == "Retirement Planner":
         add_report("Retirement Planner", "Required Corpus", fmt_inr(corpus), f"Retire at {retirement_age}, SIP {fmt_inr(req_sip)}")
         st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # CHILD PLANNER
-# -------------------------------
+# ============================================================
 elif page == "Child Planner":
     back_button()
     st.subheader("👶 Child Education / Marriage Planner")
@@ -948,14 +1133,15 @@ elif page == "Child Planner":
         add_report("Child Planner", f"{goal_type} Required SIP", fmt_inr(req_sip), f"Future Cost {fmt_inr(future_cost)} in {years} years")
         st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # EMI PLANNER
-# -------------------------------
+# ============================================================
 elif page == "EMI Planner":
     back_button()
     st.subheader("🏦 EMI / Loan Planner")
 
     tabs = st.tabs(["EMI Calculator", "Loan Eligibility"])
+
     with tabs[0]:
         c1, c2, c3 = st.columns(3)
         with c1:
@@ -964,6 +1150,7 @@ elif page == "EMI Planner":
             rate = st.number_input("Interest Rate (% p.a.)", 0.0, value=9.0, step=0.1)
         with c3:
             years = st.number_input("Tenure (Years)", 0.0, value=20.0, step=1.0)
+
         emi_val = emi(principal, rate, years)
         total_payment = emi_val * years * 12
         interest = total_payment - principal
@@ -989,6 +1176,7 @@ elif page == "EMI Planner":
             existing_emi = st.number_input("Existing EMI (₹)", 0.0, value=10000.0, step=1000.0)
         with c4:
             rate2 = st.number_input("Interest Rate (% p.a.)", 0.0, value=9.0, step=0.1)
+
         years2 = st.number_input("Tenure (Years)", 1.0, 40.0, value=20.0, step=1.0)
         eligible_loan, max_emi = loan_eligibility(income, foir, existing_emi, rate2, years2)
 
@@ -999,9 +1187,9 @@ elif page == "EMI Planner":
             {"title": "Net EMI Headroom", "value": fmt_inr(max_emi)},
         ])
 
-# -------------------------------
+# ============================================================
 # CAR PLANNER
-# -------------------------------
+# ============================================================
 elif page == "Car Planner":
     back_button()
     st.subheader("🚗 Car Purchase Planner")
@@ -1031,9 +1219,9 @@ elif page == "Car Planner":
         add_report("Car Planner", "Car EMI", fmt_inr(emi_val), f"Car {fmt_inr(car_cost)} with {down_pct}% down")
         st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # GADGET PLANNER
-# -------------------------------
+# ============================================================
 elif page == "Gadget Planner":
     back_button()
     st.subheader("📱 iPhone / Gadget Purchase Planner")
@@ -1060,9 +1248,9 @@ elif page == "Gadget Planner":
         add_report("Gadget Planner", "Required Monthly Saving", fmt_inr(req_sip), f"Gadget {fmt_inr(gadget_cost)} in {months} months")
         st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # VACATION PLANNER
-# -------------------------------
+# ============================================================
 elif page == "Vacation Planner":
     back_button()
     st.subheader("✈️ Vacation / Travel Planner")
@@ -1090,14 +1278,15 @@ elif page == "Vacation Planner":
         add_report("Vacation Planner", "Monthly Saving Needed", fmt_inr(req_sip), f"Trip target {fmt_inr(future_cost)}")
         st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # INSURANCE PLANNER
-# -------------------------------
+# ============================================================
 elif page == "Insurance Planner":
     back_button()
     st.subheader("🛡️ Insurance Need Calculator")
 
     tabs = st.tabs(["Life Insurance", "Health Insurance"])
+
     with tabs[0]:
         c1, c2, c3, c4 = st.columns(4)
         with c1:
@@ -1130,9 +1319,9 @@ elif page == "Insurance Planner":
         suggested_cover = base_cover + max((family_members - 2), 0) * 250000
         st.metric("Suggested Family Floater Health Cover", fmt_inr(suggested_cover))
 
-# -------------------------------
+# ============================================================
 # EMERGENCY FUND
-# -------------------------------
+# ============================================================
 elif page == "Emergency Fund":
     back_button()
     st.subheader("🚨 Emergency Fund Planner")
@@ -1159,9 +1348,9 @@ elif page == "Emergency Fund":
         add_report("Emergency Fund", "Required Fund", fmt_inr(req), f"Gap {fmt_inr(gap)}")
         st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # NET WORTH
-# -------------------------------
+# ============================================================
 elif page == "Net Worth":
     back_button()
     st.subheader("📊 Net Worth Dashboard")
@@ -1204,9 +1393,9 @@ elif page == "Net Worth":
         add_report("Net Worth", "Current Net Worth", fmt_inr(networth), f"Assets {fmt_inr(total_assets)}, Liabilities {fmt_inr(total_liab)}")
         st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # CASHFLOW
-# -------------------------------
+# ============================================================
 elif page == "Cashflow Planner":
     back_button()
     st.subheader("💵 Cashflow Planner")
@@ -1243,9 +1432,9 @@ elif page == "Cashflow Planner":
         add_report("Cashflow Planner", "Monthly Surplus", fmt_inr(surplus), f"Savings Rate {savings_rate:.1f}%")
         st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # FIRE
-# -------------------------------
+# ============================================================
 elif page == "FIRE Calculator":
     back_button()
     st.subheader("🔥 FIRE / Financial Freedom Calculator")
@@ -1286,9 +1475,9 @@ elif page == "FIRE Calculator":
         add_report("FIRE Calculator", "FIRE Number", fmt_inr(fire_number), f"Years to FIRE {years}")
         st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # INFLATION
-# -------------------------------
+# ============================================================
 elif page == "Inflation Calculator":
     back_button()
     st.subheader("📉 Inflation Impact Calculator")
@@ -1320,9 +1509,9 @@ elif page == "Inflation Calculator":
         add_report("Inflation Calculator", "Future Cost", fmt_inr(future_amount), f"{fmt_inr(current_amount)} growing @ {inflation}%")
         st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # STEP-UP SIP
-# -------------------------------
+# ============================================================
 elif page == "Step-up SIP":
     back_button()
     st.subheader("📈 Step-up SIP Planner")
@@ -1357,9 +1546,9 @@ elif page == "Step-up SIP":
         add_report("Step-up SIP", "Future Value", fmt_inr(fv), f"Start SIP {fmt_inr(sip)}, step-up {stepup}%")
         st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # ASSET ALLOCATION
-# -------------------------------
+# ============================================================
 elif page == "Asset Allocation":
     back_button()
     st.subheader("🧩 Asset Allocation Suggestion")
@@ -1390,9 +1579,9 @@ elif page == "Asset Allocation":
         add_report("Asset Allocation", "Suggested Allocation", f"Equity {eq}% / Debt {debt}% / Gold {gold}%", f"Risk {risk}")
         st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # TAX PROJECTION
-# -------------------------------
+# ============================================================
 elif page == "Tax Projection":
     back_button()
     st.subheader("🧾 Tax Saving Projection (Basic)")
@@ -1424,9 +1613,9 @@ elif page == "Tax Projection":
         add_report("Tax Projection", "Suggested Regime", suggestion, f"Old after deductions {fmt_inr(old_tax_after)} vs New {fmt_inr(new_tax)}")
         st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # ADVISOR NOTES
-# -------------------------------
+# ============================================================
 elif page == "Advisor Notes":
     back_button()
     st.subheader("📝 Advisor Notes")
@@ -1434,7 +1623,7 @@ elif page == "Advisor Notes":
     notes = st.text_area(
         "Enter Advisor Notes / Recommendations",
         value=st.session_state.advisor_notes,
-        height=280,
+        height=300,
         placeholder="Example: Increase SIP by 10% yearly, build 6 months emergency fund, take term cover of ₹1 Cr, reduce unsecured debt..."
     )
     st.session_state.advisor_notes = notes
@@ -1444,9 +1633,9 @@ elif page == "Advisor Notes":
         add_report("Advisor Notes", "Notes Added", "Yes", "Advisor recommendations available in report.")
         st.success("Added to report.")
 
-# -------------------------------
+# ============================================================
 # REPORT CENTER
-# -------------------------------
+# ============================================================
 elif page == "Report Center":
     back_button()
     st.subheader("📄 Client Summary Dashboard / Report Center")
@@ -1479,7 +1668,7 @@ elif page == "Report Center":
             st.download_button(
                 "⬇️ Download Summary CSV",
                 data=to_csv_download(df),
-                file_name="freedom_ultra_pro_v9_summary.csv",
+                file_name="freedom_ultra_pro_v10_summary.csv",
                 mime="text/csv"
             )
     with c2:
@@ -1490,7 +1679,8 @@ elif page == "Report Center":
                     "name": st.session_state.client_name,
                     "age": st.session_state.client_age,
                     "income": fmt_inr(st.session_state.client_income),
-                    "city": st.session_state.client_city
+                    "city": st.session_state.client_city,
+                    "risk": st.session_state.client_risk
                 },
                 st.session_state.advisor_notes
             )
@@ -1498,50 +1688,45 @@ elif page == "Report Center":
                 st.download_button(
                     "⬇️ Download PDF Report",
                     data=pdf_buffer,
-                    file_name="freedom_ultra_pro_v9_report.pdf",
+                    file_name="freedom_ultra_pro_v10_report.pdf",
                     mime="application/pdf"
                 )
         else:
             st.warning("Install reportlab for PDF.")
     with c3:
-        if st.button("🧹 Clear Report Summary"):
+        if st.button("🧹 Clear Report Summary (Here)"):
             st.session_state.report_rows = []
             st.success("Report summary cleared.")
             st.rerun()
 
-# -------------------------------
-# BOTTOM REPORT CENTER (ALWAYS VISIBLE)
-# -------------------------------
+# ============================================================
+# ALWAYS VISIBLE QUICK REPORT CENTER
+# ============================================================
 st.markdown('<div class="report-center">', unsafe_allow_html=True)
 st.markdown("### 📌 Quick Report Center")
-df_bottom = report_df()
 
-c1, c2, c3, c4 = st.columns(4)
-with c1:
+df_bottom = report_df()
+r1, r2, r3, r4 = st.columns(4)
+with r1:
     st.metric("Saved Report Items", len(df_bottom))
-with c2:
+with r2:
     st.metric("PDF Ready", "Yes" if PDF_AVAILABLE else "No")
-with c3:
+with r3:
     if st.button("📄 Open Full Report Center"):
-        go("Report Center")
-        st.rerun()
-with c4:
-    if st.button("🏠 Go Dashboard"):
-        go("Dashboard")
-        st.rerun()
+        reroute("Report Center")
+with r4:
+    if st.button("🏠 Go Dashboard Now"):
+        reroute("Dashboard")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# -------------------------------
+# ============================================================
 # FOOTER
-# -------------------------------
+# ============================================================
 st.markdown("---")
-st.markdown(
-    """
-    <div class="small-note">
-    <b>Freedom ULTRA PRO V9</b> • Professional MFD Financial Planning Super App •
-    For education / planning assistance only. Final recommendations should be validated by a qualified advisor and applicable regulations.
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+st.markdown("""
+<div class="footer-note">
+<b>Freedom ULTRA PRO V10 ULTIMATE</b> • Professional MFD Financial Planning Super App •
+For education / planning assistance only. Final recommendations should be validated by a qualified advisor and applicable regulations.
+</div>
+""", unsafe_allow_html=True)
