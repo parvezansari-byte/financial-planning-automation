@@ -1,7 +1,7 @@
 # app.py
 # ============================================================
-# FINAL Freedom ULTRA PRO V10.1 ULTIMATE
-# CLIENT MEETING MASTERPIECE VERSION + OVERALL CASHFLOW MASTER
+# FINAL Freedom ULTRA PRO V11 ELITE DASHBOARD
+# ULTRA ATTRACTIVE HOME SCREEN + TRUE CARD NAVIGATION + SECTION-WISE MODULES
 # Single-file Streamlit app | No Sidebar | Premium MFD UI
 # GitHub / Streamlit Cloud Ready
 # Run: streamlit run app.py
@@ -32,7 +32,7 @@ except Exception:
 # PAGE CONFIG
 # ============================================================
 st.set_page_config(
-    page_title="Freedom ULTRA PRO V10.1 ULTIMATE",
+    page_title="Freedom ULTRA PRO V11 ELITE DASHBOARD",
     page_icon="💼",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -46,11 +46,11 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 :root{
-    --bg1:#060b17;
-    --bg2:#0b1324;
-    --bg3:#111827;
-    --glass:rgba(17,24,39,0.74);
-    --glass2:rgba(15,23,42,0.82);
+    --bg1:#040816;
+    --bg2:#081224;
+    --bg3:#0f172a;
+    --glass:rgba(15,23,42,0.74);
+    --glass2:rgba(17,24,39,0.82);
     --line:rgba(255,255,255,0.08);
     --line2:rgba(255,255,255,0.12);
     --text:#f8fafc;
@@ -60,6 +60,8 @@ st.markdown("""
     --amber:#f59e0b;
     --pink:#ec4899;
     --red:#ef4444;
+    --cyan:#06b6d4;
+    --violet:#8b5cf6;
     --shadow:0 16px 40px rgba(0,0,0,0.30);
 }
 
@@ -68,31 +70,31 @@ html, body, [class*="css"] {
 }
 .stApp {
     background:
-        radial-gradient(circle at 8% 12%, rgba(59,130,246,0.16), transparent 28%),
-        radial-gradient(circle at 88% 8%, rgba(34,197,94,0.14), transparent 24%),
-        radial-gradient(circle at 84% 84%, rgba(236,72,153,0.08), transparent 22%),
-        radial-gradient(circle at 16% 82%, rgba(245,158,11,0.08), transparent 22%),
-        linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 42%, var(--bg3) 100%);
+        radial-gradient(circle at 10% 10%, rgba(59,130,246,0.16), transparent 28%),
+        radial-gradient(circle at 90% 8%, rgba(34,197,94,0.12), transparent 22%),
+        radial-gradient(circle at 85% 88%, rgba(139,92,246,0.08), transparent 22%),
+        radial-gradient(circle at 12% 85%, rgba(236,72,153,0.08), transparent 22%),
+        linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 45%, var(--bg3) 100%);
     color: var(--text);
 }
 
 [data-testid="stSidebar"] {display:none !important;}
 
 .block-container{
-    max-width: 1500px;
-    padding-top: 0.9rem;
+    max-width: 1550px;
+    padding-top: 0.8rem;
     padding-bottom: 2rem;
-    padding-left: 1.2rem;
-    padding-right: 1.2rem;
+    padding-left: 1.1rem;
+    padding-right: 1.1rem;
 }
 
 .header-hero{
     position: relative;
     overflow: hidden;
     background:
-      linear-gradient(135deg, rgba(34,197,94,0.12), rgba(59,130,246,0.14), rgba(236,72,153,0.08));
+      linear-gradient(135deg, rgba(34,197,94,0.10), rgba(59,130,246,0.14), rgba(139,92,246,0.10));
     border: 1px solid var(--line);
-    border-radius: 26px;
+    border-radius: 28px;
     padding: 22px 24px;
     box-shadow: var(--shadow);
     margin-bottom: 14px;
@@ -101,13 +103,22 @@ html, body, [class*="css"] {
 .header-hero:before{
     content:'';
     position:absolute;
-    top:-60px; right:-40px;
-    width:180px; height:180px;
+    top:-80px; right:-40px;
+    width:220px; height:220px;
     background: radial-gradient(circle, rgba(255,255,255,0.10), transparent 60%);
     border-radius:50%;
 }
+.header-hero:after{
+    content:'';
+    position:absolute;
+    bottom:-60px; left:-20px;
+    width:180px; height:180px;
+    background: radial-gradient(circle, rgba(34,197,94,0.10), transparent 60%);
+    border-radius:50%;
+}
+
 .brand-title{
-    font-size: 38px;
+    font-size: 42px;
     font-weight: 900;
     color: #ffffff;
     letter-spacing: 0.2px;
@@ -134,18 +145,18 @@ html, body, [class*="css"] {
     color:#e2e8f0;
 }
 
-.action-bar{
-    background: rgba(255,255,255,0.035);
+.top-strip{
+    background: rgba(255,255,255,0.03);
     border:1px solid var(--line);
     border-radius:18px;
     padding:12px 14px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
     backdrop-filter: blur(10px);
     box-shadow: 0 8px 20px rgba(0,0,0,0.18);
 }
 
 .ribbon{
-    background: rgba(255,255,255,0.035);
+    background: rgba(255,255,255,0.03);
     border:1px solid var(--line);
     border-radius:18px;
     padding:14px;
@@ -154,7 +165,7 @@ html, body, [class*="css"] {
 }
 
 .kpi-card{
-    background: linear-gradient(180deg, rgba(17,24,39,0.78), rgba(15,23,42,0.84));
+    background: linear-gradient(180deg, rgba(17,24,39,0.78), rgba(15,23,42,0.86));
     border: 1px solid var(--line);
     border-radius: 20px;
     padding: 16px;
@@ -164,7 +175,7 @@ html, body, [class*="css"] {
 }
 .kpi-title{
     font-size:12px;
-    color: var(--muted);
+    color: #94a3b8;
     margin-bottom:8px;
 }
 .kpi-value{
@@ -179,8 +190,17 @@ html, body, [class*="css"] {
     margin-top:6px;
 }
 
+.mega-kpi{
+    background: linear-gradient(180deg, rgba(17,24,39,0.78), rgba(15,23,42,0.86));
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:14px;
+    min-height:104px;
+    box-shadow: var(--shadow);
+}
+
 .section-card{
-    background: linear-gradient(180deg, rgba(17,24,39,0.78), rgba(15,23,42,0.84));
+    background: linear-gradient(180deg, rgba(17,24,39,0.76), rgba(15,23,42,0.86));
     border:1px solid var(--line);
     border-radius:24px;
     padding:18px;
@@ -190,13 +210,12 @@ html, body, [class*="css"] {
 }
 
 .module-card{
-    background: linear-gradient(180deg, rgba(17,24,39,0.74), rgba(15,23,42,0.84));
+    background: linear-gradient(180deg, rgba(17,24,39,0.76), rgba(15,23,42,0.86));
     border:1px solid var(--line);
     border-radius:22px;
     padding:14px;
-    min-height:165px;
+    min-height:170px;
     box-shadow: var(--shadow);
-    transition: all 0.2s ease;
 }
 .module-title{
     font-size:16px;
@@ -205,8 +224,8 @@ html, body, [class*="css"] {
 }
 .module-desc{
     font-size:12px;
-    color: var(--muted);
-    min-height: 44px;
+    color: #94a3b8;
+    min-height: 42px;
 }
 .module-tag{
     font-size:11px;
@@ -215,12 +234,19 @@ html, body, [class*="css"] {
     margin-top:10px;
 }
 
-.goal-bucket{
-    background: rgba(255,255,255,0.03);
-    border:1px solid var(--line);
-    border-radius:18px;
+.quick-tile{
+    background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(59,130,246,0.10));
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:20px;
     padding:14px;
-    min-height:120px;
+    min-height:110px;
+    box-shadow: var(--shadow);
+}
+
+.section-head{
+    font-size:20px;
+    font-weight:900;
+    margin-bottom:12px;
 }
 
 .report-center{
@@ -240,7 +266,7 @@ html, body, [class*="css"] {
 .stButton > button{
     width:100%;
     border-radius:14px;
-    border:1px solid var(--line);
+    border:1px solid rgba(255,255,255,0.08);
     background: linear-gradient(135deg, rgba(34,197,94,0.16), rgba(59,130,246,0.16));
     color:#ffffff;
     font-weight:800;
@@ -249,7 +275,7 @@ html, body, [class*="css"] {
 }
 .stButton > button:hover{
     transform: translateY(-1px);
-    border-color: var(--line2);
+    border-color: rgba(255,255,255,0.12);
     box-shadow: 0 10px 22px rgba(0,0,0,0.22);
 }
 
@@ -313,9 +339,6 @@ if "presentation_mode" not in st.session_state:
 # ============================================================
 # HELPERS
 # ============================================================
-def go(page_name: str):
-    st.session_state.page = page_name
-
 def reroute(page_name: str):
     st.session_state.page = page_name
     st.rerun()
@@ -510,28 +533,16 @@ def to_csv_download(df):
 def build_pdf(df, client_info, advisor_notes):
     if not PDF_AVAILABLE:
         return None
-
     buffer = BytesIO()
-    doc = SimpleDocTemplate(
-        buffer,
-        pagesize=A4,
-        rightMargin=24, leftMargin=24, topMargin=24, bottomMargin=24
-    )
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=24, leftMargin=24, topMargin=24, bottomMargin=24)
     styles = getSampleStyleSheet()
-    title_style = ParagraphStyle(
-        'TitleX',
-        parent=styles['Title'],
-        textColor=colors.HexColor("#0f172a"),
-        fontSize=18,
-        leading=22
-    )
+    title_style = ParagraphStyle('TitleX', parent=styles['Title'], textColor=colors.HexColor("#0f172a"), fontSize=18, leading=22)
     normal = styles["BodyText"]
     story = []
-
-    story.append(Paragraph("Freedom ULTRA PRO V10.1 ULTIMATE - Client Financial Planning Report", title_style))
+    story.append(Paragraph("Freedom ULTRA PRO V11 ELITE DASHBOARD - Client Financial Planning Report", title_style))
     story.append(Spacer(1, 10))
 
-    client_lines = [
+    lines = [
         f"Client Name: {client_info.get('name', '')}",
         f"Age: {client_info.get('age', '')}",
         f"Monthly Income: {client_info.get('income', '')}",
@@ -539,7 +550,7 @@ def build_pdf(df, client_info, advisor_notes):
         f"Risk Profile: {client_info.get('risk', '')}",
         f"Generated On: {datetime.now().strftime('%d-%m-%Y %H:%M')}"
     ]
-    for line in client_lines:
+    for line in lines:
         story.append(Paragraph(line, normal))
         story.append(Spacer(1, 4))
 
@@ -579,6 +590,18 @@ def render_kpi_cards(cards):
                 <div class="kpi-title">{card['title']}</div>
                 <div class="kpi-value">{card['value']}</div>
                 {subtitle}
+            </div>
+            """, unsafe_allow_html=True)
+
+def render_mega_kpis(cards):
+    cols = st.columns(len(cards))
+    for i, card in enumerate(cards):
+        with cols[i]:
+            st.markdown(f"""
+            <div class="mega-kpi">
+                <div class="kpi-title">{card['title']}</div>
+                <div class="kpi-value">{card['value']}</div>
+                <div class="kpi-sub">{card.get('sub','')}</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -629,12 +652,12 @@ def stepup_projection_table(monthly_sip, annual_rate, years, stepup_percent):
     return pd.DataFrame(rows)
 
 def back_button():
-    c1, c2 = st.columns([1.1, 6])
+    c1, c2 = st.columns([1.2, 6])
     with c1:
         if st.button("⬅️ Dashboard"):
             reroute("Dashboard")
 
-def module_card(title, desc, page_key, tag="Planner"):
+def module_card(title, desc, page_key, tag="Planner", btn_label="Open Module"):
     st.markdown(f"""
     <div class="module-card">
         <div class="module-title">{title}</div>
@@ -642,19 +665,29 @@ def module_card(title, desc, page_key, tag="Planner"):
         <div class="module-tag">{tag}</div>
     </div>
     """, unsafe_allow_html=True)
-    if st.button("Open Module", key=f"open_{page_key}"):
+    if st.button(btn_label, key=f"open_{page_key}"):
+        reroute(page_key)
+
+def quick_tile(title, desc, page_key):
+    st.markdown(f"""
+    <div class="quick-tile">
+        <div class="module-title">{title}</div>
+        <div class="module-desc">{desc}</div>
+    </div>
+    """, unsafe_allow_html=True)
+    if st.button("Launch", key=f"quick_{page_key}"):
         reroute(page_key)
 
 # ============================================================
-# HEADER HERO
+# HEADER
 # ============================================================
 st.markdown("""
 <div class="header-hero">
-    <div class="brand-title">💼 Freedom ULTRA PRO V10.1 ULTIMATE</div>
-    <div class="brand-sub">CLIENT MEETING MASTERPIECE VERSION • Premium MFD Financial Planning Super App • Overall Cashflow Master • Button UI • No Sidebar • Single File</div>
+    <div class="brand-title">💼 Freedom ULTRA PRO V11 ELITE DASHBOARD</div>
+    <div class="brand-sub">ULTRA ATTRACTIVE HOME SCREEN • TRUE CARD NAVIGATION • SECTION-WISE MODULES • Premium MFD Financial Planning Super App • No Sidebar • Single File</div>
     <div class="badge-row">
-        <span class="badge-pill">Single-file app.py</span>
-        <span class="badge-pill">Premium Dark Luxury UI</span>
+        <span class="badge-pill">Elite Dashboard</span>
+        <span class="badge-pill">True Card Navigation</span>
         <span class="badge-pill">Overall Cashflow Master</span>
         <span class="badge-pill">CSV + PDF Report Center</span>
     </div>
@@ -662,30 +695,28 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================================
-# TOP ACTION BAR
+# TOP NAV STRIP
 # ============================================================
-st.markdown('<div class="action-bar">', unsafe_allow_html=True)
-a1, a2, a3, a4, a5, a6 = st.columns([1.25, 1.35, 1.45, 1.35, 1.2, 1.6])
-
-with a1:
-    if st.button("🏠 Dashboard Home"):
+st.markdown('<div class="top-strip">', unsafe_allow_html=True)
+n1, n2, n3, n4, n5, n6 = st.columns([1.25, 1.35, 1.35, 1.3, 1.15, 1.5])
+with n1:
+    if st.button("🏠 Dashboard"):
         reroute("Dashboard")
-with a2:
+with n2:
     if st.button("💵 Overall Cashflow"):
         reroute("Overall Cashflow Master")
-with a3:
+with n3:
     if st.button("📄 Report Center"):
         reroute("Report Center")
-with a4:
+with n4:
     if st.button("📝 Advisor Notes"):
         reroute("Advisor Notes")
-with a5:
+with n5:
     if st.button("🧹 Clear Report"):
         st.session_state.report_rows = []
         st.success("Report cleared.")
-with a6:
+with n6:
     st.session_state.presentation_mode = st.toggle("🎤 Presentation Mode", value=st.session_state.presentation_mode)
-
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ============================================================
@@ -695,20 +726,20 @@ if not st.session_state.presentation_mode:
     st.markdown('<div class="ribbon">', unsafe_allow_html=True)
     c1, c2, c3, c4, c5 = st.columns(5)
     with c1:
-        st.session_state.client_name = st.text_input("Client Name", value=st.session_state.client_name, key="global_name_v101")
+        st.session_state.client_name = st.text_input("Client Name", value=st.session_state.client_name, key="global_name_v11")
     with c2:
-        st.session_state.client_age = st.number_input("Age", min_value=0, max_value=100, value=int(st.session_state.client_age), key="global_age_v101")
+        st.session_state.client_age = st.number_input("Age", min_value=0, max_value=100, value=int(st.session_state.client_age), key="global_age_v11")
     with c3:
-        st.session_state.client_income = st.number_input("Monthly Income (₹)", min_value=0.0, value=float(st.session_state.client_income), step=1000.0, key="global_income_v101")
+        st.session_state.client_income = st.number_input("Monthly Income (₹)", min_value=0.0, value=float(st.session_state.client_income), step=1000.0, key="global_income_v11")
     with c4:
-        st.session_state.client_city = st.text_input("City", value=st.session_state.client_city, key="global_city_v101")
+        st.session_state.client_city = st.text_input("City", value=st.session_state.client_city, key="global_city_v11")
     with c5:
-        risk_index = ["Conservative", "Moderate", "Aggressive"].index(st.session_state.client_risk)
-        st.session_state.client_risk = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"], index=risk_index, key="global_risk_v101")
+        idx = ["Conservative", "Moderate", "Aggressive"].index(st.session_state.client_risk)
+        st.session_state.client_risk = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"], index=idx, key="global_risk_v11")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ============================================================
-# GLOBAL KPIs
+# GLOBAL KPI STRIP
 # ============================================================
 global_monthly_income = st.session_state.client_income
 estimated_savings = global_monthly_income * 0.25
@@ -730,148 +761,124 @@ page = st.session_state.page
 # DASHBOARD
 # ============================================================
 if page == "Dashboard":
-    st.subheader("🏠 Executive Dashboard")
+    st.subheader("🏠 Executive Dashboard Elite")
 
-    tab1, tab2, tab3 = st.tabs(["📊 Overview", "🎯 Goal Buckets", "🚀 All Modules"])
+    # Quick Actions
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-head">⚡ Quick Action Tiles</div>', unsafe_allow_html=True)
+    q1, q2, q3, q4, q5, q6 = st.columns(6)
+    with q1: quick_tile("👤 New Client Meeting", "Capture client profile and planning inputs.", "Client Profile")
+    with q2: quick_tile("💵 Cashflow Review", "Review total income, expenses, EMI and investable surplus.", "Overall Cashflow Master")
+    with q3: quick_tile("🎯 Goal Check", "Quick goal planning with inflated cost and SIP.", "Goal Planner")
+    with q4: quick_tile("🛡️ Insurance Review", "Term cover and family floater guidance.", "Insurance Planner")
+    with q5: quick_tile("🧓 Retirement Review", "Retirement corpus and monthly SIP need.", "Retirement Planner")
+    with q6: quick_tile("📄 Generate Report", "Open summary report center and export.", "Report Center")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    with tab1:
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            st.markdown('<div class="section-card">', unsafe_allow_html=True)
-            st.markdown("### 📌 Client Snapshot")
-            st.write(f"**Client:** {st.session_state.client_name or 'Not Set'}")
-            st.write(f"**Age:** {st.session_state.client_age}")
-            st.write(f"**City:** {st.session_state.client_city}")
-            st.write(f"**Monthly Income:** {fmt_inr(st.session_state.client_income)}")
-            st.write(f"**Risk Profile:** {st.session_state.client_risk}")
-            st.markdown('</div>', unsafe_allow_html=True)
+    # Mega KPI strip
+    monthly_surplus_est = global_monthly_income * 0.25
+    savings_ratio_est = safe_div(monthly_surplus_est, max(global_monthly_income, 1)) * 100
+    emergency_gap_est = max(global_monthly_income * 6 - global_monthly_income * 2, 0)
+    insurance_gap_est = max(global_monthly_income * 12 * 15 - global_monthly_income * 12 * 8, 0)
+    retirement_readiness = min(100, round((st.session_state.client_age / 60) * 40 + (eq_alloc * 0.5)))
+    fire_progress = min(100, round((estimated_savings * 12 * 5) / max(global_monthly_income * 12 * 25, 1) * 1000))
 
-        with c2:
-            st.markdown('<div class="section-card">', unsafe_allow_html=True)
-            st.markdown("### 💚 Financial Health Score")
-            savings_ratio = safe_div(estimated_savings, max(global_monthly_income, 1)) * 100
-            score = min(100, round(40 + savings_ratio * 1.8))
-            st.metric("Health Score", f"{score}/100")
-            st.progress(score / 100)
-            st.write(f"**Interpretation:** {'Strong' if score >= 75 else 'Moderate' if score >= 55 else 'Needs Action'}")
-            st.markdown('</div>', unsafe_allow_html=True)
+    render_mega_kpis([
+        {"title": "Net Monthly Surplus", "value": fmt_inr(monthly_surplus_est), "sub": "Estimated from 25% model"},
+        {"title": "Savings Ratio", "value": f"{savings_ratio_est:.1f}%", "sub": "Advisor benchmark view"},
+        {"title": "Emergency Fund Gap", "value": fmt_inr(emergency_gap_est), "sub": "6 months vs current estimate"},
+        {"title": "Insurance Gap", "value": fmt_inr(insurance_gap_est), "sub": "15x income benchmark"},
+        {"title": "Retirement Readiness", "value": f"{retirement_readiness}%", "sub": "Indicative planning score"},
+        {"title": "FIRE Progress", "value": f"{fire_progress}%", "sub": "Indicative wealth momentum"},
+    ])
 
-        with c3:
-            st.markdown('<div class="section-card">', unsafe_allow_html=True)
-            st.markdown("### 🧩 Suggested Allocation")
-            st.write(f"**Equity:** {eq_alloc}%")
-            st.write(f"**Debt:** {debt_alloc}%")
-            st.write(f"**Gold:** {gold_alloc}%")
-            st.write(f"**Saved Report Items:** {len(report_df())}")
-            st.write(f"**PDF Ready:** {'Yes' if PDF_AVAILABLE else 'No'}")
-            st.markdown('</div>', unsafe_allow_html=True)
+    # Dashboard charts
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-head">📊 Dashboard Visual Intelligence</div>', unsafe_allow_html=True)
+    ch1, ch2, ch3 = st.columns(3)
 
+    with ch1:
+        st.markdown("#### 💵 Income vs Outflow Snapshot")
+        cf_df = pd.DataFrame({
+            "Category": ["Income", "Expenses", "EMI", "SIP", "Surplus"],
+            "Amount": [
+                global_monthly_income,
+                global_monthly_income * 0.45,
+                global_monthly_income * 0.15,
+                global_monthly_income * 0.10,
+                global_monthly_income * 0.30
+            ]
+        })
+        st.bar_chart(cf_df.set_index("Category"))
+
+    with ch2:
+        st.markdown("#### 🧩 Suggested Asset Allocation")
         alloc_df = pd.DataFrame({
-            "Asset Class": ["Equity", "Debt", "Gold"],
+            "Asset": ["Equity", "Debt", "Gold"],
             "Allocation %": [eq_alloc, debt_alloc, gold_alloc]
         })
-        st.markdown('<div class="section-card">', unsafe_allow_html=True)
-        st.markdown("### 📈 Allocation Snapshot")
-        st.bar_chart(alloc_df.set_index("Asset Class"))
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.bar_chart(alloc_df.set_index("Asset"))
 
-        st.markdown('<div class="section-card">', unsafe_allow_html=True)
-        st.markdown("### 💵 Quick Overall Cashflow Access")
-        q1, q2, q3 = st.columns([1.2, 1.2, 4])
-        with q1:
-            if st.button("Open Overall Cashflow Master", key="quick_overall_cf"):
-                reroute("Overall Cashflow Master")
-        with q2:
-            if st.button("Open Cashflow Planner", key="quick_cf_planner"):
-                reroute("Cashflow Planner")
-        with q3:
-            st.info("Use **Overall Cashflow Master** for complete income vs outflow analysis with financial health signal.")
+    with ch3:
+        st.markdown("#### 🎯 Goal Bucket Readiness")
+        goal_df = pd.DataFrame({
+            "Goal": ["Emergency", "Insurance", "Retirement", "Child", "Lifestyle"],
+            "Readiness %": [55, 60, retirement_readiness, 48, 65]
+        })
+        st.bar_chart(goal_df.set_index("Goal"))
+    st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown('</div>', unsafe_allow_html=True)
+    # Section-wise modules
+    # Wealth Planning
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-head">💰 Wealth Planning</div>', unsafe_allow_html=True)
+    c1, c2, c3, c4, c5 = st.columns(5)
+    with c1: module_card("📈 SIP Calculator", "Monthly SIP projection with growth table and chart.", "SIP Calculator", "Investment Planning", "Launch")
+    with c2: module_card("💰 Lumpsum Calculator", "One-time investment future value planning.", "Lumpsum Calculator", "Investment Planning", "Launch")
+    with c3: module_card("📈 Step-up SIP", "Step-up SIP projection with yearly growth path.", "Step-up SIP", "Advanced SIP", "Launch")
+    with c4: module_card("💸 SWP Calculator", "Corpus withdrawal sustainability analysis.", "SWP Calculator", "Retirement Income", "Launch")
+    with c5: module_card("🧩 Asset Allocation", "Age and risk based allocation suggestion.", "Asset Allocation", "Portfolio Strategy", "Launch")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    with tab2:
-        st.markdown('<div class="section-card">', unsafe_allow_html=True)
-        st.markdown("### 🎯 Goal Buckets (Quick Client Conversation Starters)")
-        g1, g2, g3, g4 = st.columns(4)
-        with g1:
-            st.markdown("""
-            <div class="goal-bucket">
-                <h4>🧒 Child Future</h4>
-                <p style="color:#94a3b8;font-size:12px;">Education • Marriage • Protection</p>
-            </div>
-            """, unsafe_allow_html=True)
-            if st.button("Open Child Planner"):
-                reroute("Child Planner")
-        with g2:
-            st.markdown("""
-            <div class="goal-bucket">
-                <h4>🧓 Retirement</h4>
-                <p style="color:#94a3b8;font-size:12px;">Corpus • Income • SWP • FIRE</p>
-            </div>
-            """, unsafe_allow_html=True)
-            if st.button("Open Retirement Suite"):
-                reroute("Retirement Planner")
-        with g3:
-            st.markdown("""
-            <div class="goal-bucket">
-                <h4>🏠 Lifestyle Goals</h4>
-                <p style="color:#94a3b8;font-size:12px;">Car • Gadget • Travel • Major Purchases</p>
-            </div>
-            """, unsafe_allow_html=True)
-            if st.button("Open Lifestyle Planner"):
-                reroute("Car Planner")
-        with g4:
-            st.markdown("""
-            <div class="goal-bucket">
-                <h4>🛡️ Protection & Stability</h4>
-                <p style="color:#94a3b8;font-size:12px;">Insurance • Emergency Fund • Cashflow</p>
-            </div>
-            """, unsafe_allow_html=True)
-            if st.button("Open Protection Suite"):
-                reroute("Insurance Planner")
-        st.markdown('</div>', unsafe_allow_html=True)
+    # Goal Planning
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-head">🎯 Goal Planning</div>', unsafe_allow_html=True)
+    c1, c2, c3, c4 = st.columns(4)
+    with c1: module_card("🎯 Goal Planner", "Inflated goal cost + SIP / lumpsum planning.", "Goal Planner", "Goal Planning", "Launch")
+    with c2: module_card("👶 Child Planner", "Education and marriage planning for child future.", "Child Planner", "Family Goals", "Launch")
+    with c3: module_card("🧓 Retirement Planner", "Corpus and SIP requirement for retirement.", "Retirement Planner", "Retirement Planning", "Launch")
+    with c4: module_card("🔥 FIRE Calculator", "Financial independence target and timeline.", "FIRE Calculator", "Freedom Planning", "Launch")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    with tab3:
-        st.markdown('<div class="section-card">', unsafe_allow_html=True)
-        st.markdown("### 🚀 All Modules")
+    # Lifestyle Planning
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-head">🚗 Lifestyle Planning</div>', unsafe_allow_html=True)
+    c1, c2, c3, c4 = st.columns(4)
+    with c1: module_card("🚗 Car Planner", "Car affordability and EMI check.", "Car Planner", "Lifestyle Goal", "Launch")
+    with c2: module_card("📱 Gadget Planner", "iPhone / gadget saving plan.", "Gadget Planner", "Lifestyle Goal", "Launch")
+    with c3: module_card("✈️ Vacation Planner", "Travel savings planner.", "Vacation Planner", "Lifestyle Goal", "Launch")
+    with c4: module_card("🏦 EMI Planner", "EMI calculator and loan eligibility.", "EMI Planner", "Liability Planning", "Launch")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-        modules = [
-            ("👤 Client Profile", "Capture client details, liabilities, surplus and risk profile.", "Client Profile", "Client Discovery"),
-            ("💵 Overall Cashflow Master", "Full income vs outflow engine with financial health signal.", "Overall Cashflow Master", "Master Cashflow"),
-            ("📈 SIP Calculator", "Monthly SIP projection with yearly table and growth chart.", "SIP Calculator", "Investment Planning"),
-            ("💰 Lumpsum Calculator", "One-time investment future value planning.", "Lumpsum Calculator", "Investment Planning"),
-            ("💸 SWP Calculator", "Corpus withdrawal sustainability analysis.", "SWP Calculator", "Retirement Income"),
-            ("🎯 Goal Planner", "Inflated goal cost + required SIP or lumpsum.", "Goal Planner", "Goal Planning"),
-            ("🧓 Retirement Planner", "Retirement corpus and SIP requirement.", "Retirement Planner", "Retirement Planning"),
-            ("👶 Child Planner", "Education and marriage planning for children.", "Child Planner", "Family Goals"),
-            ("🏦 EMI / Loan Planner", "EMI calculator and loan eligibility.", "EMI Planner", "Liability Planning"),
-            ("🚗 Car Purchase Planner", "Car affordability and EMI check.", "Car Planner", "Lifestyle Goal"),
-            ("📱 Gadget Planner", "iPhone / gadget saving plan.", "Gadget Planner", "Lifestyle Goal"),
-            ("✈️ Vacation Planner", "Travel savings planner.", "Vacation Planner", "Lifestyle Goal"),
-            ("🛡️ Insurance Need", "Life cover and health cover guidance.", "Insurance Planner", "Protection Planning"),
-            ("🚨 Emergency Fund", "Emergency reserve gap analysis.", "Emergency Fund", "Protection Planning"),
-            ("📊 Net Worth", "Assets vs liabilities dashboard.", "Net Worth", "Wealth Snapshot"),
-            ("💵 Cashflow Planner", "Simple monthly income, expenses, EMI and savings ratio.", "Cashflow Planner", "Cashflow Planning"),
-            ("🔥 FIRE Calculator", "Financial freedom target and timeline.", "FIRE Calculator", "Freedom Planning"),
-            ("📉 Inflation Calculator", "Future cost impact of inflation.", "Inflation Calculator", "Reality Check"),
-            ("📈 Step-up SIP", "Step-up SIP planning with projection table.", "Step-up SIP", "Advanced SIP"),
-            ("🧩 Asset Allocation", "Age and risk based asset allocation.", "Asset Allocation", "Portfolio Strategy"),
-            ("🧾 Tax Projection", "Basic old vs new regime view.", "Tax Projection", "Tax Planning"),
-            ("📝 Advisor Notes", "Save professional advisor recommendations.", "Advisor Notes", "Consultation"),
-            ("📄 Report Center", "Client summary, CSV and PDF export.", "Report Center", "Output Center"),
-        ]
+    # Protection & Stability
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-head">🛡️ Protection & Stability</div>', unsafe_allow_html=True)
+    c1, c2, c3, c4 = st.columns(4)
+    with c1: module_card("💵 Overall Cashflow Master", "Complete income vs outflow + financial health signal.", "Overall Cashflow Master", "Master Cashflow", "Launch")
+    with c2: module_card("🛡️ Insurance Need", "Life cover and health cover guidance.", "Insurance Planner", "Protection Planning", "Launch")
+    with c3: module_card("🚨 Emergency Fund", "Emergency reserve gap analysis.", "Emergency Fund", "Protection Planning", "Launch")
+    with c4: module_card("📊 Net Worth", "Assets vs liabilities dashboard.", "Net Worth", "Wealth Snapshot", "Launch")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-        idx = 0
-        rows_needed = math.ceil(len(modules) / 4)
-        for _ in range(rows_needed):
-            cols = st.columns(4)
-            for col in cols:
-                if idx < len(modules):
-                    title, desc, key, tag = modules[idx]
-                    with col:
-                        module_card(title, desc, key, tag)
-                    idx += 1
-        st.markdown('</div>', unsafe_allow_html=True)
+    # Advisor Desk
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-head">📄 Advisor Desk</div>', unsafe_allow_html=True)
+    c1, c2, c3, c4 = st.columns(4)
+    with c1: module_card("👤 Client Profile", "Capture client details, liabilities and surplus.", "Client Profile", "Client Discovery", "Launch")
+    with c2: module_card("💵 Cashflow Planner", "Simple monthly income vs expenses planner.", "Cashflow Planner", "Cashflow Planning", "Launch")
+    with c3: module_card("📝 Advisor Notes", "Save professional advisor recommendations.", "Advisor Notes", "Consultation", "Launch")
+    with c4: module_card("📄 Report Center", "Client summary, CSV and PDF export.", "Report Center", "Output Center", "Launch")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ============================================================
 # CLIENT PROFILE
@@ -883,16 +890,16 @@ elif page == "Client Profile":
     col1, col2, col3 = st.columns(3)
     with col1:
         name = st.text_input("Client Name", value=st.session_state.client_name)
-        age = st.number_input("Age", 0, 100, value=int(st.session_state.client_age), key="cp_age_v101")
+        age = st.number_input("Age", 0, 100, value=int(st.session_state.client_age), key="cp_age_v11")
         spouse_age = st.number_input("Spouse Age", 0, 100, value=max(int(st.session_state.client_age)-2, 0))
         dependents = st.number_input("No. of Dependents", 0, 10, value=2)
     with col2:
-        monthly_income = st.number_input("Monthly Income (₹)", 0.0, value=float(st.session_state.client_income), step=1000.0, key="cp_income_v101")
+        monthly_income = st.number_input("Monthly Income (₹)", 0.0, value=float(st.session_state.client_income), step=1000.0, key="cp_income_v11")
         monthly_expense = st.number_input("Monthly Expense (₹)", 0.0, value=float(st.session_state.client_income * 0.7), step=1000.0)
         current_savings = st.number_input("Current Savings / Investments (₹)", 0.0, value=500000.0, step=10000.0)
         liabilities = st.number_input("Total Liabilities (₹)", 0.0, value=1000000.0, step=10000.0)
     with col3:
-        risk = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"], index=["Conservative", "Moderate", "Aggressive"].index(st.session_state.client_risk), key="cp_risk_v101")
+        risk = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"], index=["Conservative", "Moderate", "Aggressive"].index(st.session_state.client_risk), key="cp_risk_v11")
         city = st.text_input("City", value=st.session_state.client_city)
         occupation = st.text_input("Occupation", value="Salaried")
         annual_increment = st.number_input("Expected Annual Income Growth (%)", 0.0, 50.0, value=8.0)
@@ -957,7 +964,6 @@ elif page == "Overall Cashflow Master":
     savings_ratio = safe_div(max(surplus, 0) + sip_outflow, max(total_income, 1)) * 100
     emi_ratio = safe_div(emi_outflow, max(total_income, 1)) * 100
     expense_ratio = safe_div(fixed_exp + variable_exp, max(total_income, 1)) * 100
-
     suggested_investable_surplus = max(surplus * 0.7, 0)
 
     if surplus < 0:
@@ -980,13 +986,13 @@ elif page == "Overall Cashflow Master":
         {"title": "Savings Ratio", "value": f"{savings_ratio:.1f}%"},
         {"title": "EMI Ratio", "value": f"{emi_ratio:.1f}%"},
         {"title": "Expense Ratio", "value": f"{expense_ratio:.1f}%"},
-        {"title": "Investable Surplus Suggestion", "value": fmt_inr(suggested_investable_surplus)},
+        {"title": "Investable Surplus", "value": fmt_inr(suggested_investable_surplus)},
     ])
 
     cf_breakdown = pd.DataFrame({
         "Category": [
-            "Salary Income", "Business Income", "Rental Income", "Other Income",
-            "Fixed Expenses", "Variable Expenses", "EMI", "Insurance", "SIP/Investments"
+            "Salary", "Business", "Rental", "Other",
+            "Fixed", "Variable", "EMI", "Insurance", "SIP"
         ],
         "Amount": [
             salary_income, business_income, rental_income, other_income,
@@ -994,23 +1000,8 @@ elif page == "Overall Cashflow Master":
         ]
     })
 
-    st.markdown('<div class="section-card">', unsafe_allow_html=True)
-    st.markdown("### 📊 Cashflow Breakdown")
     st.dataframe(cf_breakdown, use_container_width=True)
     st.bar_chart(cf_breakdown.set_index("Category"))
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="section-card">', unsafe_allow_html=True)
-    st.markdown("### 🧠 Advisor Interpretation")
-    if health_signal == "Strong":
-        st.success("Excellent cashflow structure. Client can increase goal-based investments or accelerate retirement planning.")
-    elif health_signal == "Moderate":
-        st.warning("Cashflow is workable but needs optimization. Focus on improving savings ratio and keeping EMI under control.")
-    elif health_signal == "Weak":
-        st.warning("Cashflow stress visible. Reduce discretionary expenses and avoid additional EMI burden before new goals.")
-    else:
-        st.error("Cashflow deficit. Immediate action required: reduce expenses, restructure liabilities, and pause non-essential spending.")
-    st.markdown('</div>', unsafe_allow_html=True)
 
     if st.button("➕ Add Overall Cashflow Master to Report"):
         add_report(
@@ -1292,567 +1283,4 @@ elif page == "EMI Planner":
     with tabs[1]:
         c1, c2, c3, c4 = st.columns(4)
         with c1:
-            income = st.number_input("Monthly Income (₹)", 0.0, value=float(st.session_state.client_income), step=1000.0)
-        with c2:
-            foir = st.number_input("FOIR (%)", 10.0, 90.0, value=50.0, step=1.0)
-        with c3:
-            existing_emi = st.number_input("Existing EMI (₹)", 0.0, value=10000.0, step=1000.0)
-        with c4:
-            rate2 = st.number_input("Interest Rate (% p.a.)", 0.0, value=9.0, step=0.1)
-
-        years2 = st.number_input("Tenure (Years)", 1.0, 40.0, value=20.0, step=1.0)
-        eligible_loan, max_emi = loan_eligibility(income, foir, existing_emi, rate2, years2)
-
-        render_kpi_cards([
-            {"title": "Max EMI Capacity", "value": fmt_inr(max_emi)},
-            {"title": "Estimated Eligible Loan", "value": fmt_inr(eligible_loan)},
-            {"title": "FOIR", "value": f"{foir:.0f}%"},
-            {"title": "Net EMI Headroom", "value": fmt_inr(max_emi)},
-        ])
-
-# ============================================================
-# CAR PLANNER
-# ============================================================
-elif page == "Car Planner":
-    back_button()
-    st.subheader("🚗 Car Purchase Planner")
-
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        car_cost = st.number_input("Car Cost (₹)", 0.0, value=1200000.0, step=10000.0)
-    with c2:
-        down_pct = st.number_input("Down Payment (%)", 0.0, 100.0, value=20.0, step=1.0)
-    with c3:
-        loan_rate = st.number_input("Car Loan Rate (% p.a.)", 0.0, value=9.0, step=0.1)
-    with c4:
-        tenure = st.number_input("Loan Tenure (Years)", 1.0, 10.0, value=5.0, step=1.0)
-
-    down_amt = car_cost * down_pct / 100
-    loan_amt = car_cost - down_amt
-    emi_val = emi(loan_amt, loan_rate, tenure)
-
-    render_kpi_cards([
-        {"title": "Down Payment", "value": fmt_inr(down_amt)},
-        {"title": "Loan Amount", "value": fmt_inr(loan_amt)},
-        {"title": "Monthly EMI", "value": fmt_inr(emi_val)},
-        {"title": "Affordable? (30% Rule)", "value": "Yes" if emi_val <= st.session_state.client_income * 0.3 else "Stretch"},
-    ])
-
-    if st.button("➕ Add Car Plan to Report"):
-        add_report("Car Planner", "Car EMI", fmt_inr(emi_val), f"Car {fmt_inr(car_cost)} with {down_pct}% down")
-        st.success("Added to report.")
-
-# ============================================================
-# GADGET PLANNER
-# ============================================================
-elif page == "Gadget Planner":
-    back_button()
-    st.subheader("📱 iPhone / Gadget Purchase Planner")
-
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        gadget_cost = st.number_input("Gadget Cost (₹)", 0.0, value=100000.0, step=1000.0)
-    with c2:
-        months = st.number_input("Target Purchase In (Months)", 1, 60, value=12)
-    with c3:
-        return_rate = st.number_input("Parking Return (% p.a.)", 0.0, value=6.0, step=0.1)
-
-    years = months / 12
-    req_sip = required_sip_for_goal(gadget_cost, return_rate, years)
-
-    render_kpi_cards([
-        {"title": "Target Cost", "value": fmt_inr(gadget_cost)},
-        {"title": "Timeline", "value": f"{months} Months"},
-        {"title": "Required Monthly Saving", "value": fmt_inr(req_sip)},
-        {"title": "Advice", "value": "Cash > EMI" if req_sip <= st.session_state.client_income * 0.1 else "Delay / Upgrade Later"},
-    ])
-
-    if st.button("➕ Add Gadget Plan to Report"):
-        add_report("Gadget Planner", "Required Monthly Saving", fmt_inr(req_sip), f"Gadget {fmt_inr(gadget_cost)} in {months} months")
-        st.success("Added to report.")
-
-# ============================================================
-# VACATION PLANNER
-# ============================================================
-elif page == "Vacation Planner":
-    back_button()
-    st.subheader("✈️ Vacation / Travel Planner")
-
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        trip_cost = st.number_input("Current Trip Cost (₹)", 0.0, value=300000.0, step=5000.0)
-    with c2:
-        months = st.number_input("Trip After (Months)", 1, 60, value=18)
-    with c3:
-        travel_infl = st.number_input("Travel Inflation (%)", 0.0, value=7.0, step=0.1)
-
-    years = months / 12
-    future_cost = inflated_goal(trip_cost, travel_infl, years)
-    req_sip = required_sip_for_goal(future_cost, 6.0, years)
-
-    render_kpi_cards([
-        {"title": "Future Trip Cost", "value": fmt_inr(future_cost)},
-        {"title": "Monthly Saving Needed", "value": fmt_inr(req_sip)},
-        {"title": "Timeline", "value": f"{months} Months"},
-        {"title": "Best Bucket", "value": "RD / Liquid / Ultra Short"},
-    ])
-
-    if st.button("➕ Add Vacation Plan to Report"):
-        add_report("Vacation Planner", "Monthly Saving Needed", fmt_inr(req_sip), f"Trip target {fmt_inr(future_cost)}")
-        st.success("Added to report.")
-
-# ============================================================
-# INSURANCE PLANNER
-# ============================================================
-elif page == "Insurance Planner":
-    back_button()
-    st.subheader("🛡️ Insurance Need Calculator")
-
-    tabs = st.tabs(["Life Insurance", "Health Insurance"])
-
-    with tabs[0]:
-        c1, c2, c3, c4 = st.columns(4)
-        with c1:
-            annual_income = st.number_input("Annual Income (₹)", 0.0, value=float(st.session_state.client_income * 12), step=10000.0)
-        with c2:
-            years_to_work = st.number_input("Years to Retirement", 1, 50, value=max(60 - st.session_state.client_age, 1))
-        with c3:
-            personal_expense = st.number_input("Personal Expense Ratio (%)", 0.0, 100.0, value=30.0)
-        with c4:
-            liabilities = st.number_input("Outstanding Liabilities (₹)", 0.0, value=2000000.0, step=10000.0)
-
-        hlv = insurance_human_life_value(annual_income, years_to_work, personal_expense)
-        final_cover = hlv + liabilities
-
-        render_kpi_cards([
-            {"title": "HLV Cover", "value": fmt_inr(hlv)},
-            {"title": "Liability Add-on", "value": fmt_inr(liabilities)},
-            {"title": "Suggested Term Cover", "value": fmt_inr(final_cover)},
-            {"title": "Rule Check", "value": "Adequate if ≥ 15x Income"},
-        ])
-
-        if st.button("➕ Add Life Cover to Report"):
-            add_report("Insurance Planner", "Suggested Term Cover", fmt_inr(final_cover), f"HLV {fmt_inr(hlv)} + Liabilities")
-            st.success("Added to report.")
-
-    with tabs[1]:
-        family_members = st.number_input("Family Members Covered", 1, 10, value=4)
-        city_tier = st.selectbox("City Category", ["Tier 1", "Tier 2", "Tier 3"])
-        base_cover = 1000000 if city_tier == "Tier 1" else 700000 if city_tier == "Tier 2" else 500000
-        suggested_cover = base_cover + max((family_members - 2), 0) * 250000
-        st.metric("Suggested Family Floater Health Cover", fmt_inr(suggested_cover))
-
-# ============================================================
-# EMERGENCY FUND
-# ============================================================
-elif page == "Emergency Fund":
-    back_button()
-    st.subheader("🚨 Emergency Fund Planner")
-
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        monthly_exp = st.number_input("Monthly Household Expense (₹)", 0.0, value=50000.0, step=1000.0)
-    with c2:
-        months = st.slider("Emergency Fund Months", 3, 24, 6)
-    with c3:
-        current_emergency = st.number_input("Current Emergency Fund (₹)", 0.0, value=100000.0, step=5000.0)
-
-    req = emergency_fund(monthly_exp, months)
-    gap = max(req - current_emergency, 0)
-
-    render_kpi_cards([
-        {"title": "Required Emergency Fund", "value": fmt_inr(req)},
-        {"title": "Current Available", "value": fmt_inr(current_emergency)},
-        {"title": "Gap", "value": fmt_inr(gap)},
-        {"title": "Suggested Bucket", "value": "Savings + Liquid Fund"},
-    ])
-
-    if st.button("➕ Add Emergency Fund to Report"):
-        add_report("Emergency Fund", "Required Fund", fmt_inr(req), f"Gap {fmt_inr(gap)}")
-        st.success("Added to report.")
-
-# ============================================================
-# NET WORTH
-# ============================================================
-elif page == "Net Worth":
-    back_button()
-    st.subheader("📊 Net Worth Dashboard")
-
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown("### Assets")
-        cash = st.number_input("Cash / Bank (₹)", 0.0, value=200000.0, step=5000.0)
-        mf = st.number_input("Mutual Funds (₹)", 0.0, value=800000.0, step=10000.0)
-        stocks = st.number_input("Stocks (₹)", 0.0, value=300000.0, step=10000.0)
-        epf = st.number_input("EPF / PPF / NPS (₹)", 0.0, value=600000.0, step=10000.0)
-        gold_val = st.number_input("Gold (₹)", 0.0, value=250000.0, step=5000.0)
-        real_estate = st.number_input("Real Estate (₹)", 0.0, value=5000000.0, step=100000.0)
-
-    with c2:
-        st.markdown("### Liabilities")
-        home_loan = st.number_input("Home Loan Outstanding (₹)", 0.0, value=2500000.0, step=10000.0)
-        car_loan = st.number_input("Car Loan Outstanding (₹)", 0.0, value=300000.0, step=10000.0)
-        personal_loan = st.number_input("Personal Loan (₹)", 0.0, value=100000.0, step=5000.0)
-        credit_card = st.number_input("Credit Card Outstanding (₹)", 0.0, value=25000.0, step=1000.0)
-
-    total_assets = cash + mf + stocks + epf + gold_val + real_estate
-    total_liab = home_loan + car_loan + personal_loan + credit_card
-    networth = total_assets - total_liab
-
-    render_kpi_cards([
-        {"title": "Total Assets", "value": fmt_inr(total_assets)},
-        {"title": "Total Liabilities", "value": fmt_inr(total_liab)},
-        {"title": "Net Worth", "value": fmt_inr(networth)},
-        {"title": "Debt Ratio", "value": f"{safe_div(total_liab, max(total_assets,1))*100:.1f}%"},
-    ])
-
-    asset_df = pd.DataFrame({
-        "Asset": ["Cash", "Mutual Funds", "Stocks", "EPF/PPF/NPS", "Gold", "Real Estate"],
-        "Value": [cash, mf, stocks, epf, gold_val, real_estate]
-    })
-    st.bar_chart(asset_df.set_index("Asset"))
-
-    if st.button("➕ Add Net Worth to Report"):
-        add_report("Net Worth", "Current Net Worth", fmt_inr(networth), f"Assets {fmt_inr(total_assets)}, Liabilities {fmt_inr(total_liab)}")
-        st.success("Added to report.")
-
-# ============================================================
-# CASHFLOW
-# ============================================================
-elif page == "Cashflow Planner":
-    back_button()
-    st.subheader("💵 Cashflow Planner")
-
-    c1, c2 = st.columns(2)
-    with c1:
-        income_salary = st.number_input("Salary Income (₹/month)", 0.0, value=float(st.session_state.client_income), step=1000.0)
-        income_other = st.number_input("Other Income (₹/month)", 0.0, value=5000.0, step=500.0)
-    with c2:
-        fixed_exp = st.number_input("Fixed Expenses (₹/month)", 0.0, value=30000.0, step=1000.0)
-        variable_exp = st.number_input("Variable Expenses (₹/month)", 0.0, value=15000.0, step=1000.0)
-        emis = st.number_input("Total EMIs (₹/month)", 0.0, value=10000.0, step=1000.0)
-        investments = st.number_input("Current Investments (₹/month)", 0.0, value=10000.0, step=1000.0)
-
-    total_income = income_salary + income_other
-    total_outflow = fixed_exp + variable_exp + emis + investments
-    surplus = total_income - total_outflow
-    savings_rate = safe_div(investments + max(surplus, 0), max(total_income, 1)) * 100
-
-    render_kpi_cards([
-        {"title": "Total Income", "value": fmt_inr(total_income)},
-        {"title": "Total Outflow", "value": fmt_inr(total_outflow)},
-        {"title": "Monthly Surplus", "value": fmt_inr(surplus)},
-        {"title": "Savings Rate", "value": f"{savings_rate:.1f}%"},
-    ])
-
-    cf_df = pd.DataFrame({
-        "Category": ["Income", "Expenses+EMI+Investments"],
-        "Amount": [total_income, total_outflow]
-    })
-    st.bar_chart(cf_df.set_index("Category"))
-
-    if st.button("➕ Add Cashflow to Report"):
-        add_report("Cashflow Planner", "Monthly Surplus", fmt_inr(surplus), f"Savings Rate {savings_rate:.1f}%")
-        st.success("Added to report.")
-
-# ============================================================
-# FIRE
-# ============================================================
-elif page == "FIRE Calculator":
-    back_button()
-    st.subheader("🔥 FIRE / Financial Freedom Calculator")
-
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        annual_expense = st.number_input("Annual Expense (₹)", 0.0, value=600000.0, step=10000.0)
-    with c2:
-        swr = st.number_input("Safe Withdrawal Rate (%)", 1.0, 10.0, value=4.0, step=0.1)
-    with c3:
-        current_corpus = st.number_input("Current Invested Corpus (₹)", 0.0, value=3000000.0, step=10000.0)
-    with c4:
-        annual_contribution = st.number_input("Annual Contribution (₹)", 0.0, value=300000.0, step=10000.0)
-
-    return_rate = st.number_input("Expected Portfolio Return (% p.a.)", 0.0, value=11.0, step=0.1)
-
-    fire_number = annual_expense / (swr / 100)
-    years = 0
-    corpus = current_corpus
-    rows = []
-    while corpus < fire_number and years < 100:
-        years += 1
-        corpus = corpus * (1 + return_rate / 100) + annual_contribution
-        rows.append({"Year": years, "Corpus": round(corpus, 2)})
-
-    render_kpi_cards([
-        {"title": "FIRE Number", "value": fmt_inr(fire_number)},
-        {"title": "Current Corpus", "value": fmt_inr(current_corpus)},
-        {"title": "Gap", "value": fmt_inr(max(fire_number - current_corpus, 0))},
-        {"title": "Years to FIRE", "value": f"{years}" if corpus >= fire_number else "100+"},
-    ])
-
-    df = pd.DataFrame(rows)
-    if not df.empty:
-        st.line_chart(df.set_index("Year"))
-
-    if st.button("➕ Add FIRE Result to Report"):
-        add_report("FIRE Calculator", "FIRE Number", fmt_inr(fire_number), f"Years to FIRE {years}")
-        st.success("Added to report.")
-
-# ============================================================
-# INFLATION
-# ============================================================
-elif page == "Inflation Calculator":
-    back_button()
-    st.subheader("📉 Inflation Impact Calculator")
-
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        current_amount = st.number_input("Current Cost / Expense (₹)", 0.0, value=100000.0, step=1000.0)
-    with c2:
-        inflation = st.number_input("Inflation (%)", 0.0, value=6.0, step=0.1)
-    with c3:
-        years = st.number_input("Years", 0.0, value=10.0, step=1.0)
-
-    future_amount = inflated_goal(current_amount, inflation, years)
-    purchasing_power_loss = future_amount - current_amount
-
-    render_kpi_cards([
-        {"title": "Current Amount", "value": fmt_inr(current_amount)},
-        {"title": "Future Equivalent", "value": fmt_inr(future_amount)},
-        {"title": "Increase Due to Inflation", "value": fmt_inr(purchasing_power_loss)},
-        {"title": "Inflation", "value": f"{inflation:.2f}%"},
-    ])
-
-    rows = [{"Year": y, "Future Cost": round(inflated_goal(current_amount, inflation, y), 2)} for y in range(1, int(years) + 1)]
-    df = pd.DataFrame(rows)
-    if not df.empty:
-        st.line_chart(df.set_index("Year"))
-
-    if st.button("➕ Add Inflation Result to Report"):
-        add_report("Inflation Calculator", "Future Cost", fmt_inr(future_amount), f"{fmt_inr(current_amount)} growing @ {inflation}%")
-        st.success("Added to report.")
-
-# ============================================================
-# STEP-UP SIP
-# ============================================================
-elif page == "Step-up SIP":
-    back_button()
-    st.subheader("📈 Step-up SIP Planner")
-
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        sip = st.number_input("Starting Monthly SIP (₹)", 0.0, value=10000.0, step=500.0)
-    with c2:
-        stepup = st.number_input("Annual Step-up (%)", 0.0, value=10.0, step=1.0)
-    with c3:
-        rate = st.number_input("Expected Return (% p.a.)", 0.0, value=12.0, step=0.1)
-    with c4:
-        years = st.number_input("Duration (Years)", 1.0, value=15.0, step=1.0)
-
-    fv = future_value_stepup_sip(sip, rate, years, stepup)
-    df = stepup_projection_table(sip, rate, years, stepup)
-    total_invested = df["Total Invested"].iloc[-1] if not df.empty else sip * years * 12
-    gain = fv - total_invested
-
-    render_kpi_cards([
-        {"title": "Total Invested", "value": fmt_inr(total_invested)},
-        {"title": "Estimated Future Value", "value": fmt_inr(fv)},
-        {"title": "Estimated Gain", "value": fmt_inr(gain)},
-        {"title": "Annual Step-up", "value": f"{stepup:.1f}%"},
-    ])
-
-    st.dataframe(df, use_container_width=True)
-    if not df.empty:
-        st.line_chart(df.set_index("Year")[["Total Invested", "Portfolio Value"]])
-
-    if st.button("➕ Add Step-up SIP to Report"):
-        add_report("Step-up SIP", "Future Value", fmt_inr(fv), f"Start SIP {fmt_inr(sip)}, step-up {stepup}%")
-        st.success("Added to report.")
-
-# ============================================================
-# ASSET ALLOCATION
-# ============================================================
-elif page == "Asset Allocation":
-    back_button()
-    st.subheader("🧩 Asset Allocation Suggestion")
-
-    c1, c2 = st.columns(2)
-    with c1:
-        age = st.number_input("Age", 0, 100, value=int(st.session_state.client_age))
-    with c2:
-        risk = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"], index=["Conservative", "Moderate", "Aggressive"].index(st.session_state.client_risk))
-
-    eq, debt, gold = asset_allocation(age, risk)
-    alloc_df = pd.DataFrame({
-        "Asset Class": ["Equity", "Debt", "Gold"],
-        "Allocation %": [eq, debt, gold]
-    })
-
-    render_kpi_cards([
-        {"title": "Equity", "value": f"{eq}%"},
-        {"title": "Debt", "value": f"{debt}%"},
-        {"title": "Gold", "value": f"{gold}%"},
-        {"title": "Profile", "value": risk},
-    ])
-
-    st.dataframe(alloc_df, use_container_width=True)
-    st.bar_chart(alloc_df.set_index("Asset Class"))
-
-    if st.button("➕ Add Allocation to Report"):
-        add_report("Asset Allocation", "Suggested Allocation", f"Equity {eq}% / Debt {debt}% / Gold {gold}%", f"Risk {risk}")
-        st.success("Added to report.")
-
-# ============================================================
-# TAX PROJECTION
-# ============================================================
-elif page == "Tax Projection":
-    back_button()
-    st.subheader("🧾 Tax Saving Projection (Basic)")
-
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        annual_income = st.number_input("Annual Gross Income (₹)", 0.0, value=float(st.session_state.client_income * 12), step=10000.0)
-    with c2:
-        section_80c = st.number_input("80C Eligible Investment (₹)", 0.0, value=150000.0, step=5000.0)
-    with c3:
-        other_deductions = st.number_input("Other Deductions (₹)", 0.0, value=50000.0, step=5000.0)
-
-    old_tax_before = basic_tax_old_regime(annual_income)
-    old_tax_after = basic_tax_old_regime(max(annual_income - min(section_80c, 150000) - other_deductions, 0))
-    tax_saved_old = max(old_tax_before - old_tax_after, 0)
-    new_tax = basic_tax_new_regime(annual_income)
-
-    render_kpi_cards([
-        {"title": "Old Regime Tax (Before)", "value": fmt_inr(old_tax_before)},
-        {"title": "Old Regime Tax (After)", "value": fmt_inr(old_tax_after)},
-        {"title": "Tax Saved (Old Regime)", "value": fmt_inr(tax_saved_old)},
-        {"title": "New Regime Tax", "value": fmt_inr(new_tax)},
-    ])
-
-    suggestion = "Old Regime may be better" if old_tax_after < new_tax else "New Regime may be better"
-    st.info(f"**Basic Suggestion:** {suggestion}")
-
-    if st.button("➕ Add Tax Projection to Report"):
-        add_report("Tax Projection", "Suggested Regime", suggestion, f"Old after deductions {fmt_inr(old_tax_after)} vs New {fmt_inr(new_tax)}")
-        st.success("Added to report.")
-
-# ============================================================
-# ADVISOR NOTES
-# ============================================================
-elif page == "Advisor Notes":
-    back_button()
-    st.subheader("📝 Advisor Notes")
-
-    notes = st.text_area(
-        "Enter Advisor Notes / Recommendations",
-        value=st.session_state.advisor_notes,
-        height=300,
-        placeholder="Example: Increase SIP by 10% yearly, build 6 months emergency fund, take term cover of ₹1 Cr, reduce unsecured debt..."
-    )
-    st.session_state.advisor_notes = notes
-    st.success("Notes auto-saved in session.")
-
-    if st.button("➕ Add Advisor Notes Marker to Report"):
-        add_report("Advisor Notes", "Notes Added", "Yes", "Advisor recommendations available in report.")
-        st.success("Added to report.")
-
-# ============================================================
-# REPORT CENTER
-# ============================================================
-elif page == "Report Center":
-    back_button()
-    st.subheader("📄 Client Summary Dashboard / Report Center")
-
-    df = report_df()
-
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        st.metric("Client", st.session_state.client_name or "Not Set")
-    with c2:
-        st.metric("Age", st.session_state.client_age)
-    with c3:
-        st.metric("Monthly Income", fmt_inr(st.session_state.client_income))
-    with c4:
-        st.metric("Report Items", len(df))
-
-    st.markdown('<div class="section-card">', unsafe_allow_html=True)
-    st.markdown("### 📋 Summary Report Table")
-    st.dataframe(df, use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="section-card">', unsafe_allow_html=True)
-    st.markdown("### 📝 Advisor Notes")
-    st.write(st.session_state.advisor_notes if st.session_state.advisor_notes else "No advisor notes added yet.")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        if not df.empty:
-            st.download_button(
-                "⬇️ Download Summary CSV",
-                data=to_csv_download(df),
-                file_name="freedom_ultra_pro_v10_1_summary.csv",
-                mime="text/csv"
-            )
-    with c2:
-        if PDF_AVAILABLE:
-            pdf_buffer = build_pdf(
-                df,
-                {
-                    "name": st.session_state.client_name,
-                    "age": st.session_state.client_age,
-                    "income": fmt_inr(st.session_state.client_income),
-                    "city": st.session_state.client_city,
-                    "risk": st.session_state.client_risk
-                },
-                st.session_state.advisor_notes
-            )
-            if pdf_buffer:
-                st.download_button(
-                    "⬇️ Download PDF Report",
-                    data=pdf_buffer,
-                    file_name="freedom_ultra_pro_v10_1_report.pdf",
-                    mime="application/pdf"
-                )
-        else:
-            st.warning("Install reportlab for PDF.")
-    with c3:
-        if st.button("🧹 Clear Report Summary (Here)"):
-            st.session_state.report_rows = []
-            st.success("Report summary cleared.")
-            st.rerun()
-
-# ============================================================
-# ALWAYS VISIBLE QUICK REPORT CENTER
-# ============================================================
-st.markdown('<div class="report-center">', unsafe_allow_html=True)
-st.markdown("### 📌 Quick Report Center")
-
-df_bottom = report_df()
-r1, r2, r3, r4, r5 = st.columns(5)
-with r1:
-    st.metric("Saved Report Items", len(df_bottom))
-with r2:
-    st.metric("PDF Ready", "Yes" if PDF_AVAILABLE else "No")
-with r3:
-    if st.button("💵 Overall Cashflow", key="bottom_overall_cf"):
-        reroute("Overall Cashflow Master")
-with r4:
-    if st.button("📄 Open Full Report Center"):
-        reroute("Report Center")
-with r5:
-    if st.button("🏠 Go Dashboard Now"):
-        reroute("Dashboard")
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# ============================================================
-# FOOTER
-# ============================================================
-st.markdown("---")
-st.markdown("""
-<div class="footer-note">
-<b>Freedom ULTRA PRO V10.1 ULTIMATE</b> • Professional MFD Financial Planning Super App •
-For education / planning assistance only. Final recommendations should be validated by a qualified advisor and applicable regulations.
-</div>
-""", unsafe_allow_html=True)
+            income = st.number_input("
