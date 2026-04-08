@@ -1,5 +1,5 @@
-# FINAL Freedom ULTRA PRO V14.1 WEALTHY BLACKSTONE PRIVATE BANK FULL CLEAN SINGLE app.py
-# Clean rebuilt single-file Streamlit app (stable version)
+# FINAL Freedom ULTRA PRO V15 WEALTHY PRIVATE BANK AI MASTERPIECE SINGLE app.py
+# Luxury single-file Streamlit app for MFD / Financial Planning / Client Meetings
 
 import streamlit as st
 import pandas as pd
@@ -9,7 +9,9 @@ import io
 from datetime import datetime
 from pathlib import Path
 
-# PDF support
+# =========================
+# PDF SUPPORT
+# =========================
 PDF_READY = True
 try:
     from reportlab.lib.pagesizes import A4
@@ -19,7 +21,7 @@ try:
 except Exception:
     PDF_READY = False
 
-st.set_page_config(page_title="Freedom ULTRA PRO V14.1 | Wealthy Blackstone Private Bank", layout="wide", page_icon="💜")
+st.set_page_config(page_title="Freedom ULTRA PRO V15 | Wealthy Private Bank AI", layout="wide", page_icon="💜")
 
 # =========================
 # HELPERS
@@ -149,8 +151,13 @@ st.markdown("""
     border-radius: 28px; padding: 18px 24px; margin-bottom: 14px;
     border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 16px 36px rgba(0,0,0,0.28);
 }
-.hero-title {font-size: 2.4rem; font-weight: 900; color: #faf5ff;}
-.hero-sub {color: #e5e7eb; font-size: 0.95rem;}
+.hero-title {font-size: 2.5rem; font-weight: 900; color: #faf5ff;}
+.hero-sub {color: #e5e7eb; font-size: 0.96rem;}
+.metric-card {
+    background: linear-gradient(135deg, rgba(76,29,149,0.22), rgba(109,40,217,0.12));
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px; padding: 12px; margin-bottom: 8px;
+}
 div.stButton > button {
     width: 100%; border-radius: 14px; padding: 0.7rem 0.8rem; font-weight: 800;
     background: linear-gradient(135deg, #4c1d95, #6d28d9); color: white;
@@ -172,15 +179,15 @@ else:
 # =========================
 # NAV
 # =========================
-st.sidebar.title("Freedom ULTRA PRO V14.1")
-st.sidebar.caption("WEALTHY BLACKSTONE PRIVATE BANK")
+st.sidebar.title("Freedom ULTRA PRO V15")
+st.sidebar.caption("WEALTHY PRIVATE BANK AI MASTERPIECE")
 
 nav = {
-    "Private Bank": ["Dashboard", "One-Click Client Recommendation", "Boardroom Client Summary", "Advisor Meeting Script", "Export Center"],
-    "Core": ["Client Profile", "Net Worth Tracker", "Risk Profiler"],
+    "Private Bank AI": ["Dashboard", "One-Click Client Recommendation", "Boardroom Client Summary", "Advisor Meeting Script", "Export Center"],
+    "Core": ["Client Profile", "Net Worth Tracker", "Risk Profiler", "Asset Allocation Dashboard"],
     "Investments": ["SIP Calculator", "Lumpsum Calculator", "SWP Calculator", "Step-Up SIP Planner"],
-    "Planning": ["Goal Planner", "Retirement Planner", "EMI / Loan Planner"],
-    "Business": ["MFD CRM Lead Tracker", "AUM Projection"],
+    "Planning": ["Goal Planner", "Retirement Planner", "EMI / Loan Planner", "Goal PDF Report", "Retirement PDF Report"],
+    "Business": ["MFD CRM Lead Tracker", "AUM Projection", "Client Proposal Generator"],
 }
 for grp, items in nav.items():
     st.sidebar.markdown(f"### {grp}")
@@ -199,8 +206,8 @@ with col1:
         st.image(str(logo_path), use_container_width=True)
 with col2:
     st.markdown('<div class="hero">', unsafe_allow_html=True)
-    st.markdown('<div class="hero-title">FINAL Freedom ULTRA PRO V14.1</div>', unsafe_allow_html=True)
-    st.markdown('<div class="hero-sub">Wealthy Blackstone Private Bank • Full Clean Rebuild • Year-wise Tables • Real PDF Reports</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-title">FINAL Freedom ULTRA PRO V15</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-sub">Wealthy Private Bank AI Masterpiece • Luxury Dashboard • PDF Reports • Proposal Engine • Advanced Client Meeting Experience</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 st.divider()
@@ -210,11 +217,32 @@ st.divider()
 # =========================
 if module == "Dashboard":
     a, b, c, d = st.columns(4)
-    a.metric("Version", "V14.1")
+    a.metric("Version", "V15")
     b.metric("Brand", "Wealthy")
-    c.metric("Modules", "15+")
+    c.metric("Modules", "18+")
     d.metric("PDF", "READY" if PDF_READY else "Install reportlab")
-    st.success("Wealthy Blackstone Private Bank is ready for premium client meetings.")
+    st.success("Wealthy Private Bank AI Masterpiece is ready for premium MFD client meetings.")
+
+    st.markdown("### 🚀 Quick Launch")
+    r1 = st.columns(4)
+    with r1[0]:
+        if st.button("👤 Client Profile"): st.session_state.module = "Client Profile"
+    with r1[1]:
+        if st.button("📊 Net Worth"): st.session_state.module = "Net Worth Tracker"
+    with r1[2]:
+        if st.button("⚖️ Risk"): st.session_state.module = "Risk Profiler"
+    with r1[3]:
+        if st.button("🧠 Allocation"): st.session_state.module = "Asset Allocation Dashboard"
+
+    r2 = st.columns(4)
+    with r2[0]:
+        if st.button("📈 SIP"): st.session_state.module = "SIP Calculator"
+    with r2[1]:
+        if st.button("🎯 Goal"): st.session_state.module = "Goal Planner"
+    with r2[2]:
+        if st.button("👴 Retirement"): st.session_state.module = "Retirement Planner"
+    with r2[3]:
+        if st.button("🧾 Proposal"): st.session_state.module = "Client Proposal Generator"
 
 # =========================
 # CORE
@@ -264,13 +292,34 @@ elif module == "Risk Profiler":
         st.slider("Income Stability", 1, 10, 7),
     ])
     if score <= 20:
-        profile = "Conservative"
+        profile, eq, debt = "Conservative", 25, 75
     elif score <= 35:
-        profile = "Moderate"
+        profile, eq, debt = "Moderate", 55, 45
     else:
-        profile = "Aggressive"
+        profile, eq, debt = "Aggressive", 75, 25
     st.metric("Risk Score", score)
     st.success(f"Risk Profile: {profile}")
+    st.info(f"Suggested Allocation: Equity {eq}% | Debt {debt}%")
+
+elif module == "Asset Allocation Dashboard":
+    st.subheader("🧠 Asset Allocation Dashboard")
+    c1, c2 = st.columns(2)
+    age = c1.number_input("Client Age", 18, 100, 35)
+    risk = c2.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"])
+    if risk == "Conservative":
+        eq = max(100 - age - 20, 10)
+    elif risk == "Moderate":
+        eq = max(100 - age, 20)
+    else:
+        eq = min(max(110 - age, 40), 85)
+    debt_alloc = 100 - eq
+    a, b = st.columns(2)
+    a.metric("Recommended Equity %", f"{eq}%")
+    b.metric("Recommended Debt %", f"{debt_alloc}%")
+    fig, ax = plt.subplots()
+    ax.pie([eq, debt_alloc], labels=["Equity", "Debt"], autopct='%1.1f%%')
+    ax.set_title("Recommended Allocation")
+    st.pyplot(fig)
 
 # =========================
 # INVESTMENTS
@@ -417,6 +466,34 @@ elif module == "EMI / Loan Planner":
     b.metric("Total Payment", fmt_inr(total))
     c.metric("Total Interest", fmt_inr(total - principal))
 
+elif module == "Goal PDF Report":
+    st.subheader("📄 Goal PDF Report")
+    goal_name = st.text_input("Goal Name", "Dream Goal")
+    current_cost = st.number_input("Current Cost (₹)", 0.0, 1e10, 1000000.0, 50000.0)
+    years = int(st.number_input("Years", 1, 60, 10))
+    inflation = st.number_input("Inflation (%)", 0.0, 20.0, 6.0, 0.5)
+    ret = st.number_input("Expected Return (%)", 0.0, 50.0, 12.0, 0.5)
+    future_goal = inflation_adjusted_cost(current_cost, inflation, years)
+    req_sip = required_sip_for_goal(future_goal, ret, years)
+    lines = [f"Goal Name: {goal_name}", f"Future Goal Value: {fmt_inr(future_goal)}", f"Required SIP: {fmt_inr(req_sip)}", f"Generated: {datetime.now().strftime('%d-%m-%Y %H:%M')}"]
+    pdf = build_pdf_bytes("WEALTHY GOAL PLANNER REPORT", lines)
+    if pdf:
+        st.download_button("📄 Download Goal PDF Report", data=pdf, file_name="wealthy_goal_report.pdf", mime="application/pdf")
+
+elif module == "Retirement PDF Report":
+    st.subheader("📄 Retirement PDF Report")
+    current_age = int(st.number_input("Current Age", 18, 80, 30))
+    retire_age = int(st.number_input("Retirement Age", current_age + 1, 90, 60))
+    monthly_exp = st.number_input("Current Monthly Expense (₹)", 0.0, 1e8, 50000.0, 5000.0)
+    inflation = st.number_input("Inflation (%)", 0.0, 20.0, 6.0, 0.5)
+    years_to_ret = retire_age - current_age
+    future_monthly_exp = monthly_exp * ((1 + inflation / 100) ** years_to_ret)
+    corpus_needed = future_monthly_exp * 12 * 25
+    lines = [f"Current Age: {current_age}", f"Retirement Age: {retire_age}", f"Monthly Expense at Retirement: {fmt_inr(future_monthly_exp)}", f"Corpus Needed: {fmt_inr(corpus_needed)}", f"Generated: {datetime.now().strftime('%d-%m-%Y %H:%M')}"]
+    pdf = build_pdf_bytes("WEALTHY RETIREMENT REPORT", lines)
+    if pdf:
+        st.download_button("📄 Download Retirement PDF Report", data=pdf, file_name="wealthy_retirement_report.pdf", mime="application/pdf")
+
 # =========================
 # BUSINESS
 # =========================
@@ -449,8 +526,16 @@ elif module == "AUM Projection":
     st.metric("Projected AUM", fmt_inr(aum))
     st.metric("Indicative 0.8% Trail", fmt_inr(aum * 0.008))
 
+elif module == "Client Proposal Generator":
+    st.subheader("🧾 Client Proposal Generator")
+    client_name = st.text_input("Client Name", "Premium Client")
+    goal = st.text_input("Primary Goal", "Retirement + Wealth Creation")
+    monthly_commitment = st.number_input("Suggested Monthly Investment (₹)", 0.0, 1e8, 50000.0, 5000.0)
+    proposal = f"Client {client_name} is recommended to begin a disciplined investment journey focused on {goal}. Suggested starting monthly commitment is {fmt_inr(monthly_commitment)} with annual review and step-up strategy."
+    st.text_area("Proposal Note", proposal, height=180)
+
 # =========================
-# PRIVATE BANK MODULES
+# PRIVATE BANK AI
 # =========================
 elif module == "One-Click Client Recommendation":
     st.subheader("✨ One-Click Client Recommendation")
@@ -507,8 +592,8 @@ elif module == "Export Center":
     st.subheader("📤 Export Center")
     export_data = {"generated_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S'), "clients": st.session_state.clients, "leads": st.session_state.leads}
     json_str = json.dumps(export_data, indent=2)
-    st.download_button("⬇️ Download Session Data (JSON)", data=json_str, file_name="wealthy_freedom_v14_1_export.json", mime="application/json")
+    st.download_button("⬇️ Download Session Data (JSON)", data=json_str, file_name="wealthy_freedom_v15_export.json", mime="application/json")
     st.code(json_str[:5000])
 
 st.divider()
-st.caption("Wealthy | FINAL Freedom ULTRA PRO V14.1 WEALTHY BLACKSTONE PRIVATE BANK FULL CLEAN SINGLE app.py • Full clean rebuild • SIP + Lumpsum + SWP + Step-Up SIP + Goal + Retirement year-wise tables added • Install: pip install streamlit pandas matplotlib reportlab")
+st.caption("Wealthy | FINAL Freedom ULTRA PRO V15 WEALTHY PRIVATE BANK AI MASTERPIECE SINGLE app.py • Luxury dashboard • Asset allocation charts • Goal + Retirement PDF reports • Client proposal generator • Install: pip install streamlit pandas matplotlib reportlab")
