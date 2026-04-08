@@ -1,5 +1,5 @@
-# FINAL Freedom ULTRA PRO V15 WEALTHY PRIVATE BANK AI MASTERPIECE SINGLE app.py
-# Luxury single-file Streamlit app for MFD / Financial Planning / Client Meetings
+# FINAL Freedom ULTRA PRO V16 WEALTHY PRIVATE BANK GENIUS ADVISOR SINGLE app.py
+# Ultimate luxury single-file Streamlit app for MFD / Financial Planning / Client Meetings
 
 import streamlit as st
 import pandas as pd
@@ -21,7 +21,7 @@ try:
 except Exception:
     PDF_READY = False
 
-st.set_page_config(page_title="Freedom ULTRA PRO V15 | Wealthy Private Bank AI", layout="wide", page_icon="💜")
+st.set_page_config(page_title="Freedom ULTRA PRO V16 | Wealthy Private Bank Genius Advisor", layout="wide", page_icon="💜")
 
 # =========================
 # HELPERS
@@ -153,11 +153,6 @@ st.markdown("""
 }
 .hero-title {font-size: 2.5rem; font-weight: 900; color: #faf5ff;}
 .hero-sub {color: #e5e7eb; font-size: 0.96rem;}
-.metric-card {
-    background: linear-gradient(135deg, rgba(76,29,149,0.22), rgba(109,40,217,0.12));
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 18px; padding: 12px; margin-bottom: 8px;
-}
 div.stButton > button {
     width: 100%; border-radius: 14px; padding: 0.7rem 0.8rem; font-weight: 800;
     background: linear-gradient(135deg, #4c1d95, #6d28d9); color: white;
@@ -179,14 +174,14 @@ else:
 # =========================
 # NAV
 # =========================
-st.sidebar.title("Freedom ULTRA PRO V15")
-st.sidebar.caption("WEALTHY PRIVATE BANK AI MASTERPIECE")
+st.sidebar.title("Freedom ULTRA PRO V16")
+st.sidebar.caption("WEALTHY PRIVATE BANK GENIUS ADVISOR")
 
 nav = {
-    "Private Bank AI": ["Dashboard", "One-Click Client Recommendation", "Boardroom Client Summary", "Advisor Meeting Script", "Export Center"],
-    "Core": ["Client Profile", "Net Worth Tracker", "Risk Profiler", "Asset Allocation Dashboard"],
-    "Investments": ["SIP Calculator", "Lumpsum Calculator", "SWP Calculator", "Step-Up SIP Planner"],
-    "Planning": ["Goal Planner", "Retirement Planner", "EMI / Loan Planner", "Goal PDF Report", "Retirement PDF Report"],
+    "Genius Advisor": ["Dashboard", "Client Onboarding Master", "One-Click Client Recommendation", "Boardroom Client Summary", "Advisor Meeting Script", "Export Center"],
+    "Core": ["Client Profile", "Net Worth Tracker", "Risk Profiler", "Asset Allocation Dashboard", "Risk-to-Product Mapper"],
+    "Investments": ["SIP vs Lumpsum Comparator", "SIP Calculator", "Lumpsum Calculator", "SWP Calculator", "Step-Up SIP Planner"],
+    "Planning": ["Goal Planner", "Goal Funding Gap Analyzer", "Retirement Planner", "Retirement Shortfall Analyzer", "EMI / Loan Planner", "Goal PDF Report", "Retirement PDF Report"],
     "Business": ["MFD CRM Lead Tracker", "AUM Projection", "Client Proposal Generator"],
 }
 for grp, items in nav.items():
@@ -206,8 +201,8 @@ with col1:
         st.image(str(logo_path), use_container_width=True)
 with col2:
     st.markdown('<div class="hero">', unsafe_allow_html=True)
-    st.markdown('<div class="hero-title">FINAL Freedom ULTRA PRO V15</div>', unsafe_allow_html=True)
-    st.markdown('<div class="hero-sub">Wealthy Private Bank AI Masterpiece • Luxury Dashboard • PDF Reports • Proposal Engine • Advanced Client Meeting Experience</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-title">FINAL Freedom ULTRA PRO V16</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-sub">Wealthy Private Bank Genius Advisor • Comparison Charts • Gap Analyzers • Product Mapping • Premium MFD Conversion Engine</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 st.divider()
@@ -217,16 +212,16 @@ st.divider()
 # =========================
 if module == "Dashboard":
     a, b, c, d = st.columns(4)
-    a.metric("Version", "V15")
+    a.metric("Version", "V16")
     b.metric("Brand", "Wealthy")
-    c.metric("Modules", "18+")
+    c.metric("Modules", "22+")
     d.metric("PDF", "READY" if PDF_READY else "Install reportlab")
-    st.success("Wealthy Private Bank AI Masterpiece is ready for premium MFD client meetings.")
+    st.success("Wealthy Private Bank Genius Advisor is ready for premium MFD client conversion meetings.")
 
     st.markdown("### 🚀 Quick Launch")
     r1 = st.columns(4)
     with r1[0]:
-        if st.button("👤 Client Profile"): st.session_state.module = "Client Profile"
+        if st.button("👤 Onboarding"): st.session_state.module = "Client Onboarding Master"
     with r1[1]:
         if st.button("📊 Net Worth"): st.session_state.module = "Net Worth Tracker"
     with r1[2]:
@@ -236,17 +231,36 @@ if module == "Dashboard":
 
     r2 = st.columns(4)
     with r2[0]:
-        if st.button("📈 SIP"): st.session_state.module = "SIP Calculator"
+        if st.button("📈 SIP vs Lumpsum"): st.session_state.module = "SIP vs Lumpsum Comparator"
     with r2[1]:
-        if st.button("🎯 Goal"): st.session_state.module = "Goal Planner"
+        if st.button("🎯 Goal Gap"): st.session_state.module = "Goal Funding Gap Analyzer"
     with r2[2]:
-        if st.button("👴 Retirement"): st.session_state.module = "Retirement Planner"
+        if st.button("👴 Retirement Gap"): st.session_state.module = "Retirement Shortfall Analyzer"
     with r2[3]:
         if st.button("🧾 Proposal"): st.session_state.module = "Client Proposal Generator"
 
 # =========================
 # CORE
 # =========================
+elif module == "Client Onboarding Master":
+    st.subheader("📝 Client Onboarding Master")
+    c1, c2, c3 = st.columns(3)
+    name = c1.text_input("Client Name")
+    age = c1.number_input("Age", 18, 100, 35)
+    city = c1.text_input("City")
+    mobile = c2.text_input("Mobile")
+    email = c2.text_input("Email")
+    occupation = c2.text_input("Occupation")
+    annual_income = c3.number_input("Annual Income (₹)", 0.0, 100000000.0, 1200000.0, 50000.0)
+    annual_expense = c3.number_input("Annual Expense (₹)", 0.0, 100000000.0, 600000.0, 50000.0)
+    networth = st.number_input("Current Net Worth (₹)", 0.0, 1e10, 2500000.0, 100000.0)
+    goal = st.text_input("Primary Goal", "Retirement + Wealth Creation")
+    surplus = max(annual_income - annual_expense, 0)
+    st.info(f"Annual Investable Surplus: {fmt_inr(surplus)}")
+    if st.button("💾 Save Full Onboarding"):
+        st.session_state.clients.append({"name": name, "age": age, "city": city, "mobile": mobile, "email": email, "occupation": occupation, "annual_income": annual_income, "annual_expense": annual_expense, "surplus": surplus, "networth": networth, "goal": goal})
+        st.success("Full client onboarding saved in session")
+
 elif module == "Client Profile":
     st.subheader("👤 Client Profile")
     c1, c2, c3 = st.columns(3)
@@ -292,14 +306,14 @@ elif module == "Risk Profiler":
         st.slider("Income Stability", 1, 10, 7),
     ])
     if score <= 20:
-        profile, eq, debt = "Conservative", 25, 75
+        profile, eq, debt_alloc = "Conservative", 25, 75
     elif score <= 35:
-        profile, eq, debt = "Moderate", 55, 45
+        profile, eq, debt_alloc = "Moderate", 55, 45
     else:
-        profile, eq, debt = "Aggressive", 75, 25
+        profile, eq, debt_alloc = "Aggressive", 75, 25
     st.metric("Risk Score", score)
     st.success(f"Risk Profile: {profile}")
-    st.info(f"Suggested Allocation: Equity {eq}% | Debt {debt}%")
+    st.info(f"Suggested Allocation: Equity {eq}% | Debt {debt_alloc}%")
 
 elif module == "Asset Allocation Dashboard":
     st.subheader("🧠 Asset Allocation Dashboard")
@@ -321,45 +335,86 @@ elif module == "Asset Allocation Dashboard":
     ax.set_title("Recommended Allocation")
     st.pyplot(fig)
 
+elif module == "Risk-to-Product Mapper":
+    st.subheader("🧭 Risk-to-Product Mapper")
+    risk = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"])
+    if risk == "Conservative":
+        products = ["Liquid Fund", "Short Duration Debt Fund", "Hybrid Conservative Fund", "Large Cap Fund"]
+    elif risk == "Moderate":
+        products = ["Large Cap Fund", "Flexi Cap Fund", "Balanced Advantage Fund", "Large & Mid Cap Fund"]
+    else:
+        products = ["Flexi Cap Fund", "Mid Cap Fund", "Index Fund", "Aggressive Hybrid / Tactical Debt"]
+    st.write("### Suggested Product Basket")
+    for p in products:
+        st.write(f"- {p}")
+
 # =========================
 # INVESTMENTS
 # =========================
+elif module == "SIP vs Lumpsum Comparator":
+    st.subheader("📊 SIP vs Lumpsum Comparator")
+    c1, c2, c3, c4 = st.columns(4)
+    sip_amt = c1.number_input("Monthly SIP (₹)", 0.0, 1e8, 10000.0, 1000.0)
+    lump_amt = c2.number_input("Lumpsum (₹)", 0.0, 1e10, 1200000.0, 10000.0)
+    ret = c3.number_input("Expected Return (%)", 0.0, 50.0, 12.0, 0.5)
+    years = int(c4.number_input("Years", 1, 60, 10))
+    sip_fv = future_value_sip(sip_amt, ret, years)
+    lump_fv = future_value_lumpsum(lump_amt, ret, years)
+    a, b = st.columns(2)
+    a.metric("SIP Future Value", fmt_inr(sip_fv))
+    b.metric("Lumpsum Future Value", fmt_inr(lump_fv))
+    yrs = list(range(1, years + 1))
+    sip_vals = [future_value_sip(sip_amt, ret, y) for y in yrs]
+    lump_vals = [future_value_lumpsum(lump_amt, ret, y) for y in yrs]
+    fig, ax = plt.subplots()
+    ax.plot(yrs, sip_vals, label="SIP")
+    ax.plot(yrs, lump_vals, label="Lumpsum")
+    ax.set_title("SIP vs Lumpsum Growth")
+    ax.set_xlabel("Years")
+    ax.set_ylabel("Value (₹)")
+    ax.legend()
+    st.pyplot(fig)
+
 elif module == "SIP Calculator":
     st.subheader("📈 SIP Calculator")
-    c1, c2, c3 = st.columns(3)
-    sip_amt = c1.number_input("Monthly SIP (₹)", 0.0, 1e8, 10000.0, 1000.0)
-    ret = c2.number_input("Expected Return (%)", 0.0, 50.0, 12.0, 0.5)
-    years = int(c3.number_input("Years", 1, 60, 10))
-    fv = future_value_sip(sip_amt, ret, years)
-    invested = sip_amt * 12 * years
-    a, b, c = st.columns(3)
-    a.metric("Total Invested", fmt_inr(invested))
-    b.metric("Current Value", fmt_inr(fv))
-    c.metric("Gain", fmt_inr(fv - invested))
-    rows = []
-    for yr in range(1, years + 1):
-        inv = sip_amt * 12 * yr
-        val = future_value_sip(sip_amt, ret, yr)
-        rows.append({"Year": yr, "Invested Value (₹)": round(inv, 2), "Current Value (₹)": round(val, 2), "Gain (₹)": round(val - inv, 2)})
-    st.markdown("### 📅 Year-wise SIP Growth Table")
-    st.dataframe(pd.DataFrame(rows), use_container_width=True)
+    tab1, tab2 = st.tabs(["Calculator", "Year-wise Table"])
+    with tab1:
+        c1, c2, c3 = st.columns(3)
+        sip_amt = c1.number_input("Monthly SIP (₹)", 0.0, 1e8, 10000.0, 1000.0, key="sip_amt_v16")
+        ret = c2.number_input("Expected Return (%)", 0.0, 50.0, 12.0, 0.5, key="sip_ret_v16")
+        years = int(c3.number_input("Years", 1, 60, 10, key="sip_years_v16"))
+        fv = future_value_sip(sip_amt, ret, years)
+        invested = sip_amt * 12 * years
+        a, b, c = st.columns(3)
+        a.metric("Total Invested", fmt_inr(invested))
+        b.metric("Current Value", fmt_inr(fv))
+        c.metric("Gain", fmt_inr(fv - invested))
+    with tab2:
+        rows = []
+        for yr in range(1, years + 1):
+            inv = sip_amt * 12 * yr
+            val = future_value_sip(sip_amt, ret, yr)
+            rows.append({"Year": yr, "Invested Value (₹)": round(inv, 2), "Current Value (₹)": round(val, 2), "Gain (₹)": round(val - inv, 2)})
+        st.dataframe(pd.DataFrame(rows), use_container_width=True)
 
 elif module == "Lumpsum Calculator":
     st.subheader("💰 Lumpsum Calculator")
-    c1, c2, c3 = st.columns(3)
-    amt = c1.number_input("Investment Amount (₹)", 0.0, 1e10, 100000.0, 10000.0)
-    ret = c2.number_input("Expected Return (%)", 0.0, 50.0, 12.0, 0.5)
-    years = int(c3.number_input("Years", 1, 60, 10))
-    fv = future_value_lumpsum(amt, ret, years)
-    a, b = st.columns(2)
-    a.metric("Current Value", fmt_inr(fv))
-    b.metric("Gain", fmt_inr(fv - amt))
-    rows = []
-    for yr in range(1, years + 1):
-        val = future_value_lumpsum(amt, ret, yr)
-        rows.append({"Year": yr, "Invested Value (₹)": round(amt, 2), "Current Value (₹)": round(val, 2), "Gain (₹)": round(val - amt, 2)})
-    st.markdown("### 📅 Year-wise Lumpsum Growth Table")
-    st.dataframe(pd.DataFrame(rows), use_container_width=True)
+    tab1, tab2 = st.tabs(["Calculator", "Year-wise Table"])
+    with tab1:
+        c1, c2, c3 = st.columns(3)
+        amt = c1.number_input("Investment Amount (₹)", 0.0, 1e10, 100000.0, 10000.0, key="lump_amt_v16")
+        ret = c2.number_input("Expected Return (%)", 0.0, 50.0, 12.0, 0.5, key="lump_ret_v16")
+        years = int(c3.number_input("Years", 1, 60, 10, key="lump_years_v16"))
+        fv = future_value_lumpsum(amt, ret, years)
+        a, b = st.columns(2)
+        a.metric("Current Value", fmt_inr(fv))
+        b.metric("Gain", fmt_inr(fv - amt))
+    with tab2:
+        rows = []
+        for yr in range(1, years + 1):
+            val = future_value_lumpsum(amt, ret, yr)
+            rows.append({"Year": yr, "Invested Value (₹)": round(amt, 2), "Current Value (₹)": round(val, 2), "Gain (₹)": round(val - amt, 2)})
+        st.dataframe(pd.DataFrame(rows), use_container_width=True)
 
 elif module == "SWP Calculator":
     st.subheader("🏦 SWP Calculator")
@@ -378,7 +433,6 @@ elif module == "SWP Calculator":
         closing = max(opening + growth - annual_withdrawal, 0)
         rows.append({"Year": yr, "Opening Corpus (₹)": round(opening, 2), "Annual Withdrawal (₹)": round(annual_withdrawal, 2), "Closing Corpus (₹)": round(closing, 2)})
         balance = closing
-    st.markdown("### 📉 Year-wise SWP Depletion Table")
     st.dataframe(pd.DataFrame(rows), use_container_width=True)
 
 elif module == "Step-Up SIP Planner":
@@ -399,7 +453,6 @@ elif module == "Step-Up SIP Planner":
         corpus = (corpus + yearly_sip) * (1 + ret / 100)
         rows.append({"Year": yr, "Annual Invested (₹)": round(yearly_sip, 2), "Total Invested (₹)": round(total_inv, 2), "Current Value (₹)": round(corpus, 2), "Gain (₹)": round(corpus - total_inv, 2)})
         yearly_sip *= (1 + stepup / 100)
-    st.markdown("### 📈 Year-wise Step-Up SIP Growth Table")
     st.dataframe(pd.DataFrame(rows), use_container_width=True)
 
 # =========================
@@ -418,13 +471,23 @@ elif module == "Goal Planner":
     a.metric("Future Goal Value", fmt_inr(future_goal))
     b.metric("Required SIP", fmt_inr(req_sip))
     c.metric("Required Lumpsum", fmt_inr(required_lumpsum_for_goal(future_goal, ret, years)))
-    rows = []
-    for yr in range(1, years + 1):
-        gv = inflation_adjusted_cost(current_cost, inflation, yr)
-        sip = required_sip_for_goal(gv, ret, yr)
-        rows.append({"Year": yr, "Goal Value (₹)": round(gv, 2), "Required SIP (₹/month)": round(sip, 2)})
-    st.markdown("### 🗺️ Year-wise Goal Roadmap")
-    st.dataframe(pd.DataFrame(rows), use_container_width=True)
+
+elif module == "Goal Funding Gap Analyzer":
+    st.subheader("🎯 Goal Funding Gap Analyzer")
+    c1, c2, c3, c4 = st.columns(4)
+    current_cost = c1.number_input("Current Goal Cost (₹)", 0.0, 1e10, 1000000.0, 50000.0)
+    current_investment = c2.number_input("Current Monthly SIP (₹)", 0.0, 1e8, 10000.0, 1000.0)
+    years = int(c3.number_input("Years to Goal", 1, 60, 10))
+    inflation = c4.number_input("Inflation (%)", 0.0, 20.0, 6.0, 0.5)
+    ret = st.number_input("Expected Return (%)", 0.0, 50.0, 12.0, 0.5)
+    future_goal = inflation_adjusted_cost(current_cost, inflation, years)
+    current_plan_value = future_value_sip(current_investment, ret, years)
+    gap = max(future_goal - current_plan_value, 0)
+    st.metric("Future Goal Value", fmt_inr(future_goal))
+    st.metric("Projected Current Plan Value", fmt_inr(current_plan_value))
+    st.metric("Funding Gap", fmt_inr(gap))
+    if gap > 0:
+        st.info(f"Extra SIP Required: {fmt_inr(required_sip_for_goal(gap, ret, years))}")
 
 elif module == "Retirement Planner":
     st.subheader("👴 Retirement Planner")
@@ -442,16 +505,26 @@ elif module == "Retirement Planner":
     a.metric("Monthly Expense @ Retirement", fmt_inr(future_monthly_exp))
     b.metric("Retirement Corpus Needed", fmt_inr(corpus_needed))
     c.metric("Monthly SIP Needed", fmt_inr(sip_required))
-    corpus = 0
-    annual_sip = sip_required * 12
-    total_inv = 0
-    rows = []
-    for yr in range(1, years_to_ret + 1):
-        total_inv += annual_sip
-        corpus = (corpus + annual_sip) * (1 + pre_ret_return / 100)
-        rows.append({"Age": current_age + yr, "Year": yr, "Total Invested (₹)": round(total_inv, 2), "Current Value (₹)": round(corpus, 2), "Gain (₹)": round(corpus - total_inv, 2)})
-    st.markdown("### 🏦 Year-wise Retirement Accumulation Table")
-    st.dataframe(pd.DataFrame(rows), use_container_width=True)
+
+elif module == "Retirement Shortfall Analyzer":
+    st.subheader("👴 Retirement Shortfall Analyzer")
+    c1, c2, c3, c4 = st.columns(4)
+    current_age = int(c1.number_input("Current Age", 18, 80, 30, key="rs_age"))
+    retire_age = int(c2.number_input("Retirement Age", current_age + 1, 90, 60, key="rs_ret_age"))
+    monthly_exp = c3.number_input("Current Monthly Expense (₹)", 0.0, 1e8, 50000.0, 5000.0, key="rs_exp")
+    current_sip = c4.number_input("Current Monthly Retirement SIP (₹)", 0.0, 1e8, 15000.0, 1000.0)
+    inflation = st.number_input("Inflation (%)", 0.0, 20.0, 6.0, 0.5, key="rs_inf")
+    ret = st.number_input("Expected Return (%)", 0.0, 50.0, 12.0, 0.5, key="rs_ret")
+    years_to_ret = retire_age - current_age
+    future_monthly_exp = monthly_exp * ((1 + inflation / 100) ** years_to_ret)
+    corpus_needed = future_monthly_exp * 12 * 25
+    projected = future_value_sip(current_sip, ret, years_to_ret)
+    shortfall = max(corpus_needed - projected, 0)
+    st.metric("Corpus Needed", fmt_inr(corpus_needed))
+    st.metric("Projected Corpus", fmt_inr(projected))
+    st.metric("Shortfall", fmt_inr(shortfall))
+    if shortfall > 0:
+        st.info(f"Extra SIP Required: {fmt_inr(required_sip_for_goal(shortfall, ret, years_to_ret))}")
 
 elif module == "EMI / Loan Planner":
     st.subheader("🏠 EMI / Loan Planner")
@@ -469,10 +542,10 @@ elif module == "EMI / Loan Planner":
 elif module == "Goal PDF Report":
     st.subheader("📄 Goal PDF Report")
     goal_name = st.text_input("Goal Name", "Dream Goal")
-    current_cost = st.number_input("Current Cost (₹)", 0.0, 1e10, 1000000.0, 50000.0)
-    years = int(st.number_input("Years", 1, 60, 10))
-    inflation = st.number_input("Inflation (%)", 0.0, 20.0, 6.0, 0.5)
-    ret = st.number_input("Expected Return (%)", 0.0, 50.0, 12.0, 0.5)
+    current_cost = st.number_input("Current Cost (₹)", 0.0, 1e10, 1000000.0, 50000.0, key="gpdf_cost")
+    years = int(st.number_input("Years", 1, 60, 10, key="gpdf_years"))
+    inflation = st.number_input("Inflation (%)", 0.0, 20.0, 6.0, 0.5, key="gpdf_inf")
+    ret = st.number_input("Expected Return (%)", 0.0, 50.0, 12.0, 0.5, key="gpdf_ret")
     future_goal = inflation_adjusted_cost(current_cost, inflation, years)
     req_sip = required_sip_for_goal(future_goal, ret, years)
     lines = [f"Goal Name: {goal_name}", f"Future Goal Value: {fmt_inr(future_goal)}", f"Required SIP: {fmt_inr(req_sip)}", f"Generated: {datetime.now().strftime('%d-%m-%Y %H:%M')}"]
@@ -482,10 +555,10 @@ elif module == "Goal PDF Report":
 
 elif module == "Retirement PDF Report":
     st.subheader("📄 Retirement PDF Report")
-    current_age = int(st.number_input("Current Age", 18, 80, 30))
-    retire_age = int(st.number_input("Retirement Age", current_age + 1, 90, 60))
-    monthly_exp = st.number_input("Current Monthly Expense (₹)", 0.0, 1e8, 50000.0, 5000.0)
-    inflation = st.number_input("Inflation (%)", 0.0, 20.0, 6.0, 0.5)
+    current_age = int(st.number_input("Current Age", 18, 80, 30, key="rpdf_age"))
+    retire_age = int(st.number_input("Retirement Age", current_age + 1, 90, 60, key="rpdf_ret_age"))
+    monthly_exp = st.number_input("Current Monthly Expense (₹)", 0.0, 1e8, 50000.0, 5000.0, key="rpdf_exp")
+    inflation = st.number_input("Inflation (%)", 0.0, 20.0, 6.0, 0.5, key="rpdf_inf")
     years_to_ret = retire_age - current_age
     future_monthly_exp = monthly_exp * ((1 + inflation / 100) ** years_to_ret)
     corpus_needed = future_monthly_exp * 12 * 25
@@ -495,7 +568,7 @@ elif module == "Retirement PDF Report":
         st.download_button("📄 Download Retirement PDF Report", data=pdf, file_name="wealthy_retirement_report.pdf", mime="application/pdf")
 
 # =========================
-# BUSINESS
+# BUSINESS / PRIVATE BANK
 # =========================
 elif module == "MFD CRM Lead Tracker":
     st.subheader("📞 MFD CRM Lead Tracker")
@@ -534,9 +607,6 @@ elif module == "Client Proposal Generator":
     proposal = f"Client {client_name} is recommended to begin a disciplined investment journey focused on {goal}. Suggested starting monthly commitment is {fmt_inr(monthly_commitment)} with annual review and step-up strategy."
     st.text_area("Proposal Note", proposal, height=180)
 
-# =========================
-# PRIVATE BANK AI
-# =========================
 elif module == "One-Click Client Recommendation":
     st.subheader("✨ One-Click Client Recommendation")
     c1, c2, c3 = st.columns(3)
@@ -592,8 +662,8 @@ elif module == "Export Center":
     st.subheader("📤 Export Center")
     export_data = {"generated_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S'), "clients": st.session_state.clients, "leads": st.session_state.leads}
     json_str = json.dumps(export_data, indent=2)
-    st.download_button("⬇️ Download Session Data (JSON)", data=json_str, file_name="wealthy_freedom_v15_export.json", mime="application/json")
+    st.download_button("⬇️ Download Session Data (JSON)", data=json_str, file_name="wealthy_freedom_v16_export.json", mime="application/json")
     st.code(json_str[:5000])
 
 st.divider()
-st.caption("Wealthy | FINAL Freedom ULTRA PRO V15 WEALTHY PRIVATE BANK AI MASTERPIECE SINGLE app.py • Luxury dashboard • Asset allocation charts • Goal + Retirement PDF reports • Client proposal generator • Install: pip install streamlit pandas matplotlib reportlab")
+st.caption("Wealthy | FINAL Freedom ULTRA PRO V16 WEALTHY PRIVATE BANK GENIUS ADVISOR SINGLE app.py • Tabs in calculators • SIP vs Lumpsum comparison chart • Goal funding gap analyzer • Retirement shortfall analyzer • Risk-to-product mapper • Install: pip install streamlit pandas matplotlib reportlab")
