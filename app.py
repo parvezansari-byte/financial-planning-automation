@@ -1,8 +1,9 @@
-# FINAL Freedom ULTRA PRO V11 WEALTHY IMPERIAL CLIENT MEETING BEAST SINGLE app.py
-# Single-file Streamlit super app for MFD / Financial Planning / Client Meetings / PDF-like text report export
+# FINAL Freedom ULTRA PRO V12 WEALTHY SUPREME BOARDROOM GOD MODE SINGLE app.py
+# Single-file Streamlit super app with REAL PDF report generation + premium boardroom experience
 
 import streamlit as st
 import json
+import io
 from datetime import datetime
 from pathlib import Path
 
@@ -15,9 +16,19 @@ except Exception:
 try:
     import matplotlib.pyplot as plt
 except Exception:
-        plt = None
+    plt = None
 
-st.set_page_config(page_title="Freedom ULTRA PRO V11 | Wealthy Imperial", layout="wide", page_icon="💜")
+# PDF libraries (real PDF generation)
+PDF_READY = True
+try:
+    from reportlab.lib.pagesizes import A4
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+except Exception:
+    PDF_READY = False
+
+st.set_page_config(page_title="Freedom ULTRA PRO V12 | Wealthy Supreme", layout="wide", page_icon="💜")
 
 # ============================================================
 # HELPERS
@@ -130,8 +141,32 @@ def generate_recommendation(risk_profile, annual_surplus, insurance_gap, monthly
         status = "Need expense optimisation or phased goal funding strategy."
 
     ins = "Insurance gap should be closed immediately." if insurance_gap > 0 else "Insurance appears broadly adequate based on current inputs."
-
     return mf, status, ins
+
+
+def build_pdf_bytes(title, lines):
+    if not PDF_READY:
+        return None
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        "TitleCenter",
+        parent=styles["Title"],
+        alignment=TA_CENTER,
+        fontSize=18,
+        leading=22,
+        spaceAfter=12,
+    )
+    body = styles["BodyText"]
+    story = [Paragraph(title, title_style), Spacer(1, 8)]
+    for line in lines:
+        story.append(Paragraph(str(line).replace("\n", "<br/>"), body))
+        story.append(Spacer(1, 6))
+    doc.build(story)
+    pdf = buffer.getvalue()
+    buffer.close()
+    return pdf
 
 # ============================================================
 # SESSION STATE
@@ -150,47 +185,22 @@ st.markdown(
     """
     <style>
     .block-container {padding-top: 0.45rem; padding-bottom: 2rem;}
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0b1020 0%, #111827 40%, #1e1b4b 100%);
-    }
+    [data-testid="stSidebar"] {background: linear-gradient(180deg, #0b1020 0%, #111827 35%, #1e1b4b 100%);}    
     .hero {
-        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 35%, #4c1d95 70%, #7c3aed 100%);
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 30%, #4c1d95 65%, #7c3aed 100%);
         border: 1px solid rgba(255,255,255,0.08);
         border-radius: 28px;
         padding: 18px 24px;
         box-shadow: 0 16px 36px rgba(0,0,0,0.30);
         margin-bottom: 14px;
     }
-    .hero-title {
-        font-size: 2.55rem;
-        font-weight: 900;
-        color: #faf5ff;
-        margin-bottom: 4px;
-    }
-    .hero-sub {
-        color: #e5e7eb;
-        font-size: 0.96rem;
-    }
-    .card {
-        background: linear-gradient(135deg, rgba(139,92,246,0.14), rgba(99,102,241,0.10));
-        border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 18px;
-        padding: 14px;
-        margin-bottom: 10px;
-    }
+    .hero-title {font-size: 2.55rem; font-weight: 900; color: #faf5ff; margin-bottom: 4px;}
+    .hero-sub {color: #e5e7eb; font-size: 0.96rem;}
     div.stButton > button {
-        width: 100%;
-        border-radius: 14px;
-        padding: 0.72rem 0.85rem;
-        font-weight: 800;
+        width: 100%; border-radius: 14px; padding: 0.72rem 0.85rem; font-weight: 800;
         border: 1px solid rgba(139,92,246,0.35);
         background: linear-gradient(135deg, rgba(76,29,149,0.98), rgba(109,40,217,0.98));
-        color: white;
-        box-shadow: 0 8px 18px rgba(76,29,149,0.25);
-    }
-    div.stButton > button:hover {
-        border: 1px solid rgba(196,181,253,0.55);
-        box-shadow: 0 10px 22px rgba(109,40,217,0.32);
+        color: white; box-shadow: 0 8px 18px rgba(76,29,149,0.25);
     }
     </style>
     """,
@@ -213,20 +223,19 @@ else:
     st.sidebar.markdown("## 💜 Wealthy")
 
 # ============================================================
-# SIDEBAR NAVIGATION
+# NAVIGATION
 # ============================================================
-st.sidebar.title("Freedom ULTRA PRO V11")
-st.sidebar.caption("WEALTHY IMPERIAL CLIENT MEETING BEAST")
+st.sidebar.title("Freedom ULTRA PRO V12")
+st.sidebar.caption("WEALTHY SUPREME BOARDROOM GOD MODE")
 
 nav_groups = {
-    "Imperial": ["Dashboard", "Boardroom Client Summary", "CEO Proposal Summary", "One-Click Client Recommendation", "Export Center"],
+    "Supreme": ["Dashboard", "Boardroom Client Summary", "CEO Proposal Summary", "One-Click Client Recommendation", "Advisor Meeting Script", "Export Center"],
     "Core": ["Client Profile", "Net Worth Tracker", "Risk Profiler", "Asset Allocation Engine"],
     "Investments": ["SIP Calculator", "Lumpsum Calculator", "SWP Calculator", "Step-Up SIP Planner"],
     "Planning": ["Goal Planner", "Retirement Planner", "FIRE Planner", "Insurance Need Analysis", "Cashflow Planner"],
     "Lifestyle": ["Child Education Planner", "Marriage Planner", "Travel Planner", "Car Purchase Planner", "iPhone Purchase Planner", "EMI / Loan Planner"],
     "Business": ["MFD CRM Lead Tracker", "AUM Projection", "Lead Conversion Analytics"],
 }
-
 for group, items in nav_groups.items():
     st.sidebar.markdown(f"### {group}")
     for item in items:
@@ -244,8 +253,8 @@ with col1:
         st.image(str(logo_path), use_container_width=True)
 with col2:
     st.markdown('<div class="hero">', unsafe_allow_html=True)
-    st.markdown('<div class="hero-title">FINAL Freedom ULTRA PRO V11</div>', unsafe_allow_html=True)
-    st.markdown('<div class="hero-sub">Wealthy Imperial Client Meeting Beast • Premium Button Dashboard • One-Click Recommendation Engine • Boardroom Proposal Experience</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-title">FINAL Freedom ULTRA PRO V12</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-sub">Wealthy Supreme Boardroom God Mode • Real PDF Report Buttons • Advisor Script • Premium Executive Meeting Experience</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 st.divider()
@@ -255,57 +264,32 @@ st.divider()
 # ============================================================
 if module == "Dashboard":
     a, b, c, d = st.columns(4)
-    a.metric("Version", "V11")
+    a.metric("Version", "V12")
     b.metric("Brand", "Wealthy")
-    c.metric("Modules", "27")
-    d.metric("Today", datetime.now().strftime("%d-%b-%Y"))
+    c.metric("Modules", "28")
+    d.metric("PDF Engine", "READY" if PDF_READY else "Install reportlab")
+    st.success("Wealthy Supreme Boardroom God Mode is ready for elite client meetings.")
 
-    st.success("Wealthy Imperial Client Meeting Beast is ready for live client presentations.")
-
-    st.markdown("### 🚀 Imperial Quick Launch Buttons")
+    st.markdown("### 🚀 Supreme Quick Launch")
     r1 = st.columns(4)
     with r1[0]:
-        if st.button("👤 Client Profile"):
-            set_module("Client Profile")
+        if st.button("👤 Client Profile"): set_module("Client Profile")
     with r1[1]:
-        if st.button("📊 Net Worth"):
-            set_module("Net Worth Tracker")
+        if st.button("📊 Net Worth"): set_module("Net Worth Tracker")
     with r1[2]:
-        if st.button("⚖️ Risk"):
-            set_module("Risk Profiler")
+        if st.button("⚖️ Risk"): set_module("Risk Profiler")
     with r1[3]:
-        if st.button("🧠 Allocation"):
-            set_module("Asset Allocation Engine")
+        if st.button("✨ Recommendation"): set_module("One-Click Client Recommendation")
 
     r2 = st.columns(4)
     with r2[0]:
-        if st.button("🎯 Goal Planner"):
-            set_module("Goal Planner")
+        if st.button("🧾 CEO Proposal"): set_module("CEO Proposal Summary")
     with r2[1]:
-        if st.button("👴 Retirement"):
-            set_module("Retirement Planner")
+        if st.button("🏛️ Boardroom Summary"): set_module("Boardroom Client Summary")
     with r2[2]:
-        if st.button("🛡️ Insurance"):
-            set_module("Insurance Need Analysis")
+        if st.button("🎤 Advisor Script"): set_module("Advisor Meeting Script")
     with r2[3]:
-        if st.button("✨ Recommendation"):
-            set_module("One-Click Client Recommendation")
-
-    r3 = st.columns(4)
-    with r3[0]:
-        if st.button("💼 AUM Projection"):
-            set_module("AUM Projection")
-    with r3[1]:
-        if st.button("📈 Lead Analytics"):
-            set_module("Lead Conversion Analytics")
-    with r3[2]:
-        if st.button("🧾 CEO Proposal"):
-            set_module("CEO Proposal Summary")
-    with r3[3]:
-        if st.button("🏛️ Boardroom Summary"):
-            set_module("Boardroom Client Summary")
-
-    st.info("Recommended flow: Client Profile → Net Worth → Risk → Goal / Retirement → Insurance → Recommendation → Proposal → Boardroom Summary → Export")
+        if st.button("📤 Export"): set_module("Export Center")
 
 # ============================================================
 # CORE MODULES
@@ -325,26 +309,17 @@ elif module == "Client Profile":
         annual_income = st.number_input("Annual Income (₹)", min_value=0.0, value=1200000.0, step=50000.0)
         annual_expense = st.number_input("Annual Expense (₹)", min_value=0.0, value=600000.0, step=50000.0)
         investable_surplus = max(annual_income - annual_expense, 0)
-
     marital = st.selectbox("Marital Status", ["Single", "Married", "Other"])
     dependents = st.number_input("Dependents", min_value=0, max_value=10, value=0)
     notes = st.text_area("Advisor Notes", "")
     st.info(f"Estimated Annual Investable Surplus: {fmt_inr(investable_surplus)}")
-
     if st.button("💾 Save Client in Session"):
-        st.session_state.clients.append({
-            "name": name, "age": age, "city": city, "mobile": mobile, "email": email,
-            "occupation": occupation, "annual_income": annual_income, "annual_expense": annual_expense,
-            "investable_surplus": investable_surplus, "marital": marital, "dependents": dependents, "notes": notes,
-        })
+        st.session_state.clients.append({"name": name, "age": age, "city": city, "mobile": mobile, "email": email, "occupation": occupation, "annual_income": annual_income, "annual_expense": annual_expense, "investable_surplus": investable_surplus, "marital": marital, "dependents": dependents, "notes": notes})
         st.success("Client saved in current session.")
-
     if st.session_state.clients:
         st.markdown("### Saved Clients (Session)")
-        if pd:
-            st.dataframe(pd.DataFrame(st.session_state.clients), use_container_width=True)
-        else:
-            st.write(st.session_state.clients)
+        if pd: st.dataframe(pd.DataFrame(st.session_state.clients), use_container_width=True)
+        else: st.write(st.session_state.clients)
 
 elif module == "Net Worth Tracker":
     st.subheader("📊 Net Worth Tracker")
@@ -359,14 +334,12 @@ elif module == "Net Worth Tracker":
         gold = st.number_input("Gold / Other Assets (₹)", min_value=0.0, value=200000.0, step=50000.0)
         loans = st.number_input("Total Liabilities / Loans (₹)", min_value=0.0, value=1500000.0, step=100000.0)
         other_assets = st.number_input("Other Assets (₹)", min_value=0.0, value=100000.0, step=50000.0)
-
     total_assets = equity + fd + epf + cash + property_val + gold + other_assets
     net_worth = total_assets - loans
     a, b, c = st.columns(3)
     a.metric("Total Assets", fmt_inr(total_assets))
     b.metric("Total Liabilities", fmt_inr(loans))
     c.metric("Net Worth", fmt_inr(net_worth))
-
     if plt:
         labels = ["Equity", "Debt", "Retirement", "Cash", "Property", "Gold", "Other"]
         values = [equity, fd, epf, cash, property_val, gold, other_assets]
@@ -383,12 +356,9 @@ elif module == "Risk Profiler":
     q4 = st.slider("Market Experience", 1, 10, 4)
     q5 = st.slider("Income Stability", 1, 10, 7)
     score = q1 + q2 + q3 + q4 + q5
-    if score <= 20:
-        profile, eq, debt = "Conservative", 20, 80
-    elif score <= 35:
-        profile, eq, debt = "Moderate", 50, 50
-    else:
-        profile, eq, debt = "Aggressive", 75, 25
+    if score <= 20: profile, eq, debt = "Conservative", 20, 80
+    elif score <= 35: profile, eq, debt = "Moderate", 50, 50
+    else: profile, eq, debt = "Aggressive", 75, 25
     st.metric("Risk Score", score)
     st.success(f"Risk Profile: {profile}")
     st.info(f"Suggested Allocation: Equity {eq}% | Debt {debt}%")
@@ -397,12 +367,9 @@ elif module == "Asset Allocation Engine":
     st.subheader("🧠 Asset Allocation Engine")
     age = st.number_input("Client Age", min_value=18, max_value=100, value=35)
     risk = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"])
-    if risk == "Conservative":
-        eq = max(100 - age - 20, 10)
-    elif risk == "Moderate":
-        eq = max(100 - age, 20)
-    else:
-        eq = min(max(110 - age, 40), 85)
+    if risk == "Conservative": eq = max(100 - age - 20, 10)
+    elif risk == "Moderate": eq = max(100 - age, 20)
+    else: eq = min(max(110 - age, 40), 85)
     debt = 100 - eq
     st.metric("Recommended Equity Allocation", f"{eq}%")
     st.metric("Recommended Debt Allocation", f"{debt}%")
@@ -612,10 +579,7 @@ elif module == "MFD CRM Lead Tracker":
         next_action = st.text_input("Next Action")
         next_date = st.date_input("Next Follow-up Date")
     if st.button("💾 Save Lead"):
-        st.session_state.notes.append({
-            "lead_name": lead_name, "source": lead_source, "stage": lead_stage,
-            "potential_aum": lead_aum, "next_action": next_action, "next_date": str(next_date),
-        })
+        st.session_state.notes.append({"lead_name": lead_name, "source": lead_source, "stage": lead_stage, "potential_aum": lead_aum, "next_action": next_action, "next_date": str(next_date)})
         st.success("Lead note saved in current session.")
     if st.session_state.notes:
         if pd:
@@ -650,13 +614,12 @@ elif module == "Lead Conversion Analytics":
         a.metric("Total Leads", total)
         b.metric("Converted", converted)
         c.metric("Conversion %", f"{ratio:.2f}%")
-        stage_counts = df["stage"].value_counts()
-        st.bar_chart(stage_counts)
+        st.bar_chart(df["stage"].value_counts())
     else:
         st.info("Add leads in CRM to view analytics.")
 
 # ============================================================
-# IMPERIAL / BOARDROOM
+# SUPREME / BOARDROOM
 # ============================================================
 elif module == "One-Click Client Recommendation":
     st.subheader("✨ One-Click Client Recommendation")
@@ -668,7 +631,6 @@ elif module == "One-Click Client Recommendation":
     goal_target = st.number_input("Primary Goal Corpus (₹)", min_value=0.0, value=7500000.0, step=100000.0)
     goal_years = st.number_input("Years to Goal", min_value=1, value=10, step=1)
     exp_return = st.number_input("Expected Return (%)", min_value=0.0, value=12.0, step=0.5)
-
     annual_surplus = max(annual_income - annual_expense, 0)
     monthly_sip_need = required_sip_for_goal(goal_target, exp_return, goal_years)
     mf_mix, status, ins = generate_recommendation(risk_profile, annual_surplus, insurance_gap, monthly_sip_need)
@@ -680,31 +642,31 @@ elif module == "One-Click Client Recommendation":
     st.write(f"**Goal Funding View:** {status}")
     st.write(f"**Insurance View:** {ins}")
 
-    report_text = f"""
-WEALTHY - CLIENT RECOMMENDATION NOTE
-Generated: {datetime.now().strftime('%d-%m-%Y %H:%M')}
-Client Name: {client_name}
-Risk Profile: {risk_profile}
-Annual Income: {fmt_inr(annual_income)}
-Annual Expense: {fmt_inr(annual_expense)}
-Annual Surplus: {fmt_inr(annual_surplus)}
-Insurance Gap: {fmt_inr(insurance_gap)}
-Primary Goal Corpus: {fmt_inr(goal_target)}
-Years to Goal: {goal_years}
-Expected Return: {exp_return}%
-Required SIP: {fmt_inr(monthly_sip_need)}
-Suggested MF Category Mix: {mf_mix}
-Goal Funding View: {status}
-Insurance View: {ins}
-Advisor Note: This is an indicative planning output for client meeting discussion.
-"""
+    txt_report = f"WEALTHY CLIENT RECOMMENDATION\nGenerated: {datetime.now().strftime('%d-%m-%Y %H:%M')}\nClient: {client_name}\nRisk Profile: {risk_profile}\nAnnual Surplus: {fmt_inr(annual_surplus)}\nRequired SIP: {fmt_inr(monthly_sip_need)}\nMF Mix: {mf_mix}\nGoal View: {status}\nInsurance View: {ins}\n"
+    st.download_button("⬇️ Download Recommendation Note (.txt)", data=txt_report, file_name=f"wealthy_recommendation_{client_name.replace(' ', '_')}.txt", mime="text/plain")
 
-    st.download_button(
-        "⬇️ Download Recommendation Note (.txt)",
-        data=report_text,
-        file_name=f"wealthy_recommendation_{client_name.replace(' ', '_')}.txt",
-        mime="text/plain",
-    )
+    pdf_lines = [
+        f"Generated: {datetime.now().strftime('%d-%m-%Y %H:%M')}",
+        f"Client Name: {client_name}",
+        f"Risk Profile: {risk_profile}",
+        f"Annual Income: {fmt_inr(annual_income)}",
+        f"Annual Expense: {fmt_inr(annual_expense)}",
+        f"Annual Surplus: {fmt_inr(annual_surplus)}",
+        f"Insurance Gap: {fmt_inr(insurance_gap)}",
+        f"Primary Goal Corpus: {fmt_inr(goal_target)}",
+        f"Years to Goal: {goal_years}",
+        f"Expected Return: {exp_return}%",
+        f"Required SIP: {fmt_inr(monthly_sip_need)}",
+        f"Suggested MF Category Mix: {mf_mix}",
+        f"Goal Funding View: {status}",
+        f"Insurance View: {ins}",
+        "Advisor Note: Indicative planning output for client meeting discussion.",
+    ]
+    pdf_bytes = build_pdf_bytes("WEALTHY CLIENT RECOMMENDATION REPORT", pdf_lines)
+    if pdf_bytes:
+        st.download_button("📄 Download Real PDF Recommendation Report", data=pdf_bytes, file_name=f"wealthy_recommendation_{client_name.replace(' ', '_')}.pdf", mime="application/pdf")
+    else:
+        st.warning("Install reportlab for real PDF download: pip install reportlab")
 
 elif module == "CEO Proposal Summary":
     st.subheader("🧾 CEO Proposal Summary")
@@ -723,7 +685,6 @@ elif module == "CEO Proposal Summary":
     st.write(f"**Annual Investable Surplus:** {fmt_inr(annual_surplus)}")
     st.write(f"**Recommended SIP for Goal:** {fmt_inr(rec_sip)}")
     st.write(f"**Status:** {coverage}")
-    st.success("Use this as a live client meeting summary screen.")
 
 elif module == "Boardroom Client Summary":
     st.subheader("🏛️ Boardroom Client Summary")
@@ -735,51 +696,62 @@ elif module == "Boardroom Client Summary":
     retirement_target = st.number_input("Retirement Corpus Target (₹)", min_value=0.0, value=30000000.0, step=500000.0)
     monthly_sip = st.number_input("Recommended SIP (₹)", min_value=0.0, value=50000.0, step=5000.0)
     annual_surplus = max(annual_income - annual_expense, 0)
-
     a, b, c, d = st.columns(4)
     a.metric("Annual Surplus", fmt_inr(annual_surplus))
     b.metric("Net Worth", fmt_inr(networth))
     c.metric("Insurance Gap", fmt_inr(insurance_gap))
     d.metric("Recommended SIP", fmt_inr(monthly_sip))
-
-    summary_text = f"""
-WEALTHY BOARDROOM SUMMARY
-Client: {client_name}
-Annual Income: {fmt_inr(annual_income)}
-Annual Expense: {fmt_inr(annual_expense)}
-Annual Surplus: {fmt_inr(annual_surplus)}
-Net Worth: {fmt_inr(networth)}
-Insurance Gap: {fmt_inr(insurance_gap)}
-Retirement Target: {fmt_inr(retirement_target)}
-Recommended SIP: {fmt_inr(monthly_sip)}
-Strategic Note: Prioritise liquidity reserve, insurance closure, goal-linked SIP, retirement acceleration, and periodic portfolio review.
-"""
-
-    st.markdown("### Boardroom Recommendation")
     st.write(f"**Client {client_name}** should prioritise emergency reserve, insurance gap closure, disciplined SIP execution, and retirement corpus acceleration.")
-    st.download_button(
-        "⬇️ Download Boardroom Summary (.txt)",
-        data=summary_text,
-        file_name=f"wealthy_boardroom_summary_{client_name.replace(' ', '_')}.txt",
-        mime="text/plain",
-    )
+
+    pdf_lines = [
+        f"Generated: {datetime.now().strftime('%d-%m-%Y %H:%M')}",
+        f"Client Name: {client_name}",
+        f"Annual Income: {fmt_inr(annual_income)}",
+        f"Annual Expense: {fmt_inr(annual_expense)}",
+        f"Annual Surplus: {fmt_inr(annual_surplus)}",
+        f"Net Worth: {fmt_inr(networth)}",
+        f"Insurance Gap: {fmt_inr(insurance_gap)}",
+        f"Retirement Target: {fmt_inr(retirement_target)}",
+        f"Recommended SIP: {fmt_inr(monthly_sip)}",
+        "Strategic Note: Prioritise liquidity reserve, insurance closure, goal-linked SIP, retirement acceleration, and periodic portfolio review.",
+    ]
+    pdf_bytes = build_pdf_bytes("WEALTHY BOARDROOM CLIENT SUMMARY", pdf_lines)
+    if pdf_bytes:
+        st.download_button("📄 Download Real PDF Boardroom Summary", data=pdf_bytes, file_name=f"wealthy_boardroom_summary_{client_name.replace(' ', '_')}.pdf", mime="application/pdf")
+    else:
+        st.warning("Install reportlab for real PDF download: pip install reportlab")
+
+elif module == "Advisor Meeting Script":
+    st.subheader("🎤 Advisor Meeting Script")
+    client_name = st.text_input("Client Name", "Premium Client")
+    main_goal = st.text_input("Primary Goal", "Retirement + Wealth Creation")
+    script = f"""
+Good morning {client_name}. Thank you for your time today.
+
+In today’s meeting, our focus is to understand your current financial position, identify the protection gaps, and create a goal-linked investment roadmap for {main_goal}.
+
+First, we review your income, expenses, and investable surplus.
+Second, we assess your net worth and current asset allocation.
+Third, we evaluate your risk profile and align the investment mix accordingly.
+Fourth, we calculate the SIP required for your major goals and retirement.
+Finally, we summarise the action plan: insurance optimisation, disciplined SIP execution, periodic review, and long-term wealth creation.
+
+My recommendation is to start with a realistic monthly commitment, increase it every year, and keep the portfolio aligned with your life goals.
+
+Thank you. I will now walk you through your personalised recommendation summary.
+"""
+    st.text_area("Advisor Script", script, height=320)
+    st.download_button("⬇️ Download Advisor Script (.txt)", data=script, file_name=f"wealthy_advisor_script_{client_name.replace(' ', '_')}.txt", mime="text/plain")
 
 # ============================================================
 # EXPORT
 # ============================================================
 elif module == "Export Center":
     st.subheader("📤 Export Center")
-    export_data = {
-        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "clients": st.session_state.clients,
-        "lead_notes": st.session_state.notes,
-    }
+    export_data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "clients": st.session_state.clients, "lead_notes": st.session_state.notes}
     json_str = json.dumps(export_data, indent=2)
-    st.download_button("⬇️ Download Session Data (JSON)", data=json_str, file_name="wealthy_freedom_v11_export.json", mime="application/json")
+    st.download_button("⬇️ Download Session Data (JSON)", data=json_str, file_name="wealthy_freedom_v12_export.json", mime="application/json")
     st.code(json_str[:5000])
 
-# ============================================================
-# FOOTER
-# ============================================================
 st.divider()
-st.caption("Wealthy | FINAL Freedom ULTRA PRO V11 WEALTHY IMPERIAL CLIENT MEETING BEAST SINGLE app.py • One-click recommendation added • Downloadable recommendation note + boardroom summary • Keep wealthy_logo.png in same folder • Next V12 can add real PDF generation + branded print-ready report.")
+st.caption("Wealthy | FINAL Freedom ULTRA PRO V12 WEALTHY SUPREME BOARDROOM GOD MODE SINGLE app.py • REAL PDF report generation added • Advisor meeting script added • Keep wealthy_logo.png in same folder • Install: pip install streamlit pandas matplotlib reportlab")
