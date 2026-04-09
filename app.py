@@ -739,4 +739,4 @@ elif module == "Export Center":
     st.code(json_str[:5000])
 
 st.divider()
-st.caption("Wealthy | FINAL Freedom ULTRA PRO V19.1 SIGNATURE PRIVATE BANK EMPEROR FULL CLEAN SINGLE app.py • Full clean flagship build • Lifestyle planners with year-wise tables • Step-up comparison chart • Executive PDFs • Install: pip install streamli
+st.caption("Wealthy | FINAL Freedom ULTRA PRO V19.1 SIGNATURE PRIVATE BANK EMPEROR FULL CLEAN SINGLE app.py • Full clean flagship build • Lifestyle planners with year-wise tables • Step-up comparison chart • Executive PDFs • Install: pip install streamlit pandas matplotlib reportlab")
