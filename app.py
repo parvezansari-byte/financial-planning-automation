@@ -1,4 +1,4 @@
-# FINAL Freedom ULTRA PRO V19.1 SIGNATURE PRIVATE BANK EMPEROR FULL CLEAN SINGLE app.py
+# FINAL Freedom ULTRA PRO V20 SIGNATURE PRIVATE BANK EMPEROR FULL CLEAN SINGLE app.py
 # Production-ready Streamlit super app for MFD / Financial Planning / Client Meetings
 
 import streamlit as st
@@ -21,7 +21,7 @@ try:
 except Exception:
     PDF_READY = False
 
-st.set_page_config(page_title="Freedom ULTRA PRO V19.1 | Signature Private Bank Emperor", layout="wide", page_icon="💜")
+st.set_page_config(page_title="Freedom ULTRA PRO V20 | Wealthy Sovereign Private Bank Legacy", layout="wide", page_icon="💜")
 
 # =========================
 # HELPERS
@@ -188,14 +188,14 @@ else:
 # NAVIGATION
 # =========================
 st.sidebar.title("Freedom ULTRA PRO V19.1")
-st.sidebar.caption("WEALTHY SIGNATURE PRIVATE BANK EMPEROR")
+st.sidebar.caption("WEALTHY SOVEREIGN PRIVATE BANK LEGACY")
 
 nav = {
-    "Emperor HQ": ["Dashboard", "Client Onboarding Master", "One-Click Client Recommendation", "Boardroom Client Summary", "Advisor Meeting Script", "Export Center"],
+    "Sovereign HQ": ["Dashboard", "Client Session Manager", "Client Onboarding Master", "One-Click Client Recommendation", "Boardroom Client Summary", "Advisor Meeting Script", "Printable Client Proposal Screen", "Export Center"],
     "Core": ["Client Profile", "Net Worth Tracker", "Risk Profiler", "Asset Allocation Dashboard", "Risk-to-Product Mapper"],
-    "Investments": ["SIP vs Lumpsum Comparator", "Normal SIP vs Step-Up SIP Chart", "SIP Calculator", "Lumpsum Calculator", "SWP Calculator", "Step-Up SIP Planner"],
-    "Life Goals": ["Family Goals Master Dashboard", "Advanced Goal Prioritization Engine", "Goal Planner", "Goal Funding Gap Analyzer", "Retirement Planner", "Retirement Shortfall Analyzer", "Child Education Planner", "Marriage Planner", "Travel Planner", "Car Purchase Planner", "iPhone Purchase Planner"],
-    "Protection & PDF": ["Insurance Need Analysis", "Insurance PDF Report", "Client Fact Find Form PDF", "Client Meeting Executive Summary PDF", "Master Combined Proposal PDF", "Goal PDF Report", "Retirement PDF Report"],
+    "Investments": ["SIP vs Lumpsum Comparator", "Normal SIP vs Step-Up SIP Chart", "SIP Calculator", "Lumpsum Calculator", "SWP Calculator", "SWP Year-wise Depletion Chart", "Step-Up SIP Planner"],
+    "Life Goals": ["Family Goals Master Dashboard", "Advanced Goal Prioritization Engine", "Goal Planner", "Goal Funding Gap Analyzer", "Retirement Planner", "Retirement Year-wise Accumulation Table", "Retirement Shortfall Analyzer", "Child Education Planner", "Marriage Planner", "Travel Planner", "Car Purchase Planner", "iPhone Purchase Planner"],
+    "Protection & PDF": ["Insurance Need Analysis", "AMC-wise Recommendation Bucket", "Insurance PDF Report", "Client Fact Find Form PDF", "Client Meeting Executive Summary PDF", "Master Combined Proposal PDF", "Goal PDF Report", "Retirement PDF Report"],
     "Cashflow & Business": ["Cashflow Planner", "EMI / Loan Planner", "MFD CRM Lead Tracker", "AUM Projection", "Client Proposal Generator"],
 }
 for grp, items in nav.items():
@@ -215,8 +215,8 @@ with col1:
         st.image(str(logo_path), use_container_width=True)
 with col2:
     st.markdown('<div class="hero">', unsafe_allow_html=True)
-    st.markdown('<div class="hero-title">FINAL Freedom ULTRA PRO V19.1</div>', unsafe_allow_html=True)
-    st.markdown('<div class="hero-sub">Wealthy Signature Private Bank Emperor • Full Clean Flagship Build • Black Card Boardroom UI • Production-Ready MFD Client Conversion Suite</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-title">FINAL Freedom ULTRA PRO V20</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-sub">Wealthy Sovereign Private Bank Legacy • Full Clean Flagship Build • Black Card Boardroom UI • Production-Ready MFD Client Conversion Suite</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 st.divider()
@@ -230,7 +230,7 @@ if module == "Dashboard":
     b.metric("Brand", "Wealthy")
     c.metric("Modules", "35+")
     d.metric("PDF", "READY" if PDF_READY else "Install reportlab")
-    st.success("Wealthy Signature Private Bank Emperor is ready for flagship client meetings.")
+    st.success("Wealthy Sovereign Private Bank Legacy is ready for flagship client meetings.")
 
     st.markdown("### 🚀 Emperor Quick Launch")
     r1 = st.columns(4)
@@ -246,6 +246,18 @@ if module == "Dashboard":
 # =========================
 # CORE MODULES
 # =========================
+elif module == "Client Session Manager":
+    st.subheader("🗂️ Client Session Manager")
+    st.info("View and manage client profiles saved in this session.")
+    if st.session_state.clients:
+        df = pd.DataFrame(st.session_state.clients)
+        st.dataframe(df, use_container_width=True)
+        if "name" in df.columns:
+            selected = st.selectbox("Select Client for Review", df["name"].fillna("Unnamed Client").tolist())
+            st.success(f"Selected Client: {selected}")
+    else:
+        st.warning("No client profiles saved yet. Use Client Onboarding Master to add profiles.")
+
 elif module == "Client Onboarding Master":
     st.subheader("📝 Client Onboarding Master")
     c1, c2, c3 = st.columns(3)
@@ -264,6 +276,9 @@ elif module == "Client Onboarding Master":
     if st.button("💾 Save Full Onboarding"):
         st.session_state.clients.append({"name": name, "age": age, "city": city, "mobile": mobile, "email": email, "occupation": occupation, "annual_income": annual_income, "annual_expense": annual_expense, "surplus": surplus, "networth": networth, "goal": goal})
         st.success("Full client onboarding saved")
+    if st.session_state.clients:
+        st.markdown("### Saved Client Profiles")
+        st.dataframe(pd.DataFrame(st.session_state.clients), use_container_width=True)
 
 elif module == "Client Profile":
     st.subheader("👤 Client Profile")
@@ -393,6 +408,27 @@ elif module == "Lumpsum Calculator":
     st.metric("Current Value", fmt_inr(fv))
     st.metric("Gain", fmt_inr(fv - amt))
 
+elif module == "SWP Year-wise Depletion Chart":
+    st.subheader("📉 SWP Year-wise Depletion Chart")
+    c1, c2, c3, c4 = st.columns(4)
+    corpus = c1.number_input("Starting Corpus (₹)", 0.0, 1e10, 5000000.0, 100000.0, key="swp_chart_corpus")
+    ret = c2.number_input("Expected Return (%)", 0.0, 30.0, 8.0, 0.5, key="swp_chart_ret")
+    years = int(c3.number_input("Years", 1, 60, 20, key="swp_chart_years"))
+    monthly_withdrawal = c4.number_input("Monthly Withdrawal (₹)", 0.0, 1e8, 40000.0, 1000.0, key="swp_chart_withdrawal")
+    annual_withdrawal = monthly_withdrawal * 12
+    balances = []
+    bal = corpus
+    for y in range(1, years + 1):
+        bal = (bal * (1 + ret / 100)) - annual_withdrawal
+        bal = max(bal, 0)
+        balances.append({"Year": y, "Corpus Balance (₹)": round(bal, 2)})
+    df = pd.DataFrame(balances)
+    st.dataframe(df, use_container_width=True)
+    fig, ax = plt.subplots()
+    ax.plot(df["Year"], df["Corpus Balance (₹)"])
+    ax.set_title("SWP Corpus Depletion")
+    st.pyplot(fig)
+
 elif module == "SWP Calculator":
     st.subheader("🏦 SWP Calculator")
     c1, c2, c3 = st.columns(3)
@@ -462,6 +498,21 @@ elif module == "Goal Funding Gap Analyzer":
     st.metric("Future Goal Value", fmt_inr(future_goal))
     st.metric("Projected Current Plan Value", fmt_inr(current_plan_value))
     st.metric("Funding Gap", fmt_inr(gap))
+
+elif module == "Retirement Year-wise Accumulation Table":
+    st.subheader("📅 Retirement Year-wise Accumulation Table")
+    c1, c2, c3, c4 = st.columns(4)
+    current_age = int(c1.number_input("Current Age", 18, 80, 30, key="ret_tab_age"))
+    retire_age = int(c2.number_input("Retirement Age", current_age + 1, 90, 60, key="ret_tab_ret"))
+    monthly_sip = c3.number_input("Monthly Retirement SIP (₹)", 0.0, 1e8, 25000.0, 1000.0, key="ret_tab_sip")
+    ret = c4.number_input("Expected Return (%)", 0.0, 50.0, 12.0, 0.5, key="ret_tab_retp")
+    years_to_ret = retire_age - current_age
+    rows = []
+    for yr in range(1, years_to_ret + 1):
+        inv = monthly_sip * 12 * yr
+        val = future_value_sip(monthly_sip, ret, yr)
+        rows.append({"Year": yr, "Invested Value (₹)": round(inv, 2), "Projected Corpus (₹)": round(val, 2), "Gain (₹)": round(val - inv, 2)})
+    st.dataframe(pd.DataFrame(rows), use_container_width=True)
 
 elif module == "Retirement Planner":
     st.subheader("👴 Retirement Planner")
@@ -557,6 +608,21 @@ elif module == "iPhone Purchase Planner":
 # =========================
 # PROTECTION / PDF / BUSINESS
 # =========================
+elif module == "AMC-wise Recommendation Bucket":
+    st.subheader("🏦 AMC-wise Recommendation Bucket")
+    risk = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"], key="amc_risk")
+    if risk == "Conservative":
+        st.write("- Large Cap / Index: SBI MF, HDFC MF")
+        st.write("- Hybrid / Debt: ICICI Prudential MF, Nippon India MF")
+    elif risk == "Moderate":
+        st.write("- Flexi Cap: Parag Parikh / HDFC / ICICI Prudential")
+        st.write("- Large & Mid Cap: Mirae Asset / Canara Robeco")
+        st.write("- Hybrid: SBI / ICICI Prudential")
+    else:
+        st.write("- Flexi Cap / Index: Parag Parikh / UTI / HDFC")
+        st.write("- Mid Cap / Emerging: Motilal Oswal / Kotak / Nippon India")
+        st.write("- Tactical Debt: ICICI Prudential / SBI")
+
 elif module == "Insurance Need Analysis":
     st.subheader("🛡️ Insurance Need Analysis")
     c1, c2, c3, c4 = st.columns(4)
@@ -689,6 +755,18 @@ elif module == "AUM Projection":
     st.metric("Projected AUM", fmt_inr(aum))
     st.metric("Indicative 0.8% Trail", fmt_inr(aum * 0.008))
 
+elif module == "Printable Client Proposal Screen":
+    st.subheader("🖨️ Printable Client Proposal Screen")
+    client_name = st.text_input("Client Name", "Premium Client", key="print_name")
+    goal = st.text_input("Primary Goal", "Retirement + Wealth Creation", key="print_goal")
+    sip = st.number_input("Suggested SIP (₹)", 0.0, 1e8, 50000.0, 5000.0, key="print_sip")
+    cover = st.number_input("Suggested Life Cover (₹)", 0.0, 1e10, 25000000.0, 100000.0, key="print_cover")
+    st.markdown(f"### Client: {client_name}")
+    st.markdown(f"**Primary Goal:** {goal}")
+    st.markdown(f"**Suggested Monthly SIP:** {fmt_inr(sip)}")
+    st.markdown(f"**Suggested Life Cover:** {fmt_inr(cover)}")
+    st.info("Use browser print (Ctrl+P) for a clean proposal handout.")
+
 elif module == "Client Proposal Generator":
     st.subheader("🧾 Client Proposal Generator")
     client_name = st.text_input("Client Name", "Premium Client")
@@ -739,4 +817,4 @@ elif module == "Export Center":
     st.code(json_str[:5000])
 
 st.divider()
-st.caption("Wealthy | FINAL Freedom ULTRA PRO V19.1 SIGNATURE PRIVATE BANK EMPEROR FULL CLEAN SINGLE app.py • Full clean flagship build • Lifestyle planners with year-wise tables • Step-up comparison chart • Executive PDFs • Install: pip install streamlit pandas matplotlib reportlab")
+st.caption("Wealthy | FINAL Freedom ULTRA PRO V20 WEALTHY SOVEREIGN PRIVATE BANK LEGACY SINGLE app.py • Multi-profile session manager • Retirement accumulation table • SWP depletion chart • Printable proposal screen • AMC-wise recommendation bucket • Install: pip install streamlit pandas matplotlib reportlab")
