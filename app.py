@@ -1,4 +1,4 @@
-# FINAL Freedom ULTRA PRO V18 WEALTHY ULTRA FAMILY OFFICE BLACK CARD SINGLE app.py
+# FINAL Freedom ULTRA PRO V19 WEALTHY SIGNATURE PRIVATE BANK EMPEROR SINGLE app.py
 # Full 360-degree luxury single-file Streamlit app for MFD / Financial Planning / Client Meetings
 
 import streamlit as st
@@ -18,7 +18,7 @@ try:
 except Exception:
     PDF_READY = False
 
-st.set_page_config(page_title="Freedom ULTRA PRO V18 | Wealthy Ultra Family Office Black Card", layout="wide", page_icon="💜")
+st.set_page_config(page_title="Freedom ULTRA PRO V19 | Wealthy Signature Private Bank Emperor", layout="wide", page_icon="💜")
 
 def fmt_inr(x):
     try:
@@ -149,14 +149,14 @@ else:
     st.sidebar.markdown("## 💜 Wealthy")
 
 st.sidebar.title("Freedom ULTRA PRO V17")
-st.sidebar.caption("WEALTHY ULTRA FAMILY OFFICE BLACK CARD")
+st.sidebar.caption("WEALTHY SIGNATURE PRIVATE BANK EMPEROR")
 
 nav = {
     "Titan HQ": ["Dashboard", "Client Onboarding Master", "One-Click Client Recommendation", "Boardroom Client Summary", "Advisor Meeting Script", "Export Center"],
     "Core": ["Client Profile", "Net Worth Tracker", "Risk Profiler", "Asset Allocation Dashboard", "Risk-to-Product Mapper"],
     "Investments": ["SIP vs Lumpsum Comparator", "SIP Calculator", "Lumpsum Calculator", "SWP Calculator", "Step-Up SIP Planner"],
     "Life Goals": ["Family Goals Master Dashboard", "Goal Planner", "Goal Funding Gap Analyzer", "Retirement Planner", "Retirement Shortfall Analyzer", "Child Education Planner", "Marriage Planner", "Travel Planner", "Car Purchase Planner", "iPhone Purchase Planner"],
-    "Protection & Cashflow": ["Insurance Need Analysis", "Insurance PDF Report", "Client Fact Find Form PDF", "Cashflow Planner", "EMI / Loan Planner", "Goal PDF Report", "Retirement PDF Report"],
+    "Protection & Cashflow": ["Insurance Need Analysis", "Insurance PDF Report", "Client Fact Find Form PDF", "Client Meeting Executive Summary PDF", "Master Combined Proposal PDF", "Cashflow Planner", "EMI / Loan Planner", "Goal PDF Report", "Retirement PDF Report"],
     "Business": ["MFD CRM Lead Tracker", "AUM Projection", "Client Proposal Generator"],
 }
 for grp, items in nav.items():
@@ -173,8 +173,8 @@ with col1:
         st.image(str(logo_path), use_container_width=True)
 with col2:
     st.markdown('<div class="hero">', unsafe_allow_html=True)
-    st.markdown('<div class="hero-title">FINAL Freedom ULTRA PRO V18</div>', unsafe_allow_html=True)
-    st.markdown('<div class="hero-sub">Wealthy Ultra Family Office Black Card • Full 360° Financial Planning • Lifestyle Goal Engines • Insurance + Cashflow • Premium MFD Client Conversion Suite</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-title">FINAL Freedom ULTRA PRO V19</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-sub">Wealthy Signature Private Bank Emperor • Full 360° Financial Planning • Lifestyle Goal Engines • Insurance + Cashflow • Premium MFD Client Conversion Suite</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 st.divider()
@@ -185,7 +185,7 @@ if module == "Dashboard":
     b.metric("Brand", "Wealthy")
     c.metric("Modules", "30+")
     d.metric("PDF", "READY" if PDF_READY else "Install reportlab")
-    st.success("Wealthy Ultra Family Office Black Card is ready for full 360-degree premium client planning meetings.")
+    st.success("Wealthy Signature Private Bank Emperor is ready for full 360-degree premium client planning meetings.")
 
     st.markdown("### 🚀 Titan Quick Launch")
     r1 = st.columns(4)
@@ -520,6 +520,39 @@ elif module == "Insurance Need Analysis":
     st.metric("Recommended Life Cover", fmt_inr(recommended_cover))
     st.metric("Insurance Gap", fmt_inr(max(recommended_cover - existing_cover, 0)))
 
+elif module == "Advanced Goal Prioritization Engine":
+    st.subheader("🎯 Advanced Goal Prioritization Engine")
+    annual_surplus = st.number_input("Annual Investable Surplus (₹)", 0.0, 1e10, 600000.0, 50000.0)
+    essential = st.number_input("Essential Goals Corpus (₹)", 0.0, 1e10, 3000000.0, 100000.0)
+    important = st.number_input("Important Goals Corpus (₹)", 0.0, 1e10, 2000000.0, 100000.0)
+    luxury = st.number_input("Luxury Goals Corpus (₹)", 0.0, 1e10, 1000000.0, 100000.0)
+    st.write("**Priority 1:** Essential Goals")
+    st.write("**Priority 2:** Important Goals")
+    st.write("**Priority 3:** Luxury Goals")
+    years_to_cover = (essential / annual_surplus) if annual_surplus > 0 else 0
+    st.info(f"Approx years to cover essential goals from surplus only: {years_to_cover:.2f}")
+
+elif module == "Client Meeting Executive Summary PDF":
+    st.subheader("📄 Client Meeting Executive Summary PDF")
+    client_name = st.text_input("Client Name", "Premium Client", key="exec_name")
+    goal = st.text_input("Primary Goal", "Retirement + Wealth Creation", key="exec_goal")
+    annual_income = st.number_input("Annual Income (₹)", 0.0, 1e10, 1800000.0, 50000.0, key="exec_income")
+    annual_expense = st.number_input("Annual Expense (₹)", 0.0, 1e10, 900000.0, 50000.0, key="exec_exp")
+    surplus = max(annual_income - annual_expense, 0)
+    pdf = build_pdf_bytes("WEALTHY EXECUTIVE SUMMARY", [f"Client Name: {client_name}", f"Primary Goal: {goal}", f"Annual Income: {fmt_inr(annual_income)}", f"Annual Expense: {fmt_inr(annual_expense)}", f"Annual Surplus: {fmt_inr(surplus)}"])
+    if pdf:
+        st.download_button("📄 Download Executive Summary PDF", data=pdf, file_name="wealthy_executive_summary.pdf", mime="application/pdf")
+
+elif module == "Master Combined Proposal PDF":
+    st.subheader("📄 Master Combined Proposal PDF")
+    client_name = st.text_input("Client Name", "Premium Client", key="master_name")
+    goal = st.text_input("Primary Goal", "Retirement + Wealth Creation", key="master_goal")
+    sip = st.number_input("Suggested Monthly SIP (₹)", 0.0, 1e8, 50000.0, 5000.0, key="master_sip")
+    cover = st.number_input("Suggested Life Cover (₹)", 0.0, 1e10, 25000000.0, 100000.0, key="master_cover")
+    pdf = build_pdf_bytes("WEALTHY MASTER COMBINED PROPOSAL", [f"Client Name: {client_name}", f"Primary Goal: {goal}", f"Suggested SIP: {fmt_inr(sip)}", f"Suggested Life Cover: {fmt_inr(cover)}"])
+    if pdf:
+        st.download_button("📄 Download Master Combined Proposal PDF", data=pdf, file_name="wealthy_master_combined_proposal.pdf", mime="application/pdf")
+
 elif module == "Cashflow Planner":
     st.subheader("💸 Cashflow Planner")
     c1, c2, c3 = st.columns(3)
@@ -645,4 +678,4 @@ elif module == "Export Center":
     st.code(json_str[:5000])
 
 st.divider()
-st.caption("Wealthy | FINAL Freedom ULTRA PRO V18 WEALTHY ULTRA FAMILY OFFICE BLACK CARD SINGLE app.py • Child + Marriage + Travel + Car + iPhone planners • Insurance need analysis • Cashflow planner • Net worth asset mix chart • Install: pip install streamlit pandas matplotlib reportlab")
+st.caption("Wealthy | FINAL Freedom ULTRA PRO V19 WEALTHY SIGNATURE PRIVATE BANK EMPEROR SINGLE app.py • Child + Marriage + Travel + Car + iPhone planners • Insurance need analysis • Cashflow planner • Net worth asset mix chart • Install: pip install streamlit pandas matplotlib reportlab")
