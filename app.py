@@ -706,7 +706,7 @@ if st.session_state.page == "home":
         """, unsafe_allow_html=True)
     with k5:
         st.markdown(f"""
-        <div class="kpi-card"><div class="kpi-title">Score</div><div class="kpi-value">{score}%</div></div>
+        <div class="kpi-card"><div class="kpi-title">Score</div><div class="kpi-value">{boardroom_score}%</div></div>
         """, unsafe_allow_html=True)
 
     st.markdown(f"""
