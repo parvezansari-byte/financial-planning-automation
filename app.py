@@ -592,7 +592,7 @@ def normalize_txn_type(x):
 
 def advisor_note(title, lines):
     st.markdown('<div class="imperial-box">', unsafe_allow_html=True)
-    st.markdown('<div class="imperial-subheader">Private Banker Advisory Notes</div>', unsafe_allow_html=True)
+    st.markdown('<div class="imperial-subheader">Advisory Notes</div>', unsafe_allow_html=True)
     st.markdown(f"**{title}**")
     for line in lines:
         st.write(f"• {line}")
@@ -841,7 +841,7 @@ if st.session_state.page == "home":
             <div class="report-text">
                 <b>Client:</b> {client_name}<br>
                 <b>Advisor:</b> {advisor_name}<br>
-                <b>Score:</b> {score}%<br>
+                <b>Score:</b> {boardroom_score}%<br>
                 <b>Suggested Allocation:</b> {suggested_eq}% Equity | {suggested_debt}% Debt | {suggested_gold}% Gold<br>
                 <b>Portfolio Mode:</b> {wealth_mode}<br>
                 <b>Retirement Priority:</b> {retirement_priority}<br><br>
