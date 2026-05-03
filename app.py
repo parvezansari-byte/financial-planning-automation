@@ -638,7 +638,7 @@ st.session_state.advisor_name = advisor_name
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("### Quick Navigation")
-st.sidebar.caption("Production Ready Navigation Panel")
+st.sidebar.caption("Navigation")
 if st.sidebar.button("🏛️ Home Dashboard", use_container_width=True):
     go("home")
 if st.sidebar.button("📈 SIP & Lumpsum", use_container_width=True):
@@ -658,11 +658,11 @@ if st.sidebar.button("🏦 Fund Suggestion & Performance", use_container_width=T
 # HOME PAGE
 # =====================================================
 if st.session_state.page == "home":
-    st.markdown('<div class="imperial-box"><div class="imperial-header">Freedom Planner Index</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="imperial-box"><div class="imperial-header">Planner Index</div></div>', unsafe_allow_html=True)
 
     total_modules = 15
     base_score = min(100, max(45, round((expected_return * 100) * 5 + (12 - inflation * 100) * 3)))
-    wealth_mode = "Imperial Growth" if expected_return >= 0.12 else "Capital Shield"
+    wealth_mode = "Growth" if expected_return >= 0.12 else "Capital Shield"
     suggested_eq = 75 if current_age <= 35 else (60 if current_age <= 50 else 40)
     suggested_debt = 20 if current_age <= 35 else (30 if current_age <= 50 else 45)
     suggested_gold = 5 if current_age <= 35 else (10 if current_age <= 50 else 15)
@@ -679,11 +679,10 @@ if st.session_state.page == "home":
     ])
 
     st.markdown(f"""
-    <div class="boardroom-banner">
-        <div style="font-family:'Cinzel', serif; font-size:28px; font-weight:800; margin-bottom:6px;">FINAL V6 BOARDROOM ELITE EDITION</div>
+    <div class="banner">
+        <div style="font-family:'Cinzel', serif; font-size:28px; font-weight:800; margin-bottom:6px;">Elite</div>
         <div style="font-size:14px; line-height:1.65;">
-            Executive-grade HNI financial planning interface built for boardroom-style client meetings. Use this elite dashboard to present
-            net worth, cashflow, goals, retirement, insurance, allocation, and rebalancing in a premium structured advisory flow.
+           beyond limit
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -707,7 +706,7 @@ if st.session_state.page == "home":
         """, unsafe_allow_html=True)
     with k5:
         st.markdown(f"""
-        <div class="kpi-card"><div class="kpi-title">Boardroom Score</div><div class="kpi-value">{boardroom_score}%</div></div>
+        <div class="kpi-card"><div class="kpi-title">Score</div><div class="kpi-value">{score}%</div></div>
         """, unsafe_allow_html=True)
 
     st.markdown(f"""
@@ -743,20 +742,20 @@ if st.session_state.page == "home":
                 <b>Protection Score:</b> {protection_score}%<br>
                 <b>Discipline Score:</b> {discipline_score}%<br>
                 <b>Boardroom Score:</b> {boardroom_score}%<br><br>
-                Ideal for premium discussion framing before detailed module walkthrough.
+                Ideal for premium
             </div>
         </div>
         """, unsafe_allow_html=True)
     with b3:
         st.markdown(f"""
-        <div class="boardroom-panel">
-            <div class="signature-title">📊 Advisor Recommendation Engine</div>
+        <div class="panel">
+            <div class="signature-title">📊 Recommendation</div>
             <div class="signature-text">
                 <b>Suggested Allocation:</b><br>
                 Equity {suggested_eq}% | Debt {suggested_debt}% | Gold {suggested_gold}%<br>
                 <b>Portfolio Mode:</b> {wealth_mode}<br>
                 <b>Priority:</b> {retirement_priority}<br><br>
-                Pair this with Portfolio Allocation + Rebalancing for a final premium recommendation close.
+                Pair this with Portfolio Allocation + Rebalancing.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -810,7 +809,7 @@ if st.session_state.page == "home":
         st.button("iPhone Purchase Planner", on_click=lambda: go("iphone"), use_container_width=True)
 
     st.markdown("---")
-    st.markdown("### 🏛️ Boardroom Elite Master Summary")
+    st.markdown("### 🏛️ Master Summary")
     s1, s2, s3 = st.columns(3)
     with s1:
         alloc_df = pd.DataFrame({"Asset Class": ["Equity", "Debt", "Gold"], "Suggested %": [suggested_eq, suggested_debt, suggested_gold]})
@@ -842,7 +841,7 @@ if st.session_state.page == "home":
             <div class="report-text">
                 <b>Client:</b> {client_name}<br>
                 <b>Advisor:</b> {advisor_name}<br>
-                <b>Boardroom Score:</b> {boardroom_score}%<br>
+                <b>Score:</b> {score}%<br>
                 <b>Suggested Allocation:</b> {suggested_eq}% Equity | {suggested_debt}% Debt | {suggested_gold}% Gold<br>
                 <b>Portfolio Mode:</b> {wealth_mode}<br>
                 <b>Retirement Priority:</b> {retirement_priority}<br><br>
