@@ -15,7 +15,7 @@ except Exception:
 # PAGE CONFIG
 # =====================================================
 st.set_page_config(
-    page_title="Freedom V4 ULTRA - Roman Imperial",
+    page_title="Freedom",
     page_icon="🏛️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -613,13 +613,13 @@ def kpi_row(items):
 # HEADER
 # =====================================================
 st.markdown('<div class="main-title">Freedom</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">Roman Imperial Private Banker Edition | Investment & Insurance Planner</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">Legacy to be built</div>', unsafe_allow_html=True)
 
 st.markdown(f"""
 <div class="hero-banner">
     <b>Prepared for:</b> {st.session_state.get('client_name', 'Client')} &nbsp;&nbsp; | &nbsp;&nbsp;
     <b>Advisor:</b> {st.session_state.get('advisor_name', 'Advisor')} &nbsp;&nbsp; | &nbsp;&nbsp;
-    <b>Theme:</b> Roman Imperial Wealth Interface
+    <b>Theme:</b> Wealth Interface
 </div>
 """, unsafe_allow_html=True)
 
