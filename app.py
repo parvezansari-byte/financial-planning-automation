@@ -330,29 +330,53 @@ button[kind="secondary"] {
    KPI / CARDS
 ========================= */
 .kpi-card {
-    background: linear-gradient(180deg, #FFF8ED 0%, #F8EBD2 100%);
-    border: 1px solid rgba(107, 30, 30, 0.14);
-    border-left: 6px solid #B8860B;
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 6px 18px rgba(92, 26, 26, 0.07);
-    margin-bottom: 10px;
+    background: linear-gradient(145deg, #ffffff, #f5e6c8);
+    border-radius: 18px;
+    padding: 18px;
     text-align: center;
+    box-shadow: 
+        0 8px 20px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.6);
+    border: 1px solid rgba(212,175,55,0.35);
+    transition: all 0.25s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 
+        0 14px 28px rgba(0,0,0,0.12),
+        0 0 10px rgba(212,175,55,0.35);
+}
+
+/* KPI COLORS */
+.kpi-green {
+    border-left: 6px solid #2ecc71;
+    background: linear-gradient(145deg, #ecfff5, #d6f5e6);
+}
+
+.kpi-yellow {
+    border-left: 6px solid #f1c40f;
+    background: linear-gradient(145deg, #fff9e6, #fceabb);
+}
+
+.kpi-red {
+    border-left: 6px solid #e74c3c;
+    background: linear-gradient(145deg, #ffecec, #f5c6c6);
 }
 
 .kpi-title {
     font-family: 'Cinzel', serif;
-    color: #5C1A1A;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
+    color: #5C1A1A;
     margin-bottom: 6px;
 }
 
 .kpi-value {
     font-family: 'Cinzel', serif;
-    color: #7A1F1F;
-    font-size: 28px;
-    font-weight: 800;
+    font-size: 30px;
+    font-weight: 900;
+    color: #2B1E12;
 }
 
 /* =========================
@@ -600,10 +624,23 @@ def advisor_note(title, lines):
 
 def kpi_row(items):
     cols = st.columns(len(items))
+
     for i, (label, value) in enumerate(items):
+
+        # detect score type
+        css_class = ""
+        if isinstance(value, str) and "%" in value:
+            num = float(value.replace("%",""))
+            if num >= 75:
+                css_class = "kpi-green"
+            elif num >= 50:
+                css_class = "kpi-yellow"
+            else:
+                css_class = "kpi-red"
+
         with cols[i]:
             st.markdown(f"""
-            <div class="kpi-card">
+            <div class="kpi-card {css_class}">
                 <div class="kpi-title">{label}</div>
                 <div class="kpi-value">{value}</div>
             </div>
