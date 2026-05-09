@@ -49,12 +49,20 @@ html, body, [class*="css"] {
 }
 
 .stApp {
-    background:
-        radial-gradient(circle at 85% 10%, rgba(212,175,55,0.18) 0%, rgba(212,175,55,0.02) 20%, transparent 42%),
-        radial-gradient(circle at 10% 90%, rgba(122,31,31,0.12) 0%, rgba(122,31,31,0.02) 24%, transparent 46%),
-        linear-gradient(135deg, #f8f2e8 0%, #f2e4cb 28%, #e5d1a8 60%, #d6b97d 100%);
+    background: linear-gradient(-45deg,
+        #f8f2e8,
+        #e5d1a8,
+        #d6b97d,
+        #f2e4cb);
+    background-size: 400% 400%;
+    animation: gradientBG 18s ease infinite;
     color: #2B1E12;
-    background-attachment: fixed;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 /* =========================
