@@ -395,24 +395,21 @@ button[kind="secondary"] {
    NAV BUTTONS
 ========================= */
 .stButton > button {
-    width: 100%;
-    min-height: 58px;
-    border-radius: 14px;
-    border: 1px solid #C58B39;
-    background: linear-gradient(145deg, #FFF8ED 0%, #F8E7C5 55%, #E8C989 100%);
-    color: #5C1A1A !important;
+    background: linear-gradient(135deg,
+        #D4AF37,
+        #F7E7A1,
+        #B8860B);
+    color: #2B1E12 !important;
+    border: none;
+    border-radius: 16px;
     font-weight: 800;
-    font-family: 'Cinzel', serif;
-    box-shadow: 0 6px 18px rgba(92, 26, 26, 0.10);
-    transition: all 0.25s ease;
+    transition: all 0.3s ease;
 }
 
 .stButton > button:hover {
-    transform: translateY(-2px);
-    background: linear-gradient(145deg, #FFFDF8 0%, #F6E6C0 45%, #DDB56A 100%);
-    color: #4A120F !important;
-    border: 1px solid #D4AF37;
-    box-shadow: 0 10px 24px rgba(92, 26, 26, 0.16);
+    transform: scale(1.04);
+    box-shadow:
+        0 0 18px rgba(212,175,55,0.6);
 }
 
 .stDownloadButton > button {
