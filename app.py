@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import plotly.graph_objects as go
+import plotly.express as px
 import re
 from datetime import datetime
 from io import BytesIO
@@ -63,6 +65,40 @@ html, body, [class*="css"] {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
+}
+.fade-in {
+    animation: fadeIn 1s ease-in-out;
+}
+
+.float-card {
+    animation: floatCard 4s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+}
+
+@keyframes floatCard {
+
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
 }
 
 /* =========================
@@ -394,10 +430,28 @@ button[kind="secondary"] {
 }
 
 .kpi-value {
+
     font-family: 'Cinzel', serif;
     font-size: 30px;
     font-weight: 900;
     color: #2B1E12;
+
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 /* =========================
@@ -668,6 +722,28 @@ def kpi_row(items):
 # HEADER
 # =====================================================
 st.markdown('<div class="main-title">Freedom</div>', unsafe_allow_html=True)
+st.markdown(f"""
+<div class="hero-banner fade-in">
+
+    <h1 style='
+        font-size:48px;
+        font-family:Cinzel;
+        color:#6B1E1E;
+        margin-bottom:6px;
+    '>
+        Freedom Wealth Intelligence
+    </h1>
+
+    <p style='
+        font-size:18px;
+        color:#3A2918;
+    '>
+        Institutional Grade Financial Architecture
+        for {client_name}
+    </p>
+
+</div>
+""", unsafe_allow_html=True)
 st.markdown('<div class="sub-title">Legacy to be built</div>', unsafe_allow_html=True)
 
 st.markdown(f"""
@@ -725,7 +801,25 @@ if st.session_state.page == "home":
     protection_score = min(100, max(55, 100 - current_age))
     discipline_score = min(100, max(50, round((expected_return * 100) * 6)))
     boardroom_score = min(100, max(60, round((base_score + protection_score + discipline_score) / 3)))
+    st.markdown("## 🧠 AI Advisory Intelligence")
 
+if expected_return >= 0.12:
+
+    st.success("""
+    🚀 Aggressive Growth Strategy Active
+    """)
+
+if inflation > 0.07:
+
+    st.warning("""
+    ⚠ High Inflation Detected
+    """)
+
+if current_age > 45:
+
+    st.info("""
+    🛡 Capital Protection Phase Recommended
+    """)
     kpi_row([
         ("Client", client_name),
         ("Advisor", advisor_name),
@@ -776,7 +870,7 @@ if st.session_state.page == "home":
     b1, b2, b3 = st.columns(3)
     with b1:
         st.markdown(f"""
-        <div class="boardroom-panel">
+        <div class="boardroom-panel fade-in float-card">
             <div class="signature-title">👤 HNI Client Profile Panel</div>
             <div class="signature-text">
                 <b>Client:</b> {client_name}<br>
@@ -981,6 +1075,42 @@ if st.session_state.page == "sip":
         ])
 
         st.dataframe(sip_df, use_container_width=True)
+        fig = go.Figure()
+
+fig.add_trace(go.Scatter(
+
+    x=sip_df["Year"],
+
+    y=sip_df["Year End Corpus (₹)"],
+
+    mode='lines+markers',
+
+    line=dict(width=4),
+
+    marker=dict(size=8),
+
+    name='Wealth Growth'
+))
+
+fig.update_layout(
+
+    title="Future Wealth Projection",
+
+    template="plotly_dark",
+
+    height=550,
+
+    paper_bgcolor='rgba(0,0,0,0)',
+
+    plot_bgcolor='rgba(0,0,0,0)',
+
+    font=dict(color='white')
+)
+
+st.plotly_chart(
+    fig,
+    use_container_width=True
+)
 
     with t2:
         c1, c2, c3 = st.columns(3)
