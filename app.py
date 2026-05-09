@@ -748,9 +748,24 @@ st.markdown('<div class="sub-title">Legacy to be built</div>', unsafe_allow_html
 
 st.markdown(f"""
 <div class="hero-banner">
-    <b>Prepared for:</b> {st.session_state.get('client_name', 'Client')} &nbsp;&nbsp; | &nbsp;&nbsp;
-    <b>Advisor:</b> {st.session_state.get('advisor_name', 'Advisor')} &nbsp;&nbsp; | &nbsp;&nbsp;
-    <b>Theme:</b> Wealth Interface
+
+    <h1 style='
+        font-size:48px;
+        font-family:Cinzel;
+        color:#6B1E1E;
+        margin-bottom:6px;
+    '>
+        Freedom Wealth Intelligence
+    </h1>
+
+    <p style='
+        font-size:18px;
+        color:#3A2918;
+    '>
+        Institutional Grade Financial Architecture
+        for {client_name}
+    </p>
+
 </div>
 """, unsafe_allow_html=True)
 
