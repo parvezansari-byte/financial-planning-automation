@@ -4,6 +4,14 @@ import numpy as np
 import re
 from datetime import datetime
 from io import BytesIO
+import plotly.graph_objects as go
+import plotly.express as px
+
+try:
+    from streamlit_echarts import st_echarts
+    ECHART_OK = True
+except:
+    ECHART_OK = False
 
 try:
     import pdfplumber
@@ -39,8 +47,590 @@ def back_button():
 # =====================================================
 st.markdown("""
 <style>
+
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
+/* =====================================================
+   GLOBAL
+===================================================== */
+
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
+}
+
+/* =====================================================
+   CINEMATIC BACKGROUND
+===================================================== */
+
+.stApp {
+
+    background:
+        radial-gradient(circle at top left,
+        rgba(212,175,55,0.16),
+        transparent 22%),
+
+        radial-gradient(circle at bottom right,
+        rgba(122,31,31,0.15),
+        transparent 28%),
+
+        linear-gradient(
+            135deg,
+            #0F172A 0%,
+            #111827 35%,
+            #1E293B 65%,
+            #0B1120 100%
+        );
+
+    background-size: 400% 400%;
+    animation: gradientMove 18s ease infinite;
+
+    background-attachment: fixed;
+    color: #F8FAFC;
+}
+
+/* =====================================================
+   ANIMATION ENGINE
+===================================================== */
+
+@keyframes gradientMove {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.fade-in {
+    animation: fadeIn 1s ease-in-out;
+}
+
+.float-card {
+    animation: floatCard 4s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+}
+
+@keyframes floatCard {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+/* =====================================================
+   MAIN CONTAINER
+===================================================== */
+
+.main .block-container {
+
+    max-width: 95%;
+
+    padding-top: 1rem;
+    padding-bottom: 2rem;
+
+    background: rgba(255,255,255,0.04);
+
+    border: 1px solid rgba(255,255,255,0.08);
+
+    border-radius: 28px;
+
+    backdrop-filter: blur(18px);
+
+    box-shadow:
+        0 8px 32px rgba(0,0,0,0.20);
+
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+/* =====================================================
+   SIDEBAR
+===================================================== */
+
+section[data-testid="stSidebar"] {
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(15,23,42,0.98),
+            rgba(30,41,59,0.98)
+        );
+
+    border-right:
+        1px solid rgba(255,255,255,0.08);
+
+    backdrop-filter: blur(18px);
+}
+
+section[data-testid="stSidebar"] * {
+    color: white !important;
+}
+
+/* =====================================================
+   HERO TITLE
+===================================================== */
+
+.main-title {
+
+    background:
+        linear-gradient(
+            90deg,
+            #D4AF37,
+            #F7E7A1,
+            #B8860B
+        );
+
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    font-size: 72px;
+
+    font-family: 'Cinzel', serif;
+
+    font-weight: 900;
+
+    text-align: center;
+
+    margin-bottom: 8px;
+
+    animation: fadeIn 1.5s ease;
+}
+
+.sub-title {
+
+    text-align: center;
+
+    color: rgba(255,255,255,0.82);
+
+    font-size: 20px;
+
+    margin-bottom: 20px;
+
+    letter-spacing: 2px;
+}
+
+/* =====================================================
+   HERO BANNER
+===================================================== */
+
+.hero-banner {
+
+    background:
+        rgba(255,255,255,0.08);
+
+    backdrop-filter: blur(20px);
+
+    border:
+        1px solid rgba(255,255,255,0.10);
+
+    border-radius: 24px;
+
+    padding: 22px;
+
+    margin-bottom: 20px;
+
+    color: white;
+
+    box-shadow:
+        0 8px 32px rgba(0,0,0,0.20);
+
+    animation: fadeIn 1s ease;
+}
+
+/* =====================================================
+   GLASS KPI CARDS
+===================================================== */
+
+.kpi-card {
+
+    background:
+        rgba(255,255,255,0.08);
+
+    backdrop-filter: blur(20px);
+
+    border:
+        1px solid rgba(255,255,255,0.10);
+
+    border-radius: 24px;
+
+    padding: 24px;
+
+    text-align: center;
+
+    box-shadow:
+        0 8px 32px rgba(0,0,0,0.18);
+
+    transition: all 0.35s ease;
+
+    animation: fadeIn 1s ease;
+}
+
+.kpi-card:hover {
+
+    transform:
+        translateY(-10px)
+        scale(1.03);
+
+    box-shadow:
+        0 18px 42px rgba(0,0,0,0.28);
+}
+
+.kpi-title {
+
+    font-size: 15px;
+
+    color: rgba(255,255,255,0.75);
+
+    margin-bottom: 8px;
+
+    font-weight: 600;
+}
+
+.kpi-value {
+
+    font-size: 34px;
+
+    font-family: 'Cinzel', serif;
+
+    font-weight: 900;
+
+    color: #F8FAFC;
+
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* =====================================================
+   BOARDROOM PANEL
+===================================================== */
+
+.boardroom-panel {
+
+    background:
+        rgba(255,255,255,0.06);
+
+    backdrop-filter: blur(18px);
+
+    border-radius: 24px;
+
+    border:
+        1px solid rgba(255,255,255,0.10);
+
+    padding: 22px;
+
+    min-height: 220px;
+
+    box-shadow:
+        0 8px 32px rgba(0,0,0,0.18);
+
+    transition: all 0.35s ease;
+
+    color: white;
+}
+
+.boardroom-panel:hover {
+
+    transform: translateY(-8px);
+
+    box-shadow:
+        0 18px 44px rgba(0,0,0,0.28);
+}
+
+/* =====================================================
+   BUTTONS
+===================================================== */
+
+.stButton > button {
+
+    width: 100%;
+
+    min-height: 58px;
+
+    border-radius: 16px;
+
+    border: none;
+
+    background:
+        linear-gradient(
+            135deg,
+            #D4AF37,
+            #F7E7A1,
+            #B8860B
+        );
+
+    color: #111827 !important;
+
+    font-weight: 800;
+
+    font-family: 'Cinzel', serif;
+
+    transition: all 0.3s ease;
+
+    box-shadow:
+        0 6px 18px rgba(212,175,55,0.25);
+}
+
+.stButton > button:hover {
+
+    transform:
+        scale(1.04)
+        translateY(-2px);
+
+    box-shadow:
+        0 0 22px rgba(212,175,55,0.55);
+}
+
+/* =====================================================
+   TABLES
+===================================================== */
+
+[data-testid="stDataFrame"] {
+
+    border-radius: 20px;
+
+    overflow: hidden;
+
+    border:
+        1px solid rgba(255,255,255,0.08);
+
+    box-shadow:
+        0 8px 22px rgba(0,0,0,0.18);
+}
+
+/* =====================================================
+   METRIC CONTAINER
+===================================================== */
+
+[data-testid="metric-container"] {
+
+    background:
+        rgba(255,255,255,0.05);
+
+    backdrop-filter: blur(16px);
+
+    border-radius: 18px;
+
+    border:
+        1px solid rgba(255,255,255,0.08);
+
+    padding: 14px;
+}
+
+/* =====================================================
+   TEXT
+===================================================== */
+
+h1,h2,h3,h4,h5,h6,p,div,label,span {
+    color: white !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# =========================================================
+# PREMIUM HERO SECTION
+# KEEP SAME HEADER — ONLY ADD THIS BELOW TITLE
+# =========================================================
+
+st.markdown(f"""
+<div class="hero-banner fade-in">
+
+    <h1 style="
+        font-size:56px;
+        font-family:Cinzel;
+        margin-bottom:8px;
+    ">
+        Freedom Wealth Intelligence
+    </h1>
+
+    <p style="
+        font-size:20px;
+        opacity:0.85;
+    ">
+        Institutional Grade Financial Architecture
+        for {client_name}
+    </p>
+
+</div>
+""", unsafe_allow_html=True)
+
+# =========================================================
+# SMART ADVISORY ENGINE
+# ADD BELOW KPI SECTION
+# =========================================================
+
+st.markdown("## 🧠 AI Advisory Intelligence")
+
+if expected_return > 0.12:
+
+    st.success("""
+    🚀 Growth Strategy Active
+    
+    Portfolio positioning supports aggressive long-term wealth compounding.
+    """)
+
+if inflation > 0.07:
+
+    st.warning("""
+    ⚠ Inflation Risk Detected
+    
+    Increase SIP contribution by at least 10% yearly.
+    """)
+
+if current_age > 45:
+
+    st.info("""
+    🛡 Capital Protection Phase
+    
+    Begin gradual transition toward preservation assets.
+    """)
+
+# =========================================================
+# PREMIUM WEALTH CHART
+# ADD BELOW SIP TABLE / RETIREMENT TABLE
+# =========================================================
+
+if "sip_df" in locals():
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+
+        x=sip_df["Year"],
+        y=sip_df["Year End Corpus (₹)"],
+
+        mode='lines+markers',
+
+        name='Wealth Growth',
+
+        line=dict(width=4),
+
+        marker=dict(size=8)
+    ))
+
+    fig.update_layout(
+
+        title="Future Wealth Projection",
+
+        template="plotly_dark",
+
+        height=550,
+
+        paper_bgcolor='rgba(0,0,0,0)',
+
+        plot_bgcolor='rgba(0,0,0,0)',
+
+        font=dict(color='white'),
+
+        margin=dict(l=20, r=20, t=60, b=20)
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+# =========================================================
+# RADIAL SCORE METER
+# ADD BELOW BOARDROOM SCORE
+# =========================================================
+
+if ECHART_OK:
+
+    option = {
+
+        "series": [{
+
+            "type": 'gauge',
+
+            "progress": {
+                "show": True,
+                "width": 18
+            },
+
+            "axisLine": {
+                "lineStyle": {
+                    "width": 18
+                }
+            },
+
+            "detail": {
+                "valueAnimation": True,
+                "fontSize": 42,
+                "color": "#ffffff"
+            },
+
+            "data": [{
+                "value": boardroom_score,
+                "name": 'Wealth Score'
+            }]
+        }]
+    }
+
+    st.markdown("## 🏛 Wealth Readiness Meter")
+
+    st_echarts(option, height="420px")
+
+# =========================================================
+# FLOATING EXECUTIVE PANELS
+# KEEP SAME CONTENT — ONLY CHANGE HTML CLASS
+# =========================================================
+
+st.markdown("""
+<div class="boardroom-panel fade-in float-card">
+
+    <div class="signature-title">
+        📊 Executive Intelligence Layer
+    </div>
+
+    <div class="signature-text">
+
+        • Dynamic Financial Planning<br><br>
+
+        • AI-Based Wealth Advisory<br><br>
+
+        • Institutional Visualization Engine<br><br>
+
+        • Motion-Based Executive Dashboard<br><br>
+
+        • Premium Private Banking Interface
+
+    </div>
+
+</div>
+""", unsafe_allow_html=True)
 /* =========================
    GLOBAL
 ========================= */
