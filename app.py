@@ -338,15 +338,19 @@ button[kind="secondary"] {
    KPI / CARDS
 ========================= */
 .kpi-card {
-    background: linear-gradient(145deg, #ffffff, #f5e6c8);
-    border-radius: 18px;
-    padding: 18px;
+    background: rgba(255,255,255,0.22);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 24px;
+    padding: 22px;
     text-align: center;
-    box-shadow: 
-        0 8px 20px rgba(0,0,0,0.08),
-        inset 0 1px 0 rgba(255,255,255,0.6);
-    border: 1px solid rgba(212,175,55,0.35);
-    transition: all 0.25s ease;
+    box-shadow:
+        0 8px 32px rgba(31,38,135,0.18);
+    transition: all 0.35s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-8px) scale(1.03);
 }
 
 .kpi-card:hover {
