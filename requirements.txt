@@ -6,3 +6,4 @@ reportlab
 python-dateutil
 pdfplumber
 openpyxl
+plotly
