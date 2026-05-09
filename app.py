@@ -257,14 +257,23 @@ button[kind="secondary"] {
 }
 
 .boardroom-panel {
-    background: linear-gradient(180deg, rgba(255,248,237,0.98) 0%, rgba(248,236,208,0.97) 100%);
-    border: 1px solid rgba(107, 30, 30, 0.14);
-    border-top: 5px solid #B8860B;
-    border-radius: 20px;
-    padding: 18px;
-    min-height: 210px;
-    box-shadow: 0 10px 24px rgba(92, 26, 26, 0.08);
-    margin-bottom: 12px;
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(18px);
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.22);
+
+    box-shadow:
+        0 8px 32px rgba(0,0,0,0.10),
+        inset 0 1px 0 rgba(255,255,255,0.2);
+
+    padding: 22px;
+    transition: all 0.35s ease;
+}
+
+.boardroom-panel:hover {
+    transform: translateY(-8px);
+    box-shadow:
+        0 18px 44px rgba(0,0,0,0.18);
 }
 
 .signature-card {
