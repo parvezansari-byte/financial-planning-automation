@@ -1033,107 +1033,220 @@ if current_age > 45:
 
 # =====================================================
 # SIP & LUMPSUM CALCULATOR
+# EXACT SAFE COPY-PASTE CODE
 # =====================================================
+
 if st.session_state.page == "sip":
+
     back_button()
-    st.markdown(f'<div class="imperial-box"><div class="imperial-header">SIP & Lumpsum Calculator</div></div>', unsafe_allow_html=True)
+
+    st.markdown(
+        '<div class="imperial-box"><div class="imperial-header">SIP & Lumpsum Calculator</div></div>',
+        unsafe_allow_html=True
+    )
 
     t1, t2 = st.tabs(["SIP Planner", "Lumpsum Planner"])
 
+    # =================================================
+    # SIP TAB
+    # =================================================
+
     with t1:
+
         c1, c2, c3, c4 = st.columns(4)
+
         with c1:
-            monthly_sip = st.number_input("Monthly SIP (₹)", 0, 100000000, 5000)
+
+            monthly_sip = st.number_input(
+                "Monthly SIP (₹)",
+                0,
+                100000000,
+                5000
+            )
+
         with c2:
-            years = st.number_input("Investment Period (Years)", 1, 60, 20)
+
+            years = st.number_input(
+                "Investment Period (Years)",
+                1,
+                60,
+                20
+            )
+
         with c3:
-            sip_return = st.number_input("Expected Return (%)", 0.0, 30.0, float(expected_return * 100)) / 100
+
+            sip_return = st.number_input(
+                "Expected Return (%)",
+                0.0,
+                30.0,
+                float(expected_return * 100)
+            ) / 100
+
         with c4:
-            step_up = st.number_input("Annual Step-up (%)", 0.0, 50.0, 10.0) / 100
+
+            step_up = st.number_input(
+                "Annual Step-up (%)",
+                0.0,
+                50.0,
+                10.0
+            ) / 100
 
         corpus = 0
         total_invested = 0
         current_sip = monthly_sip
+
         rows = []
 
         for y in range(1, years + 1):
+
             yearly_invested = 0
+
             for _ in range(12):
+
                 corpus = corpus * (1 + sip_return / 12) + current_sip
+
                 total_invested += current_sip
+
                 yearly_invested += current_sip
+
             gain = corpus - total_invested
-            rows.append([y, round(current_sip, 0), round(yearly_invested, 0), round(total_invested, 0), round(gain, 0), round(corpus, 0)])
+
+            rows.append([
+                y,
+                round(current_sip, 0),
+                round(yearly_invested, 0),
+                round(total_invested, 0),
+                round(gain, 0),
+                round(corpus, 0)
+            ])
+
             current_sip *= (1 + step_up)
 
-        sip_df = pd.DataFrame(rows, columns=["Year", "Monthly SIP (₹)", "Yearly Invested (₹)", "Total Invested (₹)", "Total Gain (₹)", "Year End Corpus (₹)"])
+        sip_df = pd.DataFrame(
+            rows,
+            columns=[
+                "Year",
+                "Monthly SIP (₹)",
+                "Yearly Invested (₹)",
+                "Total Invested (₹)",
+                "Total Gain (₹)",
+                "Year End Corpus (₹)"
+            ]
+        )
 
         kpi_row([
             ("Invested", fmt(total_invested)),
             ("Final Value", fmt(corpus)),
-            ("Absolute Gain", f"{((corpus-total_invested)/total_invested*100 if total_invested>0 else 0):.2f}%")
+            (
+                "Absolute Gain",
+                f"{((corpus-total_invested)/total_invested*100 if total_invested>0 else 0):.2f}%"
+            )
         ])
 
-        st.dataframe(sip_df, use_container_width=True)
+        st.dataframe(
+            sip_df,
+            use_container_width=True
+        )
+
+        # =============================================
+        # PREMIUM PLOTLY CHART
+        # =============================================
+
         fig = go.Figure()
 
-fig.add_trace(go.Scatter(
+        fig.add_trace(go.Scatter(
 
-    x=sip_df["Year"],
+            x=sip_df["Year"],
 
-    y=sip_df["Year End Corpus (₹)"],
+            y=sip_df["Year End Corpus (₹)"],
 
-    mode='lines+markers',
+            mode='lines+markers',
 
-    line=dict(width=4),
+            line=dict(width=4),
 
-    marker=dict(size=8),
+            marker=dict(size=8),
 
-    name='Wealth Growth'
-))
+            name='Wealth Growth'
+        ))
 
-fig.update_layout(
+        fig.update_layout(
 
-    title="Future Wealth Projection",
+            title="Future Wealth Projection",
 
-    template="plotly_dark",
+            template="plotly_dark",
 
-    height=550,
+            height=550,
 
-    paper_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
 
-    plot_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
 
-    font=dict(color='white')
-)
+            font=dict(color='white')
+        )
 
-st.plotly_chart(
-    fig,
-    use_container_width=True
-)
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
+
+    # =================================================
+    # LUMPSUM TAB
+    # =================================================
 
     with t2:
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            lumpsum_amt = st.number_input("Investment Amount (₹)", 0, 1000000000, 1000000)
-        with c2:
-            lumpsum_return = st.number_input("Expected Return for Lumpsum (%)", 0.0, 30.0, 12.0) / 100
-        with c3:
-            lumpsum_years = st.number_input("Investment Period in Years", 1, 60, 7)
 
-        final_lumpsum = future_value(lumpsum_amt, lumpsum_return, lumpsum_years)
+        c1, c2, c3 = st.columns(3)
+
+        with c1:
+
+            lumpsum_amt = st.number_input(
+                "Investment Amount (₹)",
+                0,
+                1000000000,
+                1000000
+            )
+
+        with c2:
+
+            lumpsum_return = st.number_input(
+                "Expected Return for Lumpsum (%)",
+                0.0,
+                30.0,
+                12.0
+            ) / 100
+
+        with c3:
+
+            lumpsum_years = st.number_input(
+                "Investment Period in Years",
+                1,
+                60,
+                7
+            )
+
+        final_lumpsum = future_value(
+            lumpsum_amt,
+            lumpsum_return,
+            lumpsum_years
+        )
 
         kpi_row([
             ("Invested", fmt(lumpsum_amt)),
             ("Final Value", fmt(final_lumpsum)),
-            ("Absolute Gain", f"{((final_lumpsum-lumpsum_amt)/lumpsum_amt*100 if lumpsum_amt>0 else 0):.2f}%")
+            (
+                "Absolute Gain",
+                f"{((final_lumpsum-lumpsum_amt)/lumpsum_amt*100 if lumpsum_amt>0 else 0):.2f}%"
+            )
         ])
 
-    advisor_note("SIP Recommendation", [
-        "Step-up SIP materially improves long-term corpus.",
-        "If cashflow allows, increasing SIP by 10% yearly is ideal.",
-        "Use this module for disciplined long-term goal building."
-    ])
+    advisor_note(
+        "SIP Recommendation",
+        [
+            "Step-up SIP materially improves long-term corpus.",
+            "If cashflow allows, increasing SIP by 10% yearly is ideal.",
+            "Use this module for disciplined long-term goal building."
+        ]
+    )
 
 # =====================================================
 # SWP CALCULATOR PRO
