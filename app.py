@@ -32,7 +32,7 @@ def go(page_name):
 
 def back_button():
     st.markdown("<div style='margin-top:4px; margin-bottom:8px;'></div>", unsafe_allow_html=True)
-    st.button("⬅ Back to Roman Index", on_click=lambda: go("home"), use_container_width=True)
+    st.button("⬅ Back to Index", on_click=lambda: go("home"), use_container_width=True)
 
 # =====================================================
 # IMPERIAL ROMAN ULTRA THEME
@@ -322,7 +322,7 @@ button[kind="secondary"] {
     box-shadow: 0 8px 22px rgba(92, 26, 26, 0.08);
 }
 
-.imperial-header {
+.header {
     background: linear-gradient(90deg, #7A1F1F 0%, #A52A2A 58%, #C58B39 100%);
     color: #FFF8ED;
     text-align: center;
@@ -333,7 +333,7 @@ button[kind="secondary"] {
     border-bottom: 1px solid rgba(255,248,237,0.35);
 }
 
-.imperial-subheader {
+.subheader {
     background: linear-gradient(90deg, #F2D99B 0%, #D4A15A 100%);
     color: #2B1E12;
     text-align: center;
