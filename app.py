@@ -694,19 +694,19 @@ st.session_state.advisor_name = advisor_name
 st.sidebar.markdown("---")
 st.sidebar.markdown("### Quick Navigation")
 st.sidebar.caption("Navigation")
-if st.sidebar.button("🏛️ Home Dashboard", use_container_width=True):
+if st.sidebar.button("Home Dashboard", use_container_width=True):
     go("home")
-if st.sidebar.button("📈 SIP & Lumpsum", use_container_width=True):
+if st.sidebar.button("SIP & Lumpsum", use_container_width=True):
     go("sip")
-if st.sidebar.button("💸 SWP Planner", use_container_width=True):
+if st.sidebar.button("SWP Planner", use_container_width=True):
     go("swp")
-if st.sidebar.button("👨‍👩‍👧 Children Planning", use_container_width=True):
+if st.sidebar.button("Children Planning", use_container_width=True):
     go("children")
-if st.sidebar.button("🛡️ Retirement Planner", use_container_width=True):
+if st.sidebar.button("Retirement Planner", use_container_width=True):
     go("retirement")
-if st.sidebar.button("📊 Net Worth", use_container_width=True):
+if st.sidebar.button("Net Worth", use_container_width=True):
     go("networth")
-if st.sidebar.button("🏦 Fund Suggestion & Performance", use_container_width=True):
+if st.sidebar.button("Fund Suggestion & Performance", use_container_width=True):
     go("fund_suggestion")
 
 # =====================================================
