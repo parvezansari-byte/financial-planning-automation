@@ -1,1828 +1,1937 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
-import re
+# FINAL NILE V15 MASTER TERMINAL
+# Single full app.py
+# Base: V13.1.1 cloud-optimized structure preserved in spirit
+# Added: Master terminal layout modules requested by user
+# Note: This is a single clean full-file app.py for copy-paste use.
+
+import time
 from datetime import datetime
+from pathlib import Path
 from io import BytesIO
 
-try:
-    import pdfplumber
-    PDF_OK = True
-except Exception:
-    PDF_OK = False
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import streamlit.components.v1 as components
+from newsapi import NewsApiClient
+import feedparser
 
-# =====================================================
+import streamlit as st
+
+try:
+    import yfinance as yf
+except Exception:
+    yf = None
+
+# PDF (cloud-safe)
+try:
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.lib.units import mm
+    from reportlab.platypus import (
+        SimpleDocTemplate,
+        Paragraph,
+        Spacer,
+        Table,
+        TableStyle,
+    )
+    PDF_AVAILABLE = True
+except Exception:
+    PDF_AVAILABLE = False
+
+# -------------------------------------------------
 # PAGE CONFIG
-# =====================================================
+# -------------------------------------------------
 st.set_page_config(
-    page_title="Freedom",
-    page_icon="🏛️",
+    page_title="Nile",
+    page_icon="📈",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
-# =====================================================
+# -------------------------------------------------
+# PREMIUM IMPERIAL TERMINAL CSS
+# -------------------------------------------------
+st.markdown(
+    """
+    <style>
+    :root {
+        --bg1:#01040d; --bg2:#060d1a; --bg3:#0a1324; --bg4:#0f1c33;
+        --line: rgba(148,163,184,0.12);
+        --text:#eef2ff; --muted:#94a3b8;
+    }
+    .stApp {
+        background:
+            radial-gradient(circle at 12% 14%, rgba(59,130,246,0.22), transparent 20%),
+            radial-gradient(circle at 84% 12%, rgba(168,85,247,0.18), transparent 22%),
+            radial-gradient(circle at 50% 82%, rgba(6,182,212,0.12), transparent 18%),
+            radial-gradient(circle at 26% 58%, rgba(244,114,182,0.08), transparent 16%),
+            radial-gradient(circle at 72% 64%, rgba(34,197,94,0.06), transparent 14%),
+            linear-gradient(135deg, #01040d 0%, #050b16 22%, #0a1222 48%, #0d1830 74%, #132347 100%);
+        color: var(--text);
+    }
+    .block-container { max-width: 1720px; padding-top: 1.0rem; padding-bottom: 2rem; }
+    div[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, rgba(4,8,18,0.995), rgba(8,16,30,0.995));
+        border-right: 1px solid rgba(148,163,184,0.08);
+        box-shadow: inset -1px 0 0 rgba(255,255,255,0.02);
+    }
+    .imperial-ribbon {
+        position: relative;
+        background: linear-gradient(90deg, rgba(9,15,28,0.92), rgba(16,25,46,0.88), rgba(10,16,30,0.92));
+        border: 1px solid rgba(96,165,250,0.16);
+        border-radius: 20px;
+        padding: 10px 14px;
+        margin-bottom: 12px;
+        box-shadow:
+            0 0 0 1px rgba(255,255,255,0.015) inset,
+            0 0 28px rgba(59,130,246,0.08),
+            0 12px 32px rgba(0,0,0,0.34);
+        backdrop-filter: blur(14px);
+        overflow: hidden;
+    }
+    .imperial-ribbon::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+        pointer-events: none;
+    }
+    .ribbon-chip {
+        display:inline-block; padding:6px 10px; border-radius:999px; margin-right:6px; margin-bottom:4px;
+        background: rgba(30,41,59,0.58);
+        border:1px solid rgba(255,255,255,0.06);
+        color:#dbeafe; font-weight:800; font-size:0.74rem; letter-spacing:0.15px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+    .panel {
+        position: relative;
+        background: linear-gradient(180deg, rgba(12,18,34,0.72), rgba(16,24,42,0.64));
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 22px;
+        padding: 14px;
+        box-shadow:
+            0 18px 40px rgba(0,0,0,0.30),
+            0 0 0 1px rgba(255,255,255,0.02) inset,
+            0 0 24px rgba(59,130,246,0.04);
+        margin-bottom: 12px;
+        backdrop-filter: blur(16px);
+        transition: all 0.25s ease-in-out;
+        overflow: hidden;
+    }
+    .panel::before {
+        content:"";
+        position:absolute;
+        inset:0;
+        border-radius:22px;
+        padding:1px;
+        background: linear-gradient(135deg, rgba(34,211,238,0.16), rgba(139,92,246,0.12), rgba(34,197,94,0.10), rgba(255,255,255,0.02));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events:none;
+    }
+    .panel:hover {
+        transform: translateY(-2px);
+        box-shadow:
+            0 22px 44px rgba(0,0,0,0.34),
+            0 0 0 1px rgba(255,255,255,0.03) inset,
+            0 0 28px rgba(34,211,238,0.06),
+            0 0 22px rgba(139,92,246,0.05);
+    }
+    .panel-title { font-size: 0.95rem; font-weight: 900; color: #f8fafc; margin-bottom: 8px; letter-spacing:0.2px; }
+    .subtle-divider { height:1px; background: linear-gradient(90deg, rgba(59,130,246,0.22), rgba(124,58,237,0.14), transparent); margin: 6px 0 10px 0; }
+    .hero-card, .breadth-card, .sector-tile, .metric-card, .portfolio-card, .scanner-rank-card {
+        position: relative;
+        background:
+            linear-gradient(180deg, rgba(20,28,48,0.62), rgba(14,20,36,0.52)),
+            radial-gradient(circle at top right, rgba(96,165,250,0.08), transparent 32%),
+            radial-gradient(circle at bottom left, rgba(168,85,247,0.06), transparent 30%);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 22px;
+        padding: 14px;
+        box-shadow:
+            0 18px 40px rgba(0,0,0,0.32),
+            0 0 0 1px rgba(255,255,255,0.02) inset,
+            0 0 22px rgba(59,130,246,0.05),
+            0 0 18px rgba(139,92,246,0.04);
+        backdrop-filter: blur(18px);
+        overflow: hidden;
+        transition: all 0.22s ease-in-out;
+    }
+    .hero-card:hover, .breadth-card:hover, .sector-tile:hover, .metric-card:hover, .portfolio-card:hover, .scanner-rank-card:hover {
+        transform: translateY(-3px) scale(1.01);
+        box-shadow:
+            0 24px 46px rgba(0,0,0,0.34),
+            0 0 0 1px rgba(255,255,255,0.03) inset,
+            0 0 26px rgba(34,211,238,0.08),
+            0 0 20px rgba(139,92,246,0.07);
+    }
+    .hero-card::before, .breadth-card::before, .metric-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+    }
+    .hero-card::after, .breadth-card::after, .metric-card::after, .scanner-rank-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 22px;
+        padding: 1px;
+        background: linear-gradient(135deg, rgba(34,211,238,0.12), rgba(139,92,246,0.10), rgba(255,255,255,0.03));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+    }
+    .hero-title, .metric-label, .breadth-label, .portfolio-label { font-size: 0.76rem; color: #94a3b8; margin-bottom: 4px; font-weight: 700; }
+    .hero-value, .metric-value, .breadth-value, .portfolio-value { font-size: 1.4rem; font-weight: 900; color: #fff; }
+    .hero-change { font-size: 0.92rem; font-weight: 900; margin-top: 3px; }
+    .metric-delta-up { color:#22c55e; font-weight:800; font-size:0.82rem; }
+    .metric-delta-down { color:#ef4444; font-weight:800; font-size:0.82rem; }
+    .metric-delta-flat { color:#94a3b8; font-weight:800; font-size:0.82rem; }
+    .premium-subtitle {
+        font-size:1rem; font-weight:900; letter-spacing:0.55px;
+        background: linear-gradient(90deg, #f5d0fe, #c4b5fd, #93c5fd, #67e8f9);
+        -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+        display:block; text-align:center; margin-bottom:0.55rem;
+        filter: drop-shadow(0 0 10px rgba(168,85,247,0.12));
+    }
+    .ai-badge-buy, .ai-badge-hold, .ai-badge-sell {
+        padding:14px; border-radius:18px; font-weight:900; text-align:center; font-size:0.98rem;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.02);
+    }
+    .ai-badge-buy { background: linear-gradient(135deg, rgba(34,197,94,0.22), rgba(34,197,94,0.10)); color:#86efac; border:1px solid rgba(34,197,94,0.24); }
+    .ai-badge-hold { background: linear-gradient(135deg, rgba(245,158,11,0.22), rgba(245,158,11,0.10)); color:#fcd34d; border:1px solid rgba(245,158,11,0.24); }
+    .ai-badge-sell { background: linear-gradient(135deg, rgba(239,68,68,0.22), rgba(239,68,68,0.10)); color:#fca5a5; border:1px solid rgba(239,68,68,0.24); }
+    .stButton > button, .stDownloadButton > button {
+        width:100%; border-radius:16px; border:1px solid rgba(255,255,255,0.10); color:white;
+        font-weight:900; padding:0.78rem 0.95rem; font-size:0.92rem; transition:all 0.25s ease-in-out;
+        background-size:240% 240% !important;
+        box-shadow:
+            0 12px 26px rgba(0,0,0,0.30),
+            0 0 0 1px rgba(255,255,255,0.03) inset,
+            0 0 16px rgba(59,130,246,0.05);
+        animation: buttonGlow 7s ease infinite;
+        backdrop-filter: blur(10px);
+    }
+    .stButton > button:hover, .stDownloadButton > button:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.06);
+        box-shadow:
+            0 16px 30px rgba(0,0,0,0.34),
+            0 0 0 1px rgba(255,255,255,0.04) inset,
+            0 0 20px rgba(96,165,250,0.08);
+    }
+    section[data-testid="stSidebar"] .stButton > button {
+        background: linear-gradient(135deg, #15803d, #16a34a, #22c55e, #4ade80) !important;
+    }
+    div[data-testid="stButton"][id*="fundamental_ratio_btn"] > button {
+        background: linear-gradient(135deg, #1d4ed8, #2563eb, #3b82f6, #60a5fa) !important;
+    }
+    div[data-testid="stButton"][id*="technical_ratio_btn"] > button {
+        background: linear-gradient(135deg, #6d28d9, #7c3aed, #8b5cf6, #a78bfa) !important;
+    }
+    div[data-testid="stButton"][id*="run_scan_btn"] > button {
+        background: linear-gradient(135deg, #15803d, #16a34a, #22c55e, #4ade80) !important;
+    }
+    div[data-testid="stDownloadButton"] > button {
+        background: linear-gradient(135deg, #0f766e, #0d9488, #14b8a6, #22d3ee) !important;
+    }
+    @keyframes buttonGlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    div[data-baseweb="tab-list"] {
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+    button[data-baseweb="tab"] {
+        background: linear-gradient(180deg, rgba(15,23,42,0.75), rgba(17,24,39,0.58)) !important;
+        border: 1px solid rgba(255,255,255,0.06) !important;
+        border-radius: 14px !important;
+        color: #dbeafe !important;
+        font-weight: 800 !important;
+        padding: 8px 14px !important;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.02) !important;
+    }
+    button[data-baseweb="tab"][aria-selected="true"] {
+        background: linear-gradient(135deg, rgba(29,78,216,0.35), rgba(124,58,237,0.28), rgba(34,211,238,0.22)) !important;
+        border: 1px solid rgba(96,165,250,0.20) !important;
+        box-shadow: 0 0 18px rgba(59,130,246,0.06), 0 10px 22px rgba(0,0,0,0.22) !important;
+    }
+    div[data-testid="stDownloadButton"] {
+        padding: 6px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(8,14,28,0.62), rgba(13,22,40,0.48));
+        border: 1px solid rgba(255,255,255,0.05);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.02);
+    }
+    
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# -------------------------------------------------
+# UNIVERSE
+# -------------------------------------------------
+NIFTY_50 = [
+    "RELIANCE.NS","TCS.NS","HDFCBANK.NS","BHARTIARTL.NS","ICICIBANK.NS","SBIN.NS","INFY.NS","HINDUNILVR.NS",
+    "ITC.NS","LT.NS","KOTAKBANK.NS","AXISBANK.NS","BAJFINANCE.NS","ASIANPAINT.NS","MARUTI.NS","SUNPHARMA.NS",
+    "TITAN.NS","ULTRACEMCO.NS","NESTLEIND.NS","BAJAJFINSV.NS","HCLTECH.NS","WIPRO.NS","NTPC.NS","POWERGRID.NS",
+    "TATAMOTORS.NS","M&M.NS","ONGC.NS","COALINDIA.NS","TATASTEEL.NS","JSWSTEEL.NS","ADANIPORTS.NS","INDUSINDBK.NS",
+    "TECHM.NS","GRASIM.NS","CIPLA.NS","DRREDDY.NS","HINDALCO.NS","HEROMOTOCO.NS","EICHERMOT.NS","BPCL.NS",
+    "BRITANNIA.NS","APOLLOHOSP.NS","DIVISLAB.NS","ADANIENT.NS","TATACONSUM.NS","PIDILITIND.NS","SBILIFE.NS",
+    "BAJAJ-AUTO.NS","SHRIRAMFIN.NS","TRENT.NS"
+]
+NIFTY_NEXT_50 = [
+    "ABB.NS","ADANIGREEN.NS","ADANIPOWER.NS","AMBUJACEM.NS","BANKBARODA.NS","BOSCHLTD.NS","CANBK.NS","CGPOWER.NS",
+    "CHOLAFIN.NS","DABUR.NS","DLF.NS","GAIL.NS","GODREJCP.NS","HAL.NS","HAVELLS.NS","ICICIGI.NS","ICICIPRULI.NS",
+    "INDIGO.NS","IOC.NS","IRCTC.NS","JINDALSTEL.NS","JSWENERGY.NS","LICI.NS","LODHA.NS","LUPIN.NS","MCDOWELL-N.NS",
+    "MOTHERSON.NS","NAUKRI.NS","NMDC.NS","PFC.NS","PIDILITIND.NS","PNB.NS","POLYCAB.NS","RECLTD.NS","SAIL.NS",
+    "SIEMENS.NS","TVSMOTOR.NS","UNITDSPR.NS","VEDL.NS","VOLTAS.NS","ZYDUSLIFE.NS","INDUSTOWER.NS","TORNTPHARM.NS",
+    "HDFCLIFE.NS","COLPAL.NS","MARICO.NS","UBL.NS","BERGEPAINT.NS","CONCOR.NS","OFSS.NS"
+]
+UNIVERSE = sorted(list(dict.fromkeys(NIFTY_50 + NIFTY_NEXT_50)))
+SECTOR_MAP = {s: "Others" for s in UNIVERSE}
+for s in ["TCS.NS","INFY.NS","HCLTECH.NS","WIPRO.NS","TECHM.NS","OFSS.NS"]: SECTOR_MAP[s] = "IT"
+for s in ["HDFCBANK.NS","ICICIBANK.NS","SBIN.NS","KOTAKBANK.NS","AXISBANK.NS","BAJFINANCE.NS","BAJAJFINSV.NS","INDUSINDBK.NS"]: SECTOR_MAP[s] = "Financials"
+for s in ["RELIANCE.NS","ONGC.NS","BPCL.NS","IOC.NS","GAIL.NS"]: SECTOR_MAP[s] = "Energy"
+for s in ["TATAMOTORS.NS","M&M.NS","MARUTI.NS","HEROMOTOCO.NS","EICHERMOT.NS","BAJAJ-AUTO.NS","TVSMOTOR.NS"]: SECTOR_MAP[s] = "Auto"
+for s in ["SUNPHARMA.NS","CIPLA.NS","DRREDDY.NS","DIVISLAB.NS","LUPIN.NS","ZYDUSLIFE.NS","TORNTPHARM.NS"]: SECTOR_MAP[s] = "Pharma"
+
+# -------------------------------------------------
+# HELPERS
+# -------------------------------------------------
+@st.cache_data(ttl=900, show_spinner=False)
+def get_history(symbol: str, period: str = "1y", interval: str = "1d"):
+    if yf is None:
+        return pd.DataFrame()
+    try:
+        df = yf.download(symbol, period=period, interval=interval, auto_adjust=True, progress=False, threads=False)
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = [c[0] for c in df.columns]
+        return df.dropna().copy()
+    except Exception:
+        return pd.DataFrame()
+
+@st.cache_data(ttl=1800, show_spinner=False)
+def get_info(symbol: str):
+    if yf is None:
+        return {}
+    try:
+        return yf.Ticker(symbol).info or {}
+    except Exception:
+        return {}
+
+@st.cache_data(ttl=1800, show_spinner=False)
+def get_financials(symbol: str):
+    if yf is None:
+        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+    try:
+        t = yf.Ticker(symbol)
+        return getattr(t, "balance_sheet", pd.DataFrame()), getattr(t, "financials", pd.DataFrame()), getattr(t, "cashflow", pd.DataFrame())
+    except Exception:
+        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+
+@st.cache_data(ttl=300, show_spinner=False)
+def get_live_index(symbol: str):
+    data = get_history(symbol, period="5d")
+    if data.empty or len(data) < 2:
+        return np.nan, np.nan
+    last = float(data["Close"].iloc[-1])
+    prev = float(data["Close"].iloc[-2])
+    chg = ((last / prev) - 1) * 100 if prev else 0
+    return last, chg
+
+def safe_last(series):
+    try:
+        return float(series.dropna().iloc[-1])
+    except Exception:
+        return np.nan
+
+def compute_indicators(df: pd.DataFrame):
+    if df.empty:
+        return df
+    d = df.copy()
+    d["SMA20"] = d["Close"].rolling(20).mean()
+    d["SMA50"] = d["Close"].rolling(50).mean()
+    delta = d["Close"].diff()
+    gain = delta.clip(lower=0).rolling(14).mean()
+    loss = (-delta.clip(upper=0)).rolling(14).mean()
+    rs = gain / loss.replace(0, np.nan)
+    d["RSI14"] = 100 - (100 / (1 + rs))
+    ema12 = d["Close"].ewm(span=12, adjust=False).mean()
+    ema26 = d["Close"].ewm(span=26, adjust=False).mean()
+    d["MACD"] = ema12 - ema26
+    d["MACD_SIGNAL"] = d["MACD"].ewm(span=9, adjust=False).mean()
+    tr1 = d["High"] - d["Low"]
+    tr2 = (d["High"] - d["Close"].shift()).abs()
+    tr3 = (d["Low"] - d["Close"].shift()).abs()
+    tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+    d["ATR14"] = tr.rolling(14).mean()
+    return d.dropna().copy()
+
+def compute_scan_metrics_fast(df: pd.DataFrame):
+    if df.empty or len(df) < 35:
+        return None
+    d = compute_indicators(df)
+    if d.empty:
+        return None
+    last = d.iloc[-1]
+    prev = d.iloc[-2]
+    vol20 = d["Volume"].tail(20).mean() if "Volume" in d.columns else np.nan
+    return {
+        "close": float(last["Close"]),
+        "prev_close": float(prev["Close"]),
+        "sma20": float(last["SMA20"]),
+        "sma50": float(last["SMA50"]),
+        "rsi": float(last["RSI14"]),
+        "macd": float(last["MACD"]),
+        "macd_signal": float(last["MACD_SIGNAL"]),
+        "atr": float(last["ATR14"]),
+        "breakout": float(d["High"].tail(20).max()),
+        "support": float(d["Low"].tail(20).min()),
+        "last_volume": float(last["Volume"]) if "Volume" in d.columns else np.nan,
+        "vol20": float(vol20) if pd.notna(vol20) else np.nan,
+        "day_ret": ((float(last["Close"]) / float(prev["Close"])) - 1) * 100 if float(prev["Close"]) != 0 else 0.0,
+    }
+
+def score_from_metrics(m):
+    score = 0
+    if m["close"] > m["sma20"]: score += 10
+    if m["close"] > m["sma50"]: score += 15
+    if m["sma20"] > m["sma50"]: score += 15
+    if 50 < m["rsi"] < 70: score += 15
+    if m["macd"] > m["macd_signal"]: score += 15
+    if m["close"] >= m["breakout"] * 0.985: score += 20
+    if pd.notna(m["vol20"]) and pd.notna(m["last_volume"]) and m["last_volume"] > m["vol20"] * 1.2: score += 10
+    verdict = "Strong Bullish" if score >= 75 else "Bullish" if score >= 55 else "Neutral" if score >= 35 else "Weak"
+    return score, verdict
+
+def ai_badge(score, rsi, trend_signal, macd_signal):
+    if score >= 75 and trend_signal == "Bullish" and macd_signal == "Bullish" and rsi < 75:
+        return "BUY", "ai-badge-buy", "High conviction setup"
+    elif score >= 45:
+        return "HOLD", "ai-badge-hold", "Wait for better confirmation"
+    return "SELL", "ai-badge-sell", "Weak setup / avoid now"
+
+def conviction_meter(score, rsi, trend_signal, macd_signal):
+    conviction = score + (5 if trend_signal == "Bullish" else 0) + (5 if macd_signal == "Bullish" else 0)
+    conviction += 5 if 50 <= rsi <= 70 else (-5 if rsi > 80 or rsi < 25 else 0)
+    conviction = max(0, min(100, conviction))
+    label = "Very Strong" if conviction >= 85 else "Strong" if conviction >= 70 else "Moderate" if conviction >= 50 else "Weak"
+    return conviction, label
+
+def rupee(v):
+    try: return f"₹{v:,.2f}"
+    except Exception: return "N/A"
+
+def metric_box(label, value, delta_text="", positive=None):
+    delta_cls = "metric-delta-up" if positive is True else "metric-delta-down" if positive is False else "metric-delta-flat"
+    st.markdown(f"<div class='metric-card'><div class='metric-label'>{label}</div><div class='metric-value'>{value}</div><div class='{delta_cls}'>{delta_text}</div></div>", unsafe_allow_html=True)
+
+def beautiful_top_card(title, value, change, inverse=False):
+    if pd.isna(value):
+        st.markdown(f"<div class='hero-card'><div class='hero-title'>{title}</div><div class='hero-value' style='font-size:1.05rem;color:#94a3b8;'>Data unavailable</div></div>", unsafe_allow_html=True)
+        return
+    up = change >= 0
+    color = "#ef4444" if (inverse and up) else "#22c55e" if (inverse and not up) else "#22c55e" if up else "#ef4444"
+    arrow = "▲" if up else "▼"
+    glow = "rgba(34,197,94,0.10)" if color == "#22c55e" else "rgba(239,68,68,0.10)"
+    st.markdown(f"""
+    <div class='hero-card' style='box-shadow:0 16px 36px rgba(0,0,0,0.26),0 0 0 1px rgba(255,255,255,0.02) inset,0 0 24px {glow};'>
+        <div style='height:4px;border-radius:999px;background:linear-gradient(90deg,{color},rgba(255,255,255,0.08));margin-bottom:10px;'></div>
+        <div class='hero-title'>{title}</div>
+        <div class='hero-value'>{value:,.2f}</div>
+        <div class='hero-change' style='color:{color};'>{arrow} {change:+.2f}%</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+def make_gauge(value):
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=value,
+        title={"text": "Conviction", "font": {"size": 18}},
+        number={"font": {"size": 34}},
+        gauge={
+            "axis": {"range": [0, 100], "tickwidth": 1},
+            "bar": {"color": "#22d3ee", "thickness": 0.32},
+            "bgcolor": "rgba(255,255,255,0.02)",
+            "borderwidth": 0,
+            "steps": [
+                {"range": [0, 40], "color": "rgba(239,68,68,0.30)"},
+                {"range": [40, 70], "color": "rgba(245,158,11,0.28)"},
+                {"range": [70, 100], "color": "rgba(34,197,94,0.28)"}
+            ],
+            "threshold": {"line": {"color": "#ffffff", "width": 3}, "thickness": 0.8, "value": value}
+        }
+    ))
+    fig.update_layout(height=245, margin=dict(l=10, r=10, t=34, b=4), paper_bgcolor="rgba(0,0,0,0)", font_color="white")
+    return fig
+
+def make_candlestick(df, symbol, entry=None, stop=None, target=None, breakout=None, support=None):
+    fig = go.Figure()
+    fig.add_trace(go.Candlestick(x=df.index, open=df["Open"], high=df["High"], low=df["Low"], close=df["Close"], name="Price"))
+    fig.add_trace(go.Scatter(x=df.index, y=df["SMA20"], name="SMA20"))
+    fig.add_trace(go.Scatter(x=df.index, y=df["SMA50"], name="SMA50"))
+    if breakout is not None: fig.add_hline(y=breakout, line_dash="dot", annotation_text="Breakout")
+    if support is not None: fig.add_hline(y=support, line_dash="dot", annotation_text="Support")
+    if entry is not None: fig.add_hline(y=entry, line_dash="dash", annotation_text="Entry")
+    if stop is not None: fig.add_hline(y=stop, line_dash="dash", annotation_text="SL")
+    if target is not None: fig.add_hline(y=target, line_dash="dash", annotation_text="Target")
+    fig.update_layout(title=f"{symbol} Price Structure", template="plotly_dark", height=520, xaxis_rangeslider_visible=False, margin=dict(l=8, r=8, t=36, b=8), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+    return fig
+
+def make_rsi_chart(df):
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=df.index, y=df["RSI14"], name="RSI 14"))
+    fig.add_hline(y=70, line_dash="dot")
+    fig.add_hline(y=30, line_dash="dot")
+    fig.update_layout(template="plotly_dark", height=255, margin=dict(l=8, r=8, t=26, b=8), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+    return fig
+
+def parse_portfolio_text(portfolio_text):
+    rows = []
+    if not portfolio_text.strip(): return pd.DataFrame(columns=["Symbol", "Quantity", "Avg Buy Price"])
+    for line in portfolio_text.strip().splitlines():
+        parts = [p.strip() for p in line.split(",")]
+        if len(parts) != 3: continue
+        symbol, qty, avg = parts
+        try:
+            qty = float(qty); avg = float(avg)
+            if qty > 0 and avg > 0: rows.append({"Symbol": symbol, "Quantity": qty, "Avg Buy Price": avg})
+        except Exception:
+            continue
+    return pd.DataFrame(rows)
+
+def portfolio_action_from_metrics(pl_pct, score, rsi):
+    if pl_pct < -10 and score < 35: return "EXIT"
+    elif pl_pct > 18 and (rsi > 75 or score < 45): return "REDUCE"
+    elif score >= 70 and 45 <= rsi <= 70: return "ADD"
+    return "HOLD"
+
+def make_portfolio_risk_gauge(value):
+    fig = go.Figure(go.Indicator(mode="gauge+number", value=value, title={"text": "Portfolio Risk"}, gauge={"axis": {"range": [0, 100]}, "bar": {"color": "#8b5cf6"}, "steps": [{"range": [0, 35], "color": "rgba(34,197,94,0.35)"}, {"range": [35, 70], "color": "rgba(245,158,11,0.35)"}, {"range": [70, 100], "color": "rgba(239,68,68,0.35)"}] }))
+    fig.update_layout(height=260, margin=dict(l=10, r=10, t=36, b=6), paper_bgcolor="rgba(0,0,0,0)")
+    return fig
+
+# -------------------------------------------------
+# PDF HELPERS
+# -------------------------------------------------
+def pdf_styles():
+    styles = getSampleStyleSheet()
+    return {
+        "title": ParagraphStyle("TitleNile", parent=styles["Title"], fontName="Helvetica-Bold", fontSize=18, leading=22, alignment=TA_CENTER, textColor=colors.HexColor("#0F172A"), spaceAfter=4),
+        "subtitle": ParagraphStyle("SubNile", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=10, leading=12, alignment=TA_CENTER, textColor=colors.HexColor("#475569"), spaceAfter=10),
+        "section": ParagraphStyle("SectionNile", parent=styles["Heading2"], fontName="Helvetica-Bold", fontSize=12, leading=14, alignment=TA_LEFT, textColor=colors.HexColor("#1E3A8A"), spaceAfter=6, spaceBefore=6),
+        "body": ParagraphStyle("BodyNile", parent=styles["Normal"], fontName="Helvetica", fontSize=9, leading=12, textColor=colors.HexColor("#111827")),
+    }
+
+def pdf_table(data, col_widths=None, header_bg="#0F172A"):
+    tbl = Table(data, colWidths=col_widths, repeatRows=1)
+    tbl.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(header_bg)), ("TEXTCOLOR", (0, 0), (-1, 0), colors.white), ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 8), ("BACKGROUND", (0, 1), (-1, -1), colors.HexColor("#F8FAFC")), ("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#CBD5E1"))
+    ]))
+    return tbl
+
+def build_stock_pdf(symbol, last_close, change_pct, ai_action, conviction_score, score, rsi, entry, stop_loss, target, qty, position_value, fund_verdict='N/A', tech_verdict='N/A', overall_ratio_score='N/A', fund_summary='N/A', tech_summary='N/A', overall_summary='N/A'):
+    if not PDF_AVAILABLE: return None
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=14 * mm, rightMargin=14 * mm, topMargin=12 * mm, bottomMargin=12 * mm)
+    s = pdf_styles(); story = []
+    story.append(Paragraph("NILE", s["title"]))
+    story.append(Paragraph("Premium Stock Research Report", s["subtitle"]))
+    story.append(Spacer(1, 6))
+
+    summary = [
+        ["Field", "Value"],
+        ["Symbol", symbol],
+        ["Current Price", rupee(last_close)],
+        ["Daily Change", f"{change_pct:+.2f}%"],
+        ["AI Signal", ai_action],
+        ["Conviction", f"{conviction_score}/100"],
+        ["Institutional Score", f"{score}/100"],
+        ["RSI", f"{rsi:.2f}"],
+    ]
+    story.append(Paragraph("Stock Summary", s["section"]))
+    story.append(pdf_table(summary, col_widths=[60 * mm, 110 * mm]))
+    story.append(Spacer(1, 6))
+
+    ratio_table = [
+        ["Ratio Interpretation", "Verdict / Score"],
+        ["Fundamental Verdict", str(fund_verdict)],
+        ["Technical Verdict", str(tech_verdict)],
+        ["Overall Combined Score", f"{overall_ratio_score}/100" if overall_ratio_score != 'N/A' else 'N/A'],
+    ]
+    story.append(Paragraph("Ratio Interpretation Engine", s["section"]))
+    story.append(pdf_table(ratio_table, col_widths=[70 * mm, 100 * mm], header_bg="#1E3A8A"))
+    story.append(Spacer(1, 6))
+
+    chip_table = [
+        ["Signal Chips", "Status"],
+        ["Fundamental", str(fund_verdict)],
+        ["Technical", str(tech_verdict)],
+        ["Overall", f"{overall_ratio_score}/100" if overall_ratio_score != 'N/A' else 'N/A'],
+        ["AI Action", str(ai_action)],
+    ]
+    story.append(Paragraph("Decision Chips (PDF Translation)", s["section"]))
+    story.append(pdf_table(chip_table, col_widths=[60 * mm, 110 * mm], header_bg="#0F766E"))
+    story.append(Spacer(1, 6))
+
+    trade = [
+        ["Trade Plan", "Value"],
+        ["Entry", rupee(entry)],
+        ["Stop", rupee(stop_loss)],
+        ["Target", rupee(target)],
+        ["Qty", str(qty)],
+        ["Position Size", rupee(position_value)],
+    ]
+    story.append(Paragraph("Professional Trade Plan", s["section"]))
+    story.append(pdf_table(trade, col_widths=[60 * mm, 110 * mm], header_bg="#0F172A"))
+    story.append(Spacer(1, 6))
+
+    story.append(Paragraph("Analyst Summary", s["section"]))
+    story.append(Paragraph(f"<b>Fundamental View:</b> {fund_summary}", s["body"]))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph(f"<b>Technical View:</b> {tech_summary}", s["body"]))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph(f"<b>Overall View:</b> {overall_summary}", s["body"]))
+
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.getvalue()
+
+# -------------------------------------------------
 # SESSION STATE
-# =====================================================
-if "page" not in st.session_state:
-    st.session_state.page = "home"
+# -------------------------------------------------
+if "scan_df" not in st.session_state:
+    st.session_state.scan_df = pd.DataFrame()
 
-def go(page_name):
-    st.session_state.page = page_name
+# -------------------------------------------------
+# SIDEBAR
+# -------------------------------------------------
+with st.sidebar:
+    st.markdown("## Nile")
+    st.caption("Stock Analysis")
+    universe_choice = st.radio("Stock Universe", ["NIFTY 50", "NIFTY NEXT 50", "NIFTY 100 (Combined)"], index=2)
+    stock_list = NIFTY_50 if universe_choice == "NIFTY 50" else NIFTY_NEXT_50 if universe_choice == "NIFTY NEXT 50" else UNIVERSE
+    symbol = st.selectbox("Select Stock", options=stock_list, index=0)
+    period = st.selectbox("History Period", ["6mo", "1y", "2y", "5y"], index=1)
+    capital = st.number_input("Capital (₹)", min_value=1000, value=100000, step=1000)
+    risk_pct = st.slider("Risk per Trade (%)", 0.5, 5.0, 1.0, 0.5)
+    rr_ratio = st.slider("Risk : Reward", 1.0, 5.0, 2.0, 0.5)
+    max_scan_cap = min(60, len(stock_list)); default_scan = min(25, max_scan_cap)
+    scan_count = st.slider("Scanner Universe", 10, max_scan_cap, default_scan)
+    compare_symbols = st.multiselect("Multi-Stock Compare", stock_list, default=stock_list[:3], max_selections=5)
+    st.markdown("---")
+    st.markdown("### Portfolio Command Center")
+    portfolio_text = st.text_area("Portfolio Input (SYMBOL, QTY, AVG BUY)", value="RELIANCE.NS,10,2450\nTCS.NS,5,3800\nHDFCBANK.NS,20,1650", height=120)
+    run_scan = st.button("Run Institutional Scan", key="run_scan_btn")
 
-def back_button():
-    st.markdown("<div style='margin-top:4px; margin-bottom:8px;'></div>", unsafe_allow_html=True)
-    st.button("⬅ Back to Roman Index", on_click=lambda: go("home"), use_container_width=True)
+# -------------------------------------------------
+# HEADER / LOGO
+# -------------------------------------------------
 
-# =====================================================
-# IMPERIAL ROMAN ULTRA THEME
-# =====================================================
+logo_path = "logo.png"
+
+logo_l, logo_c, logo_r = st.columns([2.2, 2.8, 2.2])
+
+with logo_c:
+
+    try:
+        st.image(logo_path, width=230)
+
+    except:
+        st.markdown(
+            "<div style='font-size:2.6rem;font-weight:900;color:#fff;text-align:center;'>Nile</div>",
+            unsafe_allow_html=True
+        )
+
+    st.markdown(
+        "<div class='premium-subtitle'>Stock Analysis</div>",
+        unsafe_allow_html=True
+    )
+# -------------------------------------------------
+# TOP RIBBON + LIVE CARDS
+# -------------------------------------------------
+nifty50_last, nifty50_chg = get_live_index("^NSEI")
+banknifty_last, banknifty_chg = get_live_index("^NSEBANK")
+indiavix_last, indiavix_chg = get_live_index("^INDIAVIX")
+now_ist = datetime.now()
+market_open = now_ist.weekday() < 5 and (((now_ist.hour > 9) or (now_ist.hour == 9 and now_ist.minute >= 15)) and ((now_ist.hour < 15) or (now_ist.hour == 15 and now_ist.minute <= 30)))
+market_status = "OPEN" if market_open else "CLOSED"
+market_status_color = "#22c55e" if market_open else "#ef4444"
+last_updated = now_ist.strftime("%d-%b-%Y %I:%M %p")
+st.markdown(f"<div class='imperial-ribbon'><span class='ribbon-chip'>NIFTY 50</span><span class='ribbon-chip'>BANK NIFTY</span><span class='ribbon-chip'>INDIA VIX</span><span class='ribbon-chip'>Imperial Terminal</span><span class='ribbon-chip'>Institutional Flow</span><span class='ribbon-chip'>Cloud Safe</span><span class='ribbon-chip' style='color:{market_status_color};'>Market: {market_status}</span><span class='ribbon-chip'>Last Updated: {last_updated}</span></div>", unsafe_allow_html=True)
+
+c1, c2, c3 = st.columns(3, gap="small")
+with c1: beautiful_top_card("NIFTY 50 Live", nifty50_last, nifty50_chg)
+with c2: beautiful_top_card("BANK NIFTY Live", banknifty_last, banknifty_chg)
+with c3: beautiful_top_card("INDIA VIX Live", indiavix_last, indiavix_chg, inverse=True)
+# =========================================================
+# AI GLOBAL + INDIAN MARKET NEWS ENGINE
+# =========================================================
+
+import feedparser
+import streamlit as st
+import streamlit.components.v1 as components
+from textblob import TextBlob
+
+# =========================================================
+# FETCH GLOBAL + INDIAN NEWS
+# =========================================================
+
+@st.cache_data(ttl=300)
+def get_market_news():
+
+    news_sources = [
+
+        # GLOBAL
+        "https://feeds.finance.yahoo.com/rss/2.0/headline?s=%5EGSPC&region=US&lang=en-US",
+
+        # INDIA
+        "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
+
+        # MONEYCONTROL
+        "https://www.moneycontrol.com/rss/business.xml"
+
+    ]
+
+    all_articles = []
+
+    for source in news_sources:
+
+        try:
+
+            feed = feedparser.parse(source)
+
+            for entry in feed.entries[:5]:
+
+                image_url = ""
+
+                try:
+
+                    if "media_content" in entry:
+                        image_url = entry.media_content[0]["url"]
+
+                except:
+                    pass
+
+                all_articles.append({
+
+                    "title": entry.title,
+                    "source": feed.feed.get("title", "Market News"),
+                    "url": entry.link,
+                    "image": image_url
+
+                })
+
+        except:
+            pass
+
+    return all_articles[:12]
+
+
+# =========================================================
+# SMART AI IMAGE ENGINE
+# =========================================================
+
+def get_news_image(title):
+
+    title = title.lower()
+
+    # BANKING / FINANCE
+    if any(word in title for word in [
+        "bank", "hdfc", "icici", "sbi",
+        "financial", "jpmorgan", "federal reserve"
+    ]):
+
+        return (
+            "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a"
+        )
+
+    # IT / AI / TECH
+    elif any(word in title for word in [
+        "ai", "tech", "nvidia", "microsoft",
+        "apple", "semiconductor", "tcs", "infosys"
+    ]):
+
+        return (
+            "https://images.unsplash.com/photo-1518770660439-4636190af475"
+        )
+
+    # AUTO
+    elif any(word in title for word in [
+        "auto", "tesla", "vehicle", "car",
+        "tata motors", "mahindra"
+    ]):
+
+        return (
+            "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7"
+        )
+
+    # ENERGY / OIL
+    elif any(word in title for word in [
+        "oil", "energy", "gas", "shell", "ongc"
+    ]):
+
+        return (
+            "https://images.unsplash.com/photo-1509391366360-2e959784a276"
+        )
+
+    # REALTY
+    elif any(word in title for word in [
+        "realty", "property", "housing"
+    ]):
+
+        return (
+            "https://images.unsplash.com/photo-1560518883-ce09059eeffa"
+        )
+
+    # STOCK MARKET
+    return (
+        "https://images.unsplash.com/photo-1642790551116-18e150f248e5"
+    )
+
+
+# =========================================================
+# AI SENTIMENT ENGINE
+# =========================================================
+
+def analyze_news_sentiment(title):
+
+    analysis = TextBlob(title)
+
+    polarity = analysis.sentiment.polarity
+
+    score = round((polarity + 1) * 50, 1)
+
+    if polarity > 0.15:
+
+        sentiment = "Bullish"
+        color = "#22c55e"
+
+        summary = (
+            "Positive institutional sentiment detected. "
+            "Momentum and confidence appear strong."
+        )
+
+    elif polarity < -0.15:
+
+        sentiment = "Bearish"
+        color = "#ef4444"
+
+        summary = (
+            "Negative market sentiment detected. "
+            "Risk-off positioning may increase volatility."
+        )
+
+    else:
+
+        sentiment = "Neutral"
+        color = "#facc15"
+
+        summary = (
+            "Balanced market sentiment observed. "
+            "Investors await further confirmation."
+        )
+
+    return sentiment, score, color, summary
+
+
+# =========================================================
+# NEWS HEADER
+# =========================================================
+
 st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap');
-
-/* =========================
-   GLOBAL
-========================= */
-html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif;
-}
-
-.stApp {
-    background: linear-gradient(-45deg,
-        #f8f2e8,
-        #e5d1a8,
-        #d6b97d,
-        #f2e4cb);
-    background-size: 400% 400%;
-    animation: gradientBG 18s ease infinite;
-    color: #2B1E12;
-}
-
-@keyframes gradientBG {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* =========================
-   MAIN CONTAINER
-========================= */
-.main .block-container {
-    max-width: 94%;
-    padding-top: 1.15rem;
-    padding-bottom: 2.2rem;
-    padding-left: 1.2rem;
-    padding-right: 1.2rem;
-    background: rgba(255, 248, 237, 0.52);
-    border: 1px solid rgba(107, 30, 30, 0.10);
-    border-radius: 24px;
-    backdrop-filter: blur(6px);
-    box-shadow: 0 12px 35px rgba(92, 26, 26, 0.08);
-}
-
-/* =========================
-   SIDEBAR
-========================= */
-section[data-testid="stSidebar"] {
-    background:
-        linear-gradient(180deg, #f4e8d0 0%, #ead8b3 45%, #ddc08a 100%);
-    border-right: 2px solid #C58B39;
-    box-shadow: inset -8px 0 22px rgba(107, 30, 30, 0.05);
-}
-
-section[data-testid="stSidebar"] * {
-    color: #2B1E12 !important;
-}
-
-section[data-testid="stSidebar"] h1,
-section[data-testid="stSidebar"] h2,
-section[data-testid="stSidebar"] h3 {
-    font-family: 'Cinzel', serif !important;
-    color: #6B1E1E !important;
-    font-weight: 800 !important;
-}
-
-/* =========================
-   INPUTS
-========================= */
-.stTextInput input,
-.stNumberInput input,
-.stTextArea textarea,
-.stSelectbox div[data-baseweb="select"] {
-    background: linear-gradient(180deg, #fffdf8 0%, #f9f0dc 100%) !important;
-    color: #2B1E12 !important;
-    border: 1px solid #B8860B !important;
-    border-radius: 12px !important;
-    font-weight: 700 !important;
-}
-
-button[kind="secondary"] {
-    border-radius: 10px !important;
-}
-
-/* =========================
-   TITLES
-========================= */
-.main-title {
-    background:
-        linear-gradient(90deg, #5C1212 0%, #7A1F1F 25%, #A52A2A 58%, #C58B39 100%);
-    padding: 26px;
-    border-radius: 20px;
-    text-align: center;
-    color: #FFF8ED;
-    font-size: 54px;
-    font-weight: 800;
-    font-family: 'Cinzel', serif;
-    border: 2px solid #D4AF37;
-    box-shadow: 0 12px 30px rgba(92, 26, 26, 0.22);
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-}
-
-.sub-title {
-    background:
-        linear-gradient(90deg, #4A120F 0%, #6B1E1E 55%, #8B6B2E 100%);
-    color: #FFF8ED;
-    text-align: center;
-    padding: 10px;
-    font-size: 19px;
-    font-weight: 700;
-    border-radius: 12px;
-    border: 1px solid rgba(212,175,55,0.65);
-    margin-bottom: 14px;
-    box-shadow: 0 4px 14px rgba(92, 26, 26, 0.10);
-}
-
-.hero-banner {
-    background:
-        linear-gradient(135deg, rgba(255,248,237,0.82), rgba(247,231,201,0.76));
-    border: 1px solid rgba(184,134,11,0.22);
-    border-radius: 20px;
-    padding: 16px 18px;
-    margin-bottom: 14px;
-    box-shadow: 0 8px 22px rgba(92, 26, 26, 0.06);
-}
-
-.summary-strip {
-    background: linear-gradient(90deg, #5C1212 0%, #7A1F1F 35%, #A52A2A 68%, #C58B39 100%);
-    color: #FFF8ED !important;
-    border: 1px solid rgba(212,175,55,0.55);
-    border-radius: 18px;
-    padding: 14px 18px;
-    margin-bottom: 14px;
-    box-shadow: 0 10px 24px rgba(92, 26, 26, 0.14);
-    font-weight: 700;
-}
-
-.tile-card {
-    background: linear-gradient(180deg, rgba(255,248,237,0.96) 0%, rgba(249,238,214,0.96) 100%);
-    border: 1px solid rgba(107, 30, 30, 0.14);
-    border-top: 4px solid #B8860B;
-    border-radius: 18px;
-    padding: 16px;
-    min-height: 170px;
-    box-shadow: 0 8px 20px rgba(92, 26, 26, 0.08);
-    margin-bottom: 12px;
-}
-
-.tile-title {
-    font-family: 'Cinzel', serif;
-    color: #6B1E1E !important;
-    font-size: 18px;
-    font-weight: 800;
-    margin-bottom: 8px;
-}
-
-.tile-text {
-    color: #3A2918 !important;
-    font-size: 14px;
-    line-height: 1.55;
-}
-
-.export-panel {
-    background: linear-gradient(135deg, rgba(242,217,155,0.45), rgba(255,248,237,0.88));
-    border: 1px solid rgba(184,134,11,0.25);
-    border-left: 6px solid #7A1F1F;
-    border-radius: 18px;
-    padding: 16px;
-    margin-top: 8px;
-    margin-bottom: 12px;
-    box-shadow: 0 8px 18px rgba(92, 26, 26, 0.06);
-}
-
-.report-panel {
-    background: linear-gradient(180deg, rgba(255,248,237,0.98) 0%, rgba(248,236,208,0.97) 100%);
-    border: 1px solid rgba(107, 30, 30, 0.14);
-    border-left: 6px solid #B8860B;
-    border-radius: 18px;
-    padding: 18px;
-    margin-top: 8px;
-    margin-bottom: 12px;
-    box-shadow: 0 8px 18px rgba(92, 26, 26, 0.06);
-}
-
-.report-title {
-    font-family: 'Cinzel', serif;
-    color: #6B1E1E !important;
-    font-size: 18px;
-    font-weight: 800;
-    margin-bottom: 8px;
-}
-
-.report-text {
-    color: #3A2918 !important;
-    font-size: 14px;
-    line-height: 1.65;
-}
-
-.signature-banner {
-    background: linear-gradient(90deg, #4A120F 0%, #6B1E1E 25%, #8E2B2B 55%, #C58B39 100%);
-    color: #FFF8ED !important;
-    border: 1px solid rgba(212,175,55,0.55);
-    border-radius: 22px;
-    padding: 18px 22px;
-    margin-bottom: 14px;
-    box-shadow: 0 12px 28px rgba(92, 26, 26, 0.18);
-}
-
-.boardroom-banner {
-    background: linear-gradient(90deg, #3E0F0F 0%, #5C1212 22%, #7A1F1F 48%, #A52A2A 72%, #D4AF37 100%);
-    color: #FFF8ED !important;
-    border: 1px solid rgba(212,175,55,0.65);
-    border-radius: 24px;
-    padding: 20px 24px;
-    margin-bottom: 16px;
-    box-shadow: 0 14px 32px rgba(92, 26, 26, 0.20);
-}
-
-.boardroom-panel {
-    background: rgba(255,255,255,0.18);
-    backdrop-filter: blur(18px);
-    border-radius: 24px;
-    border: 1px solid rgba(255,255,255,0.22);
-
-    box-shadow:
-        0 8px 32px rgba(0,0,0,0.10),
-        inset 0 1px 0 rgba(255,255,255,0.2);
-
-    padding: 22px;
-    transition: all 0.35s ease;
-}
-
-.boardroom-panel:hover {
-    transform: translateY(-8px);
-    box-shadow:
-        0 18px 44px rgba(0,0,0,0.18);
-}
-
-.signature-card {
-    background: linear-gradient(180deg, rgba(255,248,237,0.97) 0%, rgba(248,236,208,0.96) 100%);
-    border: 1px solid rgba(107, 30, 30, 0.14);
-    border-left: 6px solid #B8860B;
-    border-radius: 18px;
-    padding: 18px;
-    min-height: 190px;
-    box-shadow: 0 8px 20px rgba(92, 26, 26, 0.08);
-    margin-bottom: 12px;
-}
-
-.signature-title {
-    font-family: 'Cinzel', serif;
-    color: #6B1E1E !important;
-    font-size: 18px;
-    font-weight: 800;
-    margin-bottom: 8px;
-}
-
-.signature-text {
-    color: #3A2918 !important;
-    font-size: 14px;
-    line-height: 1.6;
-}
-
-.score-strip {
-    background: linear-gradient(90deg, rgba(255,248,237,0.95) 0%, rgba(249,238,214,0.96) 100%);
-    border: 1px solid rgba(184,134,11,0.22);
-    border-radius: 18px;
-    padding: 14px 16px;
-    margin-bottom: 14px;
-    box-shadow: 0 8px 18px rgba(92, 26, 26, 0.06);
-}
-
-/* =========================
-   SECTION BOXES
-========================= */
-.imperial-box {
-    border: 1px solid rgba(107, 30, 30, 0.14);
-    background: linear-gradient(180deg, rgba(255,248,237,0.92) 0%, rgba(250,240,220,0.92) 100%);
-    margin-bottom: 14px;
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: 0 8px 22px rgba(92, 26, 26, 0.08);
-}
-
-.imperial-header {
-    background: linear-gradient(90deg, #7A1F1F 0%, #A52A2A 58%, #C58B39 100%);
-    color: #FFF8ED;
-    text-align: center;
-    font-weight: 800;
-    font-size: 24px;
-    font-family: 'Cinzel', serif;
-    padding: 12px;
-    border-bottom: 1px solid rgba(255,248,237,0.35);
-}
-
-.imperial-subheader {
-    background: linear-gradient(90deg, #F2D99B 0%, #D4A15A 100%);
-    color: #2B1E12;
-    text-align: center;
-    font-weight: 800;
-    padding: 8px;
-    font-family: 'Cinzel', serif;
-    border-bottom: 1px solid rgba(107, 30, 30, 0.10);
-}
-
-/* =========================
-   KPI / CARDS
-========================= */
-.kpi-card {
-    background: rgba(255,255,255,0.22);
-    backdrop-filter: blur(14px);
-    border: 1px solid rgba(255,255,255,0.25);
-    border-radius: 24px;
-    padding: 22px;
-    text-align: center;
-    box-shadow:
-        0 8px 32px rgba(31,38,135,0.18);
-    transition: all 0.35s ease;
-}
-
-.kpi-card:hover {
-    transform: translateY(-8px) scale(1.03);
-}
-
-.kpi-card:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 
-        0 14px 28px rgba(0,0,0,0.12),
-        0 0 10px rgba(212,175,55,0.35);
-}
-
-/* KPI COLORS */
-.kpi-green {
-    border-left: 6px solid #2ecc71;
-    background: linear-gradient(145deg, #ecfff5, #d6f5e6);
-}
-
-.kpi-yellow {
-    border-left: 6px solid #f1c40f;
-    background: linear-gradient(145deg, #fff9e6, #fceabb);
-}
-
-.kpi-red {
-    border-left: 6px solid #e74c3c;
-    background: linear-gradient(145deg, #ffecec, #f5c6c6);
-}
-
-.kpi-title {
-    font-family: 'Cinzel', serif;
-    font-size: 15px;
-    font-weight: 700;
-    color: #5C1A1A;
-    margin-bottom: 6px;
-}
-
-.kpi-value {
-    font-family: 'Cinzel', serif;
-    font-size: 30px;
-    font-weight: 900;
-    color: #2B1E12;
-}
-
-/* =========================
-   NAV BUTTONS
-========================= */
-.stButton > button {
-    background: linear-gradient(135deg,
-        #D4AF37,
-        #F7E7A1,
-        #B8860B);
-    color: #2B1E12 !important;
-    border: none;
-    border-radius: 16px;
-    font-weight: 800;
-    transition: all 0.3s ease;
-}
-
-.stButton > button:hover {
-    transform: scale(1.04);
-    box-shadow:
-        0 0 18px rgba(212,175,55,0.6);
-}
-
-.stDownloadButton > button {
-    width: 100%;
-    min-height: 48px;
-    border-radius: 12px;
-    border: 1px solid #8B6B2E;
-    background: linear-gradient(145deg, #E5C47A 0%, #C58B39 100%);
-    color: #2B1E12 !important;
-    font-weight: 800;
-    box-shadow: 0 4px 12px rgba(92, 26, 26, 0.10);
-}
-
-/* =========================
-   METRICS / ALERTS
-========================= */
-[data-testid="metric-container"] {
-    background: linear-gradient(180deg, #FFF8ED 0%, #F7E9D0 100%);
-    border: 1px solid rgba(107, 30, 30, 0.14);
-    border-left: 6px solid #B8860B;
-    border-radius: 16px;
-    padding: 12px;
-    box-shadow: 0 6px 16px rgba(92, 26, 26, 0.07);
-}
-
-[data-testid="stAlert"] {
-    border-radius: 14px !important;
-    border: 1px solid rgba(184,134,11,0.30) !important;
-    background: linear-gradient(180deg, #FFF8ED 0%, #F7E9D0 100%) !important;
-}
-
-/* =========================
-   TABS
-========================= */
-.stTabs [data-baseweb="tab-list"] {
-    gap: 8px;
-}
-.stTabs [data-baseweb="tab"] {
-    background: #F8EFD9;
-    border-radius: 10px 10px 0 0;
-    border: 1px solid #D4A15A;
-    color: #5C1A1A;
-    font-weight: 700;
-    font-family: 'Cinzel', serif;
-}
-.stTabs [aria-selected="true"] {
-    background: linear-gradient(90deg, #7A1F1F 0%, #C58B39 100%) !important;
-    color: #FFF8ED !important;
-}
-
-/* =========================
-   TABLES
-========================= */
-thead tr th {
-    background: linear-gradient(90deg, #7A1F1F 0%, #A52A2A 60%, #C58B39 100%) !important;
-    color: #FFF8ED !important;
-    border: 1px solid #6B1E1E !important;
-    font-weight: 800 !important;
-}
-
-tbody tr td {
-    color: #2B1E12 !important;
-    border: 1px solid #E6D0A8 !important;
-    background: #FFF8ED !important;
-}
-
-[data-testid="stDataFrame"] {
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid rgba(107, 30, 30, 0.10);
-    box-shadow: 0 6px 18px rgba(92, 26, 26, 0.05);
-}
-
-/* =========================
-   TEXT
-========================= */
-label, .stMarkdown, .stText, .stCaption, p, div {
-    color: #2B1E12 !important;
-}
-
-hr {
-    border: none;
-    border-top: 2px solid rgba(197, 139, 57, 0.35);
-}
-
-header[data-testid="stHeader"] {
-    background: rgba(0,0,0,0);
-}
-footer {
-    visibility: hidden;
-}
-</style>
+<div class='panel'>
+    <div class='panel-title'>
+        AI Global + Indian Market News
+    </div>
+    <div class='subtle-divider'></div>
+</div>
 """, unsafe_allow_html=True)
 
-# =====================================================
-# HELPERS
-# =====================================================
-def fmt(x):
+
+# =========================================================
+# VIEW TOGGLE
+# =========================================================
+
+view_all_news = st.toggle("View All News")
+
+
+# =========================================================
+# LOAD NEWS
+# =========================================================
+
+news = get_market_news()
+
+display_news = news if view_all_news else news[:3]
+
+
+# =========================================================
+# NEWS CARDS
+# =========================================================
+
+if len(display_news) > 0:
+
+    cols = st.columns(3)
+
+    for i, article in enumerate(display_news):
+
+        with cols[i % 3]:
+
+            sentiment, score, color, summary = (
+                analyze_news_sentiment(article["title"])
+            )
+
+            image_url = article["image"]
+
+            if image_url == "":
+                image_url = get_news_image(article["title"])
+
+            html_code = f"""
+
+            <div style="
+                background:linear-gradient(
+                    180deg,
+                    rgba(15,23,42,0.97),
+                    rgba(8,15,35,0.96)
+                );
+                border:1px solid rgba(255,255,255,0.08);
+                border-radius:26px;
+                overflow:hidden;
+                min-height:640px;
+                box-shadow:
+                    0 14px 30px rgba(0,0,0,0.34),
+                    0 0 18px rgba(34,211,238,0.05);
+            ">
+
+                <!-- IMAGE -->
+
+                <img src="{image_url}"
+
+                    style="
+                    width:100%;
+                    height:240px;
+                    object-fit:cover;
+                ">
+
+                <!-- CONTENT -->
+
+                <div style="padding:20px;">
+
+                    <!-- TITLE -->
+
+                    <div style="
+                        color:white;
+                        font-size:1.08rem;
+                        font-weight:900;
+                        line-height:1.7;
+                        margin-bottom:18px;
+                    ">
+                        {article['title']}
+                    </div>
+
+                    <!-- AI BOX -->
+
+                    <div style="
+                        background:rgba(255,255,255,0.04);
+                        border:1px solid rgba(255,255,255,0.06);
+                        border-radius:18px;
+                        padding:16px;
+                        margin-bottom:18px;
+                    ">
+
+                        <div style="
+                            color:{color};
+                            font-size:0.96rem;
+                            font-weight:900;
+                            margin-bottom:8px;
+                        ">
+                            AI Sentiment: {sentiment}
+                        </div>
+
+                        <div style="
+                            color:white;
+                            font-size:0.84rem;
+                            font-weight:700;
+                            margin-bottom:10px;
+                        ">
+                            Sentiment Score: {score}/100
+                        </div>
+
+                        <div style="
+                            color:#cbd5e1;
+                            font-size:0.80rem;
+                            line-height:1.7;
+                        ">
+                            {summary}
+                        </div>
+
+                    </div>
+
+                    <!-- SOURCE -->
+
+                    <div style="
+                        color:#94a3b8;
+                        font-size:0.82rem;
+                        font-weight:700;
+                        margin-bottom:18px;
+                    ">
+                        {article['source']}
+                    </div>
+
+                    <!-- BUTTON -->
+
+                    <a href="{article['url']}"
+                        target="_blank"
+                        style="
+                            color:#22d3ee;
+                            text-decoration:none;
+                            font-size:0.92rem;
+                            font-weight:900;
+                        ">
+                        Read Full Article →
+                    </a>
+
+                </div>
+
+            </div>
+
+            """
+
+            components.html(
+                html_code,
+                height=680
+            )
+
+else:
+
+    st.warning("Unable to fetch market news.")      # -------------------------------------------------
+# MARKET BREADTH
+# -------------------------------------------------
+breadth_sample_size = min(12, len(stock_list)); breadth_symbols = stock_list[:breadth_sample_size]
+advancers = decliners = bullish_trend_count = valid_breadth_count = 0; breadth_rows = []
+for s in breadth_symbols:
+    d = get_history(s, period="6mo")
+    if d.empty or len(d) < 35: continue
+    m = compute_scan_metrics_fast(d)
+    if not m: continue
+    valid_breadth_count += 1
+    day_ret = m.get("day_ret", 0.0)
+    if day_ret >= 0: advancers += 1
+    else: decliners += 1
+    if m["sma20"] > m["sma50"]: bullish_trend_count += 1
+    breadth_rows.append(day_ret)
+if valid_breadth_count == 0:
+    breadth_ratio = trend_ratio = avg_day_ret = 0.0
+else:
+    avg_day_ret = float(np.mean(breadth_rows)) if breadth_rows else 0.0
+    breadth_ratio = round((advancers / max(valid_breadth_count, 1)) * 100, 1)
+    trend_ratio = round((bullish_trend_count / max(valid_breadth_count, 1)) * 100, 1)
+
+b1, b2, b3, b4 = st.columns(4, gap="small")
+with b1: st.markdown(f"<div class='breadth-card'><div class='breadth-label'>Advance / Decline</div><div class='breadth-value'>{advancers} / {decliners}</div><div class='metric-delta-flat'>{valid_breadth_count} stocks sampled</div></div>", unsafe_allow_html=True)
+with b2: st.markdown(f"<div class='breadth-card'><div class='breadth-label'>Breadth Strength</div><div class='breadth-value'>{breadth_ratio}%</div><div class='{'metric-delta-up' if breadth_ratio >= 55 else 'metric-delta-down'}'>Advancers share</div></div>", unsafe_allow_html=True)
+with b3: st.markdown(f"<div class='breadth-card'><div class='breadth-label'>Bullish Trend Stocks</div><div class='breadth-value'>{bullish_trend_count}</div><div class='{'metric-delta-up' if trend_ratio >= 55 else 'metric-delta-down'}'>{trend_ratio}% above trend filter</div></div>", unsafe_allow_html=True)
+with b4: st.markdown(f"<div class='breadth-card'><div class='breadth-label'>Average Daily Return</div><div class='breadth-value'>{avg_day_ret:+.2f}%</div><div class='{'metric-delta-up' if avg_day_ret >= 0 else 'metric-delta-down'}'>Universe average</div></div>", unsafe_allow_html=True)
+# =========================================================
+# FII / DII INSTITUTIONAL FLOW DASHBOARD
+# =========================================================
+
+import requests
+import pandas as pd
+import plotly.graph_objects as go
+
+@st.cache_data(ttl=3600)
+def get_fii_dii_data():
+
     try:
-        return f"₹ {x:,.0f}"
+
+        url = "https://www.moneycontrol.com/stocks/marketstats/fii_dii_activity/index.php"
+
+        tables = pd.read_html(url)
+
+        df = tables[0]
+
+        df.columns = [str(c).strip() for c in df.columns]
+
+        return df
+
     except Exception:
-        return "₹ 0"
 
-def future_value(pv, rate, years):
-    return pv * ((1 + rate) ** max(years, 0))
+        return pd.DataFrame()
 
-def future_value_sip(monthly_investment, annual_return, years):
-    months = int(max(years, 0) * 12)
-    if months <= 0:
-        return 0
-    r = annual_return / 12
-    if r <= 0:
-        return monthly_investment * months
-    return monthly_investment * (((1 + r) ** months - 1) / r) * (1 + r)
 
-def lumpsum_required(target, annual_return, years):
-    if years <= 0:
-        return target
-    return target / ((1 + annual_return) ** years)
+st.markdown("""
+<div class='panel'>
+    <div class='panel-title'>
+        Institutional Money Flow Dashboard
+    </div>
+    <div class='subtle-divider'></div>
+</div>
+""", unsafe_allow_html=True)
 
-def monthly_sip_required(target, annual_rate, years):
-    months = int(max(years, 0) * 12)
-    if months <= 0:
-        return 0
-    r = annual_rate / 12
-    if r <= 0:
-        return target / months
-    factor = (((1 + r) ** months - 1) / r) * (1 + r)
-    return target / factor if factor > 0 else 0
+fii_df = get_fii_dii_data()
 
-def monthly_sip_required_stepup(target, annual_return, years, step_up):
-    months = int(max(years, 0) * 12)
-    if months <= 0:
-        return 0
-    r = annual_return / 12
-    low, high = 0, max(target, 1)
-    for _ in range(80):
-        mid = (low + high) / 2
-        corpus = 0
-        sip = mid
-        for m in range(1, months + 1):
-            corpus = corpus * (1 + r) + sip
-            if m % 12 == 0:
-                sip *= (1 + step_up)
-        if corpus >= target:
-            high = mid
-        else:
-            low = mid
-    return high
+if not fii_df.empty:
 
-def swp_corpus_required(monthly_withdrawal, annual_return, years):
-    r = annual_return / 12
-    n = int(years * 12)
-    if n <= 0:
-        return 0
-    if r == 0:
-        return monthly_withdrawal * n
-    return monthly_withdrawal * ((1 - (1 + r) ** (-n)) / r)
-
-def emi_calculator(principal, annual_rate, years):
-    r = annual_rate / 12
-    n = int(years * 12)
-    if n <= 0:
-        return 0
-    if r == 0:
-        return principal / n
-    return principal * r * ((1 + r) ** n) / (((1 + r) ** n) - 1)
-
-def xnpv(rate, cashflows):
-    if len(cashflows) < 1:
-        return 0
-    t0 = cashflows[0][0]
-    return sum(cf / ((1 + rate) ** ((dt - t0).days / 365.0)) for dt, cf in cashflows)
-
-def xirr(cashflows):
-    if len(cashflows) < 2:
-        return None
-    low, high = -0.9999, 10.0
-    for _ in range(200):
-        mid = (low + high) / 2
-        val = xnpv(mid, cashflows)
-        if abs(val) < 1e-6:
-            return mid
-        if val > 0:
-            low = mid
-        else:
-            high = mid
-    return mid
-
-def clean_amount(x):
-    x = str(x).replace(",", "").replace("₹", "").replace("Rs.", "").replace("Rs", "").strip()
-    x = re.sub(r"[^0-9.\-]", "", x)
     try:
+
+        latest = fii_df.iloc[0]
+
+        numeric_cols = []
+
+        for col in fii_df.columns:
+
+            try:
+                fii_df[col] = (
+                    fii_df[col]
+                    .astype(str)
+                    .str.replace(",", "")
+                )
+
+                fii_df[col] = pd.to_numeric(
+                    fii_df[col],
+                    errors="ignore"
+                )
+            except:
+                pass
+
+        fii_buy = float(latest.iloc[1])
+        fii_sell = float(latest.iloc[2])
+
+        dii_buy = float(latest.iloc[3])
+        dii_sell = float(latest.iloc[4])
+
+        fii_net = fii_buy - fii_sell
+        dii_net = dii_buy - dii_sell
+
+        if fii_net > 1500:
+
+            sentiment = "STRONG BULLISH"
+            sentiment_color = "#22c55e"
+
+        elif fii_net > 0:
+
+            sentiment = "BULLISH"
+            sentiment_color = "#4ade80"
+
+        elif fii_net < -1500:
+
+            sentiment = "STRONG BEARISH"
+            sentiment_color = "#ef4444"
+
+        else:
+
+            sentiment = "NEUTRAL"
+            sentiment_color = "#facc15"
+
+        c1,c2,c3,c4,c5 = st.columns(5)
+
+        with c1:
+            metric_box(
+                "FII Buy",
+                f"₹{fii_buy:,.0f} Cr"
+            )
+
+        with c2:
+            metric_box(
+                "FII Sell",
+                f"₹{fii_sell:,.0f} Cr"
+            )
+
+        with c3:
+            metric_box(
+                "DII Buy",
+                f"₹{dii_buy:,.0f} Cr"
+            )
+
+        with c4:
+            metric_box(
+                "DII Sell",
+                f"₹{dii_sell:,.0f} Cr"
+            )
+
+        with c5:
+            metric_box(
+                "Net FII",
+                f"₹{fii_net:,.0f} Cr",
+                sentiment,
+                fii_net > 0
+            )
+
+        st.markdown(f"""
+        <div style="
+            background:rgba(15,23,42,0.85);
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:22px;
+            padding:18px;
+            text-align:center;
+            margin-top:12px;
+            margin-bottom:18px;
+        ">
+            <div style="
+                color:{sentiment_color};
+                font-size:1.35rem;
+                font-weight:900;
+            ">
+                Institutional Sentiment
+            </div>
+
+            <div style="
+                color:white;
+                font-size:2rem;
+                font-weight:900;
+                margin-top:10px;
+            ">
+                {sentiment}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        try:
+
+            date_col = fii_df.columns[0]
+
+            fii_df["Net FII"] = (
+                fii_df.iloc[:,1] -
+                fii_df.iloc[:,2]
+            )
+
+            fii_df["Net DII"] = (
+                fii_df.iloc[:,3] -
+                fii_df.iloc[:,4]
+            )
+
+            chart_df = fii_df.head(30)
+
+            fig = go.Figure()
+
+            fig.add_trace(
+                go.Bar(
+                    x=chart_df[date_col],
+                    y=chart_df["Net FII"],
+                    name="Net FII"
+                )
+            )
+
+            fig.add_trace(
+                go.Bar(
+                    x=chart_df[date_col],
+                    y=chart_df["Net DII"],
+                    name="Net DII"
+                )
+            )
+
+            fig.update_layout(
+                title="30 Day Institutional Flow",
+                template="plotly_dark",
+                height=500,
+                barmode="group",
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)"
+            )
+
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+        except:
+            pass
+
+        with st.expander(
+            "View Complete FII/DII Data"
+        ):
+            st.dataframe(
+                fii_df,
+                use_container_width=True
+            )
+
+    except Exception as e:
+
+        st.warning(
+            f"FII/DII data unavailable : {e}"
+        )
+
+else:
+
+    st.warning(
+        "Unable to fetch FII/DII data."
+    )
+
+# -------------------------------------------------
+# MAIN SELECTED STOCK DATA
+# -------------------------------------------------
+raw = get_history(symbol, period=period)
+if raw.empty:
+    st.error("Unable to fetch market data. Please ensure yfinance is installed and internet is available on deployment.")
+    st.stop()
+
+df = compute_indicators(raw)
+if df.empty:
+    st.warning("Not enough data to compute indicators.")
+    st.stop()
+
+info = get_info(symbol)
+bs, fin, cf = get_financials(symbol)
+last_close = safe_last(df["Close"])
+prev_close = float(df["Close"].iloc[-2]) if len(df) > 1 else last_close
+change_pct = ((last_close / prev_close) - 1) * 100 if prev_close else 0
+rsi = safe_last(df["RSI14"]); atr = safe_last(df["ATR14"])
+m = compute_scan_metrics_fast(raw)
+score, verdict = score_from_metrics(m) if m else (0, "Weak")
+trend_signal = "Bullish" if df.iloc[-1]["SMA20"] > df.iloc[-1]["SMA50"] else "Bearish"
+macd_signal = "Bullish" if df.iloc[-1]["MACD"] > df.iloc[-1]["MACD_SIGNAL"] else "Bearish"
+breakout_level = df["High"].tail(20).max(); support_level = df["Low"].tail(20).min(); entry = breakout_level * 1.002
+stop_loss = max(entry - atr * 1.5, support_level); risk_per_share = max(entry - stop_loss, 0.01)
+allowed_risk = capital * (risk_pct / 100); qty = max(int(allowed_risk // risk_per_share), 0); target = entry + (risk_per_share * rr_ratio); position_value = qty * entry
+ai_action, ai_class, ai_reason = ai_badge(score, rsi, trend_signal, macd_signal)
+conviction_score, conviction_label = conviction_meter(score, rsi, trend_signal, macd_signal)
+
+# -------------------------------------------------
+# INSTITUTIONAL SUMMARY + CONVICTION
+# -------------------------------------------------
+s1, s2, s3 = st.columns([1.15, 0.9, 1.2], gap="small")
+with s1:
+    st.markdown(f"<div class='{ai_class}'>AI {ai_action} • {conviction_score}% Confidence<br><span style='font-size:0.82rem;font-weight:700'>{ai_reason}</span></div>", unsafe_allow_html=True)
+with s2:
+    st.plotly_chart(make_gauge(conviction_score), use_container_width=True)
+with s3:
+    st.markdown(f"<div class='panel'><div class='panel-title'>Institutional Summary</div><div class='subtle-divider'></div><span class='ribbon-chip'>Trend: {trend_signal}</span><span class='ribbon-chip'>Momentum: {macd_signal}</span><span class='ribbon-chip'>RSI: {rsi:.1f}</span><span class='ribbon-chip'>Sector: {info.get('sector','N/A')}</span><span class='ribbon-chip'>Action: {ai_action}</span><div style='margin-top:8px;color:#cbd5e1;font-weight:700;font-size:0.88rem;'>BUY above {entry:.2f} • SL {stop_loss:.2f} • Target {target:.2f}</div></div>", unsafe_allow_html=True)
+
+# -------------------------------------------------
+# PRIMARY METRICS
+# -------------------------------------------------
+m1, m2, m3, m4, m5 = st.columns(5, gap="small")
+with m1: metric_box("Last Price", rupee(last_close), f"{change_pct:+.2f}% today", positive=change_pct >= 0)
+with m2: metric_box("Institutional Score", f"{score}/100", verdict, positive=score >= 55)
+with m3: metric_box("RSI (14)", f"{rsi:.2f}", "Healthy" if 50 <= rsi <= 70 else "Watch", positive=50 <= rsi <= 70)
+with m4: metric_box("ATR (14)", f"{atr:.2f}", "Volatility gauge")
+market_cap = info.get("marketCap", np.nan)
+with m5: metric_box("Market Cap", f"₹{market_cap/1e7:,.0f} Cr" if pd.notna(market_cap) else "N/A", info.get("sector", "Unknown"))
+
+# -------------------------------------------------
+# RATIO BUTTONS
+# -------------------------------------------------
+cb1, cb2 = st.columns(2, gap="small")
+with cb1: show_fundamental_ratio = st.button("Fundamental Ratio", key="fundamental_ratio_btn")
+with cb2: show_technical_ratio = st.button("Technical Ratio", key="technical_ratio_btn")
+
+# -------------------------------------------------
+# CHARTS
+# -------------------------------------------------
+left, right = st.columns([2.1, 0.9], gap="small")
+with left:
+    st.markdown("<div class='panel'><div class='panel-title'>Price Structure</div><div class='subtle-divider'></div></div>", unsafe_allow_html=True)
+    st.plotly_chart(make_candlestick(df.tail(180), symbol, entry, stop_loss, target, breakout_level, support_level), use_container_width=True)
+with right:
+    st.markdown("<div class='panel'><div class='panel-title'>Momentum (RSI)</div><div class='subtle-divider'></div></div>", unsafe_allow_html=True)
+    st.plotly_chart(make_rsi_chart(df.tail(180)), use_container_width=True)
+
+# -------------------------------------------------
+# RATIO PANELS
+# -------------------------------------------------
+if show_fundamental_ratio:
+    st.markdown("<div class='panel'><div class='panel-title'>Fundamental Ratio</div><div class='subtle-divider'></div></div>", unsafe_allow_html=True)
+    current_ratio = info.get('currentRatio', 'N/A')
+    quick_ratio = info.get('quickRatio', 'N/A')
+    roe = round((info.get('returnOnEquity', 0) or 0) * 100, 2) if info.get('returnOnEquity') is not None else 'N/A'
+    roa = round((info.get('returnOnAssets', 0) or 0) * 100, 2) if info.get('returnOnAssets') is not None else 'N/A'
+    operating_margin = round((info.get('operatingMargins', 0) or 0) * 100, 2) if info.get('operatingMargins') is not None else 'N/A'
+    profit_margin = round((info.get('profitMargins', 0) or 0) * 100, 2) if info.get('profitMargins') is not None else 'N/A'
+    gross_margin = round((info.get('grossMargins', 0) or 0) * 100, 2) if info.get('grossMargins') is not None else 'N/A'
+    rev_growth = round((info.get('revenueGrowth', 0) or 0) * 100, 2) if info.get('revenueGrowth') is not None else 'N/A'
+    earn_growth = round((info.get('earningsGrowth', 0) or 0) * 100, 2) if info.get('earningsGrowth') is not None else 'N/A'
+    div_yield = round((info.get('dividendYield', 0) or 0) * 100, 2) if info.get('dividendYield') is not None else 'N/A'
+    fund_rows = [
+        {'Category':'Valuation','Metric':'Market Cap (₹ Cr)','Value': round((info.get('marketCap', 0) or 0)/1e7, 2) if info.get('marketCap') is not None else 'N/A'},
+        {'Category':'Valuation','Metric':'Trailing P/E','Value': info.get('trailingPE', 'N/A')},
+        {'Category':'Valuation','Metric':'Forward P/E','Value': info.get('forwardPE', 'N/A')},
+        {'Category':'Valuation','Metric':'PEG Ratio','Value': info.get('pegRatio', 'N/A')},
+        {'Category':'Valuation','Metric':'Price to Book','Value': info.get('priceToBook', 'N/A')},
+        {'Category':'Valuation','Metric':'Enterprise Value','Value': info.get('enterpriseValue', 'N/A')},
+        {'Category':'Profitability','Metric':'ROE %','Value': roe},
+        {'Category':'Profitability','Metric':'ROA %','Value': roa},
+        {'Category':'Profitability','Metric':'Operating Margin %','Value': operating_margin},
+        {'Category':'Profitability','Metric':'Profit Margin %','Value': profit_margin},
+        {'Category':'Profitability','Metric':'Gross Margin %','Value': gross_margin},
+        {'Category':'Growth','Metric':'Revenue Growth %','Value': rev_growth},
+        {'Category':'Growth','Metric':'Earnings Growth %','Value': earn_growth},
+        {'Category':'Growth','Metric':'Book Value','Value': info.get('bookValue', 'N/A')},
+        {'Category':'Growth','Metric':'EPS (TTM)','Value': info.get('trailingEps', 'N/A')},
+        {'Category':'Balance Sheet','Metric':'Debt to Equity','Value': info.get('debtToEquity', 'N/A')},
+        {'Category':'Balance Sheet','Metric':'Current Ratio','Value': current_ratio},
+        {'Category':'Balance Sheet','Metric':'Quick Ratio','Value': quick_ratio},
+        {'Category':'Cash / Shareholder','Metric':'Free Cashflow','Value': info.get('freeCashflow', 'N/A')},
+        {'Category':'Cash / Shareholder','Metric':'Operating Cashflow','Value': info.get('operatingCashflow', 'N/A')},
+        {'Category':'Cash / Shareholder','Metric':'Dividend Yield %','Value': div_yield},
+        {'Category':'Cash / Shareholder','Metric':'Payout Ratio','Value': info.get('payoutRatio', 'N/A')},
+    ]
+    fr = pd.DataFrame(fund_rows)
+    f1, f2, f3, f4 = st.columns(4)
+    with f1: metric_box('P/E', str(info.get('trailingPE', 'N/A')), 'Valuation')
+    with f2: metric_box('ROE %', str(roe), 'Profitability', True if isinstance(roe,(int,float)) and roe >= 15 else None)
+    with f3: metric_box('Debt/Equity', str(info.get('debtToEquity', 'N/A')), 'Leverage')
+    with f4: metric_box('Revenue Growth %', str(rev_growth), 'Growth', True if isinstance(rev_growth,(int,float)) and rev_growth >= 10 else None)
+    st.dataframe(fr.style.set_properties(**{'background-color': 'rgba(15,23,42,0.55)', 'color': 'white', 'border-color': 'rgba(255,255,255,0.05)'}), use_container_width=True)
+
+if show_technical_ratio:
+    st.markdown("<div class='panel'><div class='panel-title'>Technical Ratio</div><div class='subtle-divider'></div></div>", unsafe_allow_html=True)
+    high_52 = raw['High'].tail(min(len(raw), 252)).max() if not raw.empty else np.nan
+    low_52 = raw['Low'].tail(min(len(raw), 252)).min() if not raw.empty else np.nan
+    sma20 = round(df.iloc[-1]['SMA20'], 2)
+    sma50 = round(df.iloc[-1]['SMA50'], 2)
+    ema20 = round(df['Close'].ewm(span=20, adjust=False).mean().iloc[-1], 2)
+    ema50 = round(df['Close'].ewm(span=50, adjust=False).mean().iloc[-1], 2)
+    avg_vol20 = round(df['Volume'].tail(20).mean(), 2) if 'Volume' in df.columns else 'N/A'
+    last_vol = round(df['Volume'].iloc[-1], 2) if 'Volume' in df.columns else 'N/A'
+    vol_ratio = round((last_vol / avg_vol20), 2) if isinstance(avg_vol20,(int,float)) and avg_vol20 not in [0,'N/A'] and isinstance(last_vol,(int,float)) else 'N/A'
+    price_vs_sma20 = round(((last_close / sma20) - 1) * 100, 2) if sma20 else np.nan
+    price_vs_sma50 = round(((last_close / sma50) - 1) * 100, 2) if sma50 else np.nan
+    tech_rows = [
+        {'Category':'Trend','Metric':'Last Price','Value': round(last_close, 2)},
+        {'Category':'Trend','Metric':'SMA 20','Value': sma20},
+        {'Category':'Trend','Metric':'SMA 50','Value': sma50},
+        {'Category':'Trend','Metric':'EMA 20','Value': ema20},
+        {'Category':'Trend','Metric':'EMA 50','Value': ema50},
+        {'Category':'Trend','Metric':'Price vs SMA20 %','Value': price_vs_sma20},
+        {'Category':'Trend','Metric':'Price vs SMA50 %','Value': price_vs_sma50},
+        {'Category':'Momentum','Metric':'RSI 14','Value': round(rsi, 2)},
+        {'Category':'Momentum','Metric':'MACD','Value': round(df.iloc[-1]['MACD'], 2)},
+        {'Category':'Momentum','Metric':'MACD Signal','Value': round(df.iloc[-1]['MACD_SIGNAL'], 2)},
+        {'Category':'Momentum','Metric':'Daily Change %','Value': round(change_pct, 2)},
+        {'Category':'Volatility','Metric':'ATR 14','Value': round(atr, 2)},
+        {'Category':'Volatility','Metric':'52W High','Value': round(high_52, 2) if pd.notna(high_52) else 'N/A'},
+        {'Category':'Volatility','Metric':'52W Low','Value': round(low_52, 2) if pd.notna(low_52) else 'N/A'},
+        {'Category':'Levels','Metric':'20D Breakout','Value': round(breakout_level, 2)},
+        {'Category':'Levels','Metric':'20D Support','Value': round(support_level, 2)},
+        {'Category':'Levels','Metric':'Suggested Entry','Value': round(entry, 2)},
+        {'Category':'Levels','Metric':'Stop Loss','Value': round(stop_loss, 2)},
+        {'Category':'Levels','Metric':'Target','Value': round(target, 2)},
+        {'Category':'Volume','Metric':'Last Volume','Value': last_vol},
+        {'Category':'Volume','Metric':'20D Avg Volume','Value': avg_vol20},
+        {'Category':'Volume','Metric':'Volume Ratio','Value': vol_ratio},
+    ]
+    tr = pd.DataFrame(tech_rows)
+    t1, t2, t3, t4 = st.columns(4)
+    with t1: metric_box('RSI 14', f'{rsi:.2f}', 'Momentum', True if 50 <= rsi <= 70 else None)
+    with t2: metric_box('ATR 14', f'{atr:.2f}', 'Volatility')
+    with t3: metric_box('Price vs SMA20 %', f'{price_vs_sma20:+.2f}%', 'Trend', True if price_vs_sma20 >= 0 else False)
+    with t4: metric_box('Volume Ratio', str(vol_ratio), 'Participation', True if isinstance(vol_ratio,(int,float)) and vol_ratio >= 1.2 else None)
+    st.dataframe(tr.style.set_properties(**{'background-color': 'rgba(15,23,42,0.55)', 'color': 'white', 'border-color': 'rgba(255,255,255,0.05)'}), use_container_width=True)
+
+# -------------------------------------------------
+# RATIO INTERPRETATION ENGINE
+# -------------------------------------------------
+def chip_html(text, tone='neutral'):
+    tones = {
+        'green': ('rgba(34,197,94,0.16)', 'rgba(34,197,94,0.28)', '#86efac'),
+        'yellow': ('rgba(245,158,11,0.16)', 'rgba(245,158,11,0.28)', '#fcd34d'),
+        'red': ('rgba(239,68,68,0.16)', 'rgba(239,68,68,0.28)', '#fca5a5'),
+        'blue': ('rgba(59,130,246,0.16)', 'rgba(59,130,246,0.28)', '#93c5fd'),
+        'neutral': ('rgba(148,163,184,0.14)', 'rgba(148,163,184,0.22)', '#cbd5e1')
+    }
+    bg, bd, fg = tones.get(tone, tones['neutral'])
+    return f"<span style='display:inline-block;padding:7px 12px;border-radius:999px;background:{bg};border:1px solid {bd};color:{fg};font-weight:900;font-size:0.76rem;margin-right:6px;margin-bottom:6px;'>{text}</span>"
+
+def to_num(x):
+    try:
+        if x in [None, 'N/A', 'nan']: return np.nan
         return float(x)
     except Exception:
         return np.nan
 
-def normalize_txn_type(x):
-    x = str(x).lower().strip()
-    buy = ["purchase", "sip", "systematic investment", "switch in", "stp in", "allotment", "buy", "investment", "additional purchase"]
-    sell = ["redemption", "switch out", "sell", "withdrawal", "swp", "stp out", "redeem"]
-    current = ["current value", "market value", "current market value", "valuation"]
-    for k in buy:
-        if k in x:
-            return "Purchase"
-    for k in sell:
-        if k in x:
-            return "Redemption"
-    for k in current:
-        if k in x:
-            return "Current Value"
-    return "Unknown"
+def get_fundamental_interpretation(info):
+    pe = to_num(info.get('trailingPE'))
+    pb = to_num(info.get('priceToBook'))
+    roe_v = to_num((info.get('returnOnEquity', np.nan) or np.nan) * 100 if info.get('returnOnEquity') is not None else np.nan)
+    de = to_num(info.get('debtToEquity'))
+    revg = to_num((info.get('revenueGrowth', np.nan) or np.nan) * 100 if info.get('revenueGrowth') is not None else np.nan)
+    pm = to_num((info.get('profitMargins', np.nan) or np.nan) * 100 if info.get('profitMargins') is not None else np.nan)
+    score_f = 50
+    if pd.notna(roe_v): score_f += 15 if roe_v >= 15 else (5 if roe_v >= 10 else -10)
+    if pd.notna(de): score_f += 10 if de <= 80 else (0 if de <= 150 else -12)
+    if pd.notna(revg): score_f += 10 if revg >= 10 else (4 if revg >= 5 else -8)
+    if pd.notna(pm): score_f += 10 if pm >= 10 else (4 if pm >= 5 else -8)
+    if pd.notna(pe): score_f += 8 if pe <= 25 else (2 if pe <= 40 else -10)
+    if pd.notna(pb): score_f += 7 if pb <= 6 else (2 if pb <= 10 else -8)
+    score_f = max(0, min(100, score_f))
+    if score_f >= 75:
+        verdict = 'Strong'; tone = 'green'; summary = 'Healthy profitability, manageable valuation, and balance-sheet quality support strong long-term conviction.'
+    elif score_f >= 55:
+        verdict = 'Fair'; tone = 'yellow'; summary = 'Fundamentals are broadly acceptable, but valuation or growth quality needs selective monitoring.'
+    elif score_f >= 35:
+        verdict = 'Expensive'; tone = 'red'; summary = 'Business quality may be reasonable, but current valuation or efficiency metrics look stretched.'
+    else:
+        verdict = 'Weak'; tone = 'red'; summary = 'Balance sheet, profitability, or growth profile does not currently support strong conviction.'
+    return score_f, verdict, tone, summary
 
-def advisor_note(title, lines):
-    st.markdown('<div class="imperial-box">', unsafe_allow_html=True)
-    st.markdown('<div class="imperial-subheader">Advisory Notes</div>', unsafe_allow_html=True)
-    st.markdown(f"**{title}**")
-    for line in lines:
-        st.write(f"• {line}")
-    st.markdown('</div>', unsafe_allow_html=True)
+def get_technical_interpretation(last_close, sma20, sma50, rsi, macd, macd_signal, vol_ratio):
+    score_t = 50
+    if last_close > sma20: score_t += 12
+    else: score_t -= 8
+    if last_close > sma50: score_t += 14
+    else: score_t -= 10
+    if sma20 > sma50: score_t += 14
+    else: score_t -= 8
+    if 50 <= rsi <= 70: score_t += 14
+    elif rsi > 75 or rsi < 35: score_t -= 10
+    if macd > macd_signal: score_t += 12
+    else: score_t -= 8
+    if isinstance(vol_ratio, (int, float)) and not pd.isna(vol_ratio):
+        score_t += 8 if vol_ratio >= 1.2 else (2 if vol_ratio >= 0.9 else -6)
+    score_t = max(0, min(100, score_t))
+    if score_t >= 70:
+        verdict = 'Bullish'; tone = 'green'; summary = 'Trend, momentum, and participation are aligned for a constructive tactical setup.'
+    elif score_t >= 45:
+        verdict = 'Neutral'; tone = 'yellow'; summary = 'Technical structure is mixed. Price action is tradable but not fully confirmed.'
+    else:
+        verdict = 'Risky'; tone = 'red'; summary = 'Trend or momentum quality is weak; capital protection should take priority.'
+    return score_t, verdict, tone, summary
 
-def kpi_row(items):
-    cols = st.columns(len(items))
+fund_score, fund_verdict, fund_tone, fund_summary = get_fundamental_interpretation(info)
+tech_sma20 = round(df.iloc[-1]['SMA20'], 2)
+tech_sma50 = round(df.iloc[-1]['SMA50'], 2)
+tech_macd = round(df.iloc[-1]['MACD'], 2)
+tech_macd_signal = round(df.iloc[-1]['MACD_SIGNAL'], 2)
+tech_vol20 = round(df['Volume'].tail(20).mean(), 2) if 'Volume' in df.columns else np.nan
+tech_last_vol = round(df['Volume'].iloc[-1], 2) if 'Volume' in df.columns else np.nan
+tech_vol_ratio = round((tech_last_vol / tech_vol20), 2) if pd.notna(tech_last_vol) and pd.notna(tech_vol20) and tech_vol20 != 0 else np.nan
+tech_score, tech_verdict, tech_tone, tech_summary = get_technical_interpretation(last_close, tech_sma20, tech_sma50, rsi, tech_macd, tech_macd_signal, tech_vol_ratio)
+overall_ratio_score = round((fund_score * 0.5) + (tech_score * 0.5), 1)
+overall_tone = 'green' if overall_ratio_score >= 70 else 'yellow' if overall_ratio_score >= 50 else 'red'
+overall_summary = 'High-conviction alignment across business quality and price structure.' if overall_ratio_score >= 70 else 'Balanced but selective setup; wait for stronger confirmation on weaker side.' if overall_ratio_score >= 50 else 'Risk-reward is currently weak unless price or fundamentals improve materially.'
 
-    for i, (label, value) in enumerate(items):
+st.markdown("<div class='panel'><div class='panel-title'>Ratio Interpretation Engine</div><div class='subtle-divider'></div></div>", unsafe_allow_html=True)
+ri1, ri2, ri3 = st.columns(3)
+with ri1: metric_box('Fundamental Score', f'{fund_score}/100', fund_verdict, positive=True if fund_tone=='green' else False if fund_tone=='red' else None)
+with ri2: metric_box('Technical Score', f'{tech_score}/100', tech_verdict, positive=True if tech_tone=='green' else False if tech_tone=='red' else None)
+with ri3: metric_box('Overall Combined', f'{overall_ratio_score}/100', 'Blended ratio score', positive=True if overall_tone=='green' else False if overall_tone=='red' else None)
 
-        # detect score type
-        css_class = ""
-        if isinstance(value, str) and "%" in value:
-            num = float(value.replace("%",""))
-            if num >= 75:
-                css_class = "kpi-green"
-            elif num >= 50:
-                css_class = "kpi-yellow"
-            else:
-                css_class = "kpi-red"
+st.markdown(
+    f"<div class='panel'>"
+    f"<div class='panel-title'>Instant Analyst-Style Summary</div>"
+    f"<div class='subtle-divider'></div>"
+    f"{chip_html('Fundamental Verdict: ' + fund_verdict, fund_tone)}"
+    f"{chip_html('Technical Verdict: ' + tech_verdict, tech_tone)}"
+    f"{chip_html('Overall Score: ' + str(overall_ratio_score) + '/100', overall_tone)}"
+    f"{chip_html('AI Action: ' + ai_action, 'green' if ai_action=='BUY' else 'yellow' if ai_action=='HOLD' else 'red')}"
+    f"<div style='margin-top:10px;color:#dbeafe;font-weight:800;font-size:0.9rem;'>Fundamental View:</div>"
+    f"<div style='color:#cbd5e1;font-size:0.88rem;line-height:1.6;margin-top:4px;'>{fund_summary}</div>"
+    f"<div style='margin-top:10px;color:#dbeafe;font-weight:800;font-size:0.9rem;'>Technical View:</div>"
+    f"<div style='color:#cbd5e1;font-size:0.88rem;line-height:1.6;margin-top:4px;'>{tech_summary}</div>"
+    f"<div style='margin-top:10px;color:#dbeafe;font-weight:800;font-size:0.9rem;'>Analyst Summary:</div>"
+    f"<div style='color:#e2e8f0;font-size:0.9rem;line-height:1.7;margin-top:4px;'>{overall_summary} Current institutional read for <b>{symbol}</b> is <b>{fund_verdict}</b> fundamentally and <b>{tech_verdict}</b> technically, producing a blended conviction score of <b>{overall_ratio_score}/100</b>.</div>"
+    f"</div>",
+    unsafe_allow_html=True
+)
 
-        with cols[i]:
+# -------------------------------------------------
+# SIGNAL ENGINE + TRADE PLAN
+# -------------------------------------------------
+sg1, sg2 = st.columns([1.15, 1.85], gap="small")
+with sg1:
+    st.markdown("<div class='panel'><div class='panel-title'>Institutional Signal Engine</div><div class='subtle-divider'></div></div>", unsafe_allow_html=True)
+    sig_df = pd.DataFrame({"Signal": ["Trend", "Momentum", "Breakout", "RSI", "Volume"], "Status": [trend_signal, macd_signal, "Active" if last_close >= breakout_level * 0.97 else "Watch", "Healthy" if 50 <= rsi <= 70 else "Extreme", "Elevated" if m and pd.notna(m['vol20']) and pd.notna(m['last_volume']) and m['last_volume'] > m['vol20'] else "Normal"]})
+    st.dataframe(sig_df, use_container_width=True)
+with sg2:
+    st.markdown("<div class='panel'><div class='panel-title'>Professional Trade Plan</div><div class='subtle-divider'></div></div>", unsafe_allow_html=True)
+    p1, p2, p3, p4, p5 = st.columns(5, gap="small")
+    with p1: metric_box("Suggested Entry", rupee(entry), "Breakout confirmation", True)
+    with p2: metric_box("Stop Loss", rupee(stop_loss), "ATR + support based", False)
+    with p3: metric_box("Target", rupee(target), f"R:R {rr_ratio:.1f}", True)
+    with p4: metric_box("Quantity", f"{qty}", f"Risk {rupee(allowed_risk)}", True if qty > 0 else None)
+    with p5: metric_box("Position Size", rupee(position_value), "Capital deployed", position_value <= capital)
+
+# -------------------------------------------------
+# SCANNER
+# -------------------------------------------------
+if run_scan:
+    scan_rows = []
+    scan_symbols = stock_list[:scan_count]
+    progress = st.progress(0)
+    for i, s in enumerate(scan_symbols, start=1):
+        d = get_history(s, period="6mo")
+        if d.empty or len(d) < 35:
+            progress.progress(i / len(scan_symbols)); continue
+        met = compute_scan_metrics_fast(d)
+        if not met:
+            progress.progress(i / len(scan_symbols)); continue
+        sc, ver = score_from_metrics(met)
+        trend = "Bullish" if met["sma20"] > met["sma50"] else "Bearish"
+        macd = "Bullish" if met["macd"] > met["macd_signal"] else "Bearish"
+        ai, _, _ = ai_badge(sc, met["rsi"], trend, macd)
+        ent = round(met["breakout"] * 1.002, 2)
+        stp = round(max(ent - met["atr"] * 1.5, met["support"]), 2)
+        scan_rows.append({"Symbol": s, "AI": ai, "Score": sc, "Verdict": ver, "Price": round(met["close"], 2), "Entry": ent, "Stop": stp, "RSI": round(met["rsi"], 2), "Sector": SECTOR_MAP.get(s, "Others")})
+        progress.progress(i / len(scan_symbols))
+    progress.empty()
+    st.session_state.scan_df = pd.DataFrame(scan_rows).sort_values(["Score", "RSI"], ascending=[False, True]).reset_index(drop=True) if scan_rows else pd.DataFrame()
+
+if not st.session_state.scan_df.empty:
+    st.markdown("<div class='panel'><div class='panel-title'>Watchlist Decision Matrix</div><div class='subtle-divider'></div><div style='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;'><span class='ribbon-chip'>Ranked Institutional Watchlist</span><span class='ribbon-chip'>AI Decision Layer</span><span class='ribbon-chip'>Scanner Priority</span></div></div>", unsafe_allow_html=True)
+    top_scan = st.session_state.scan_df.head(8).copy()
+    rank_cols = st.columns(min(4, len(top_scan)))
+    for i, (_, r) in enumerate(top_scan.head(4).iterrows()):
+        with rank_cols[i]:
+            badge_color = "#22c55e" if r['AI'] == 'BUY' else "#f59e0b" if r['AI'] == 'HOLD' else "#ef4444"
             st.markdown(f"""
-            <div class="kpi-card {css_class}">
-                <div class="kpi-title">{label}</div>
-                <div class="kpi-value">{value}</div>
+            <div class='scanner-rank-card'>
+                <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;'>
+                    <div style='font-weight:900;color:white;font-size:1rem;'>{r['Symbol']}</div>
+                    <div style='padding:4px 8px;border-radius:999px;background:{badge_color}22;border:1px solid {badge_color}44;color:{badge_color};font-weight:900;font-size:0.72rem;'>{r['AI']}</div>
+                </div>
+                <div style='font-size:1.45rem;font-weight:900;color:white;'>{int(r['Score'])}/100</div>
+                <div style='color:#93c5fd;font-weight:800;font-size:0.8rem;margin-top:4px;'>RSI {r['RSI']:.2f} • {r['Sector']}</div>
+                <div style='height:6px;border-radius:999px;background:rgba(255,255,255,0.05);margin-top:10px;overflow:hidden;'>
+                    <div style='width:{min(max(r['Score'],0),100)}%;height:100%;background:linear-gradient(90deg,#22d3ee,#8b5cf6);'></div>
+                </div>
             </div>
             """, unsafe_allow_html=True)
+    st.dataframe(st.session_state.scan_df.head(15).style.set_properties(**{'background-color': 'rgba(15,23,42,0.55)', 'color': 'white', 'border-color': 'rgba(255,255,255,0.05)'}), use_container_width=True)
 
-# =====================================================
-# HEADER
-# =====================================================
-st.markdown('<div class="main-title">Freedom</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">Legacy to be built</div>', unsafe_allow_html=True)
+# -------------------------------------------------
+# PORTFOLIO COMMAND CENTER
+# -------------------------------------------------
+portfolio_df = parse_portfolio_text(portfolio_text)
+portfolio_analysis_df = pd.DataFrame()
+if not portfolio_df.empty:
+    rows = []
+    for _, row in portfolio_df.iterrows():
+        s = row["Symbol"]
+        d = get_history(s, period="6mo")
+        if d.empty: continue
+        dd = compute_indicators(d)
+        if dd.empty: continue
+        cp = float(dd["Close"].iloc[-1]); qty_h = float(row["Quantity"]); avg_buy = float(row["Avg Buy Price"])
+        invested = qty_h * avg_buy; current = qty_h * cp; pl = current - invested; pl_pct = ((current / invested) - 1) * 100 if invested else 0
+        met = compute_scan_metrics_fast(d); sc, _ = score_from_metrics(met) if met else (0, "Weak")
+        r = float(dd["RSI14"].iloc[-1]); action = portfolio_action_from_metrics(pl_pct, sc, r)
+        rows.append({"Symbol": s, "Sector": SECTOR_MAP.get(s, "Others"), "Quantity": qty_h, "Avg Buy Price": avg_buy, "Current Price": round(cp, 2), "Invested Value": round(invested, 2), "Current Value": round(current, 2), "P/L ₹": round(pl, 2), "P/L %": round(pl_pct, 2), "Action": action})
+    portfolio_analysis_df = pd.DataFrame(rows)
 
-st.markdown(f"""
-<div class="hero-banner">
-    <b>Prepared for:</b> {st.session_state.get('client_name', 'Client')} &nbsp;&nbsp; | &nbsp;&nbsp;
-    <b>Advisor:</b> {st.session_state.get('advisor_name', 'Advisor')} &nbsp;&nbsp; | &nbsp;&nbsp;
-    <b>Theme:</b> Wealth Interface
+st.markdown("<div class='panel'><div class='panel-title'>Portfolio Command Center</div><div class='subtle-divider'></div></div>", unsafe_allow_html=True)
+if portfolio_analysis_df.empty:
+    st.info("Add portfolio entries in sidebar to activate Portfolio Command Center.")
+else:
+    total_invested = portfolio_analysis_df["Invested Value"].sum(); total_current = portfolio_analysis_df["Current Value"].sum(); total_pl = total_current - total_invested; total_pl_pct = ((total_current / total_invested) - 1) * 100 if total_invested else 0
+    pc1, pc2, pc3, pc4 = st.columns(4)
+    with pc1: metric_box("Invested", rupee(total_invested), "Capital deployed")
+    with pc2: metric_box("Current Value", rupee(total_current), "Marked to market")
+    with pc3: metric_box("P/L ₹", rupee(total_pl), f"{total_pl_pct:+.2f}%", positive=total_pl >= 0)
+    risk_score = min(100, max(0, 50 + (portfolio_analysis_df["P/L %"].std() if len(portfolio_analysis_df) > 1 else 0)))
+    with pc4: st.plotly_chart(make_portfolio_risk_gauge(risk_score), use_container_width=True)
+    st.dataframe(portfolio_analysis_df.style.set_properties(**{'background-color': 'rgba(15,23,42,0.55)', 'color': 'white', 'border-color': 'rgba(255,255,255,0.05)'}), use_container_width=True)
+    alloc = portfolio_analysis_df.groupby('Sector', as_index=False)['Current Value'].sum()
+    if not alloc.empty:
+        donut = go.Figure(data=[go.Pie(labels=alloc['Sector'], values=alloc['Current Value'], hole=0.58, textinfo='label+percent')])
+        donut.update_traces(marker=dict(line=dict(color='rgba(255,255,255,0.08)', width=1.5)))
+        donut.update_layout(title='Portfolio Allocation', template='plotly_dark', height=360, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', legend=dict(orientation='h', y=-0.15))
+        st.plotly_chart(donut, use_container_width=True)
+
+# -------------------------------------------------
+# PORTFOLIO ACTION SUGGESTIONS
+# -------------------------------------------------
+st.markdown("<div class='panel'><div class='panel-title'>Portfolio Action Suggestions</div><div class='subtle-divider'></div></div>", unsafe_allow_html=True)
+if portfolio_analysis_df.empty:
+    st.info("Portfolio suggestions will appear after portfolio input.")
+else:
+    sugg = portfolio_analysis_df[["Symbol", "Sector", "P/L %", "Action"]].copy()
+    st.dataframe(sugg, use_container_width=True)
+
+# =========================================================
+# ADVANCED SECTOR HEATMAP WITH TIMEFRAME FILTER
+# =========================================================
+
+st.markdown("""
+<div class='panel'>
+    <div class='panel-title'>
+        Sector Heatmap Performance
+    </div>
+    <div class='subtle-divider'></div>
 </div>
 """, unsafe_allow_html=True)
 
-# =====================================================
-# SIDEBAR
-# =====================================================
-st.sidebar.markdown("## Client Profile")
-client_name = st.sidebar.text_input("Client Name", "Aditya")
-advisor_name = st.sidebar.text_input("Advisor Name", "Saurabh")
-current_age = st.sidebar.number_input("Current Age", 18, 80, 30)
-inflation = st.sidebar.number_input("Inflation (%)", 0.0, 20.0, 6.0) / 100
-expected_return = st.sidebar.number_input("Expected Return (%)", 0.0, 25.0, 12.0) / 100
+# ---------------------------------------------------------
+# TIMEFRAME FILTER
+# ---------------------------------------------------------
 
-st.session_state.client_name = client_name
-st.session_state.advisor_name = advisor_name
+timeframe = st.selectbox(
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("### Quick Navigation")
-st.sidebar.caption("Navigation")
-if st.sidebar.button("Home Dashboard", use_container_width=True):
-    go("home")
-if st.sidebar.button("SIP & Lumpsum", use_container_width=True):
-    go("sip")
-if st.sidebar.button("SWP Planner", use_container_width=True):
-    go("swp")
-if st.sidebar.button("Children Planning", use_container_width=True):
-    go("children")
-if st.sidebar.button("Retirement Planner", use_container_width=True):
-    go("retirement")
-if st.sidebar.button("Net Worth", use_container_width=True):
-    go("networth")
-if st.sidebar.button("Fund Suggestion & Performance", use_container_width=True):
-    go("fund_suggestion")
+    "Select Performance Period",
 
-# =====================================================
-# HOME PAGE
-# =====================================================
-if st.session_state.page == "home":
-    st.markdown('<div class="imperial-box"><div class="imperial-header">Planner Index</div></div>', unsafe_allow_html=True)
-
-    total_modules = 15
-    base_score = min(100, max(45, round((expected_return * 100) * 5 + (12 - inflation * 100) * 3)))
-    wealth_mode = "Growth" if expected_return >= 0.12 else "Capital Shield"
-    suggested_eq = 75 if current_age <= 35 else (60 if current_age <= 50 else 40)
-    suggested_debt = 20 if current_age <= 35 else (30 if current_age <= 50 else 45)
-    suggested_gold = 5 if current_age <= 35 else (10 if current_age <= 50 else 15)
-    retirement_priority = "High" if current_age >= 40 else "Moderate"
-    protection_score = min(100, max(55, 100 - current_age))
-    discipline_score = min(100, max(50, round((expected_return * 100) * 6)))
-    boardroom_score = min(100, max(60, round((base_score + protection_score + discipline_score) / 3)))
-
-    kpi_row([
-        ("Client", client_name),
-        ("Advisor", advisor_name),
-        ("Inflation", f"{inflation*100:.1f}%"),
-        ("Expected Return", f"{expected_return*100:.1f}%")
-    ])
-
-    st.markdown(f"""
-    <div class="banner">
-        <div style="font-family:'Cinzel', serif; font-size:28px; font-weight:800; margin-bottom:6px;">Elite</div>
-        <div style="font-size:14px; line-height:1.65;">
-           beyond limit
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    k1, k2, k3, k4, k5 = st.columns(5)
-    with k1:
-        st.markdown(f"""
-        <div class="kpi-card"><div class="kpi-title">Modules</div><div class="kpi-value">{total_modules}</div></div>
-        """, unsafe_allow_html=True)
-    with k2:
-        st.markdown(f"""
-        <div class="kpi-card"><div class="kpi-title">Readiness</div><div class="kpi-value">{base_score}%</div></div>
-        """, unsafe_allow_html=True)
-    with k3:
-        st.markdown(f"""
-        <div class="kpi-card"><div class="kpi-title">Protection</div><div class="kpi-value">{protection_score}%</div></div>
-        """, unsafe_allow_html=True)
-    with k4:
-        st.markdown(f"""
-        <div class="kpi-card"><div class="kpi-title">Discipline</div><div class="kpi-value">{discipline_score}%</div></div>
-        """, unsafe_allow_html=True)
-    with k5:
-        st.markdown(f"""
-        <div class="kpi-card"><div class="kpi-title">Score</div><div class="kpi-value">{boardroom_score}%</div></div>
-        """, unsafe_allow_html=True)
-
-    st.markdown(f"""
-    <div class="summary-strip">
-        Boardroom Allocation Lens &nbsp;&nbsp; | &nbsp;&nbsp;
-        <b>{suggested_eq}% Equity</b> · <b>{suggested_debt}% Debt</b> · <b>{suggested_gold}% Gold</b>
-        &nbsp;&nbsp; | &nbsp;&nbsp; Mode: <b>{wealth_mode}</b>
-        &nbsp;&nbsp; | &nbsp;&nbsp; Retirement Priority: <b>{retirement_priority}</b>
-    </div>
-    """, unsafe_allow_html=True)
-
-    b1, b2, b3 = st.columns(3)
-    with b1:
-        st.markdown(f"""
-        <div class="boardroom-panel">
-            <div class="signature-title">👤 HNI Client Profile Panel</div>
-            <div class="signature-text">
-                <b>Client:</b> {client_name}<br>
-                <b>Advisor:</b> {advisor_name}<br>
-                <b>Age:</b> {current_age}<br>
-                <b>Inflation Assumption:</b> {inflation*100:.1f}%<br>
-                <b>Expected Return:</b> {expected_return*100:.1f}%<br><br>
-                Use as opening boardroom profile before moving into wealth, protection, and lifestyle planning.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-    with b2:
-        st.markdown(f"""
-        <div class="boardroom-panel">
-            <div class="signature-title">🎯 Executive Goal Scorecards</div>
-            <div class="signature-text">
-                <b>Advisory Readiness:</b> {base_score}%<br>
-                <b>Protection Score:</b> {protection_score}%<br>
-                <b>Discipline Score:</b> {discipline_score}%<br>
-                <b>Boardroom Score:</b> {boardroom_score}%<br><br>
-                Ideal for premium
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-    with b3:
-        st.markdown(f"""
-        <div class="panel">
-            <div class="signature-title">📊 Recommendation</div>
-            <div class="signature-text">
-                <b>Suggested Allocation:</b><br>
-                Equity {suggested_eq}% | Debt {suggested_debt}% | Gold {suggested_gold}%<br>
-                <b>Portfolio Mode:</b> {wealth_mode}<br>
-                <b>Priority:</b> {retirement_priority}<br><br>
-                Pair this with Portfolio Allocation + Rebalancing.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    t1, t2, t3 = st.columns(3)
-    with t1:
-        st.markdown(f"""
-        <div class="tile-card">
-            <div class="tile-title">🏛️ Core Wealth Planning</div>
-            <div class="tile-text">SIP, SWP, goal feasibility, and allocation modules to build the long-term compounding blueprint.</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with t2:
-        st.markdown(f"""
-        <div class="tile-card">
-            <div class="tile-title">🛡️ Protection & Retirement</div>
-            <div class="tile-text">Retirement, term cover, and Monte Carlo modules to stress-test sustainability and family protection.</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with t3:
-        st.markdown(f"""
-        <div class="tile-card">
-            <div class="tile-title">💼 Lifestyle & Balance Sheet</div>
-            <div class="tile-text">Cashflow, net worth, and lifestyle purchase planners to preserve financial discipline without harming goals.</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    a1, a2, a3 = st.columns(3)
-    with a1:
-        st.markdown("### 🏛️ Core Wealth Planning")
-        st.button("SIP & Lumpsum Calculator", on_click=lambda: go("sip"), use_container_width=True)
-        st.button("SIP + SWP Planner", on_click=lambda: go("sip_swp"), use_container_width=True)
-        st.button("SWP Calculator", on_click=lambda: go("swp"), use_container_width=True)
-        st.button("Goal Feasibility", on_click=lambda: go("goal"), use_container_width=True)
-        st.button("Portfolio Allocation", on_click=lambda: go("portfolio"), use_container_width=True)
-        st.button("Fund Suggestion & Performance", on_click=lambda: go("fund_suggestion"), use_container_width=True)
-    with a2:
-        st.markdown("### 👨‍👩‍👧 Life Goal & Protection")
-        st.button("Future Planning for Children", on_click=lambda: go("children"), use_container_width=True)
-        st.button("Retirement Planner", on_click=lambda: go("retirement"), use_container_width=True)
-        st.button("Term Insurance Calculator", on_click=lambda: go("term"), use_container_width=True)
-        st.button("Retirement Monte Carlo", on_click=lambda: go("mc_retirement"), use_container_width=True)
-        st.button("Portfolio Rebalancing", on_click=lambda: go("rebalance"), use_container_width=True)
-    with a3:
-        st.markdown("### 💼 Lifestyle & Balance Sheet")
-        st.button("Cashflow Planner", on_click=lambda: go("cashflow"), use_container_width=True)
-        st.button("Net Worth Dashboard", on_click=lambda: go("networth"), use_container_width=True)
-        st.button("House Planning", on_click=lambda: go("house"), use_container_width=True)
-        st.button("Car Purchase Planner", on_click=lambda: go("car"), use_container_width=True)
-        st.button("EMI vs SIP Calculator", on_click=lambda: go("emi_vs_sip"), use_container_width=True)
-        st.button("iPhone Purchase Planner", on_click=lambda: go("iphone"), use_container_width=True)
-
-    st.markdown("---")
-    st.markdown("### 🏛️ Master Summary")
-    s1, s2, s3 = st.columns(3)
-    with s1:
-        alloc_df = pd.DataFrame({"Asset Class": ["Equity", "Debt", "Gold"], "Suggested %": [suggested_eq, suggested_debt, suggested_gold]})
-        st.dataframe(alloc_df, use_container_width=True, hide_index=True)
-    with s2:
-        fund_df = pd.DataFrame({
-            "Model Bucket": ["Large Cap / Flexi Cap", "Hybrid / Debt", "Gold / SGB"],
-            "Boardroom Role": ["Growth Engine", "Capital Stability", "Strategic Hedge"]
-        })
-        st.dataframe(fund_df, use_container_width=True, hide_index=True)
-    with s3:
-        st.markdown(f"""
-        <div class="export-panel">
-            <b>HNI Client Presentation Flow</b><br><br>
-            • Open with Client Profile & Net Worth<br>
-            • Move to Cashflow & Goal Feasibility<br>
-            • Present Children + Retirement Planning<br>
-            • Close with Insurance + Allocation + Rebalancing<br><br>
-            <b>Meeting Tone:</b> Boardroom | Elite | Private Banker
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("### 🧾 V6.2 EXPORT + PDF READY | Advisor Summary")
-    r1, r2 = st.columns([1.4, 1])
-    with r1:
-        st.markdown(f"""
-        <div class="report-panel">
-            <div class="report-title">Executive Meeting Summary</div>
-            <div class="report-text">
-                <b>Client:</b> {client_name}<br>
-                <b>Advisor:</b> {advisor_name}<br>
-                <b>Score:</b> {boardroom_score}%<br>
-                <b>Suggested Allocation:</b> {suggested_eq}% Equity | {suggested_debt}% Debt | {suggested_gold}% Gold<br>
-                <b>Portfolio Mode:</b> {wealth_mode}<br>
-                <b>Retirement Priority:</b> {retirement_priority}<br><br>
-                <b>Recommended Meeting Flow:</b><br>
-                1. Net Worth + Cashflow Review<br>
-                2. Goal Feasibility + Children Planning<br>
-                3. Retirement Sustainability + SWP Logic<br>
-                4. Insurance Adequacy + Allocation + Rebalancing<br><br>
-                <b>Advisor Closing Note:</b> Focus first on retirement security, then goal-based investing, and finally lifestyle aspirations without disturbing core wealth compounding.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-    with r2:
-        summary_df = pd.DataFrame({
-            "Metric": ["Readiness", "Protection", "Discipline", "Boardroom"],
-            "Score": [f"{base_score}%", f"{protection_score}%", f"{discipline_score}%", f"{boardroom_score}%"]
-        })
-        st.dataframe(summary_df, use_container_width=True, hide_index=True)
-        st.markdown(f"""
-        <div class="export-panel">
-            <b>PDF / Print Ready Guidance</b><br><br>
-            • Use this home dashboard as cover page<br>
-            • Export screenshots module-wise for client deck<br>
-            • Present summary first, then calculators<br>
-            • Use Boardroom Master Summary as closing page<br><br>
-            <b>Format:</b> HNI | Boardroom | Presentation Ready
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("### 📜 Executive Private Banker Notes")
-    note1, note2, note3 = st.columns(3)
-    with note1:
-        st.info("Prioritize retirement first, then child goals, then lifestyle purchases.")
-    with note2:
-        st.info("Use SWP only after a sustainable corpus is validated through retirement modules.")
-    with note3:
-        st.info("Close every meeting with allocation + rebalancing for a professional advisory finish.")
-
-    st.caption("Disclaimer: Output of these calculators is for illustration / advisory discussion purpose only. Please validate before execution.")
-
-# =====================================================
-# SIP & LUMPSUM CALCULATOR
-# =====================================================
-if st.session_state.page == "sip":
-    back_button()
-    st.markdown(f'<div class="imperial-box"><div class="imperial-header">SIP & Lumpsum Calculator</div></div>', unsafe_allow_html=True)
-
-    t1, t2 = st.tabs(["SIP Planner", "Lumpsum Planner"])
-
-    with t1:
-        c1, c2, c3, c4 = st.columns(4)
-        with c1:
-            monthly_sip = st.number_input("Monthly SIP (₹)", 0, 100000000, 5000)
-        with c2:
-            years = st.number_input("Investment Period (Years)", 1, 60, 20)
-        with c3:
-            sip_return = st.number_input("Expected Return (%)", 0.0, 30.0, float(expected_return * 100)) / 100
-        with c4:
-            step_up = st.number_input("Annual Step-up (%)", 0.0, 50.0, 10.0) / 100
-
-        corpus = 0
-        total_invested = 0
-        current_sip = monthly_sip
-        rows = []
-
-        for y in range(1, years + 1):
-            yearly_invested = 0
-            for _ in range(12):
-                corpus = corpus * (1 + sip_return / 12) + current_sip
-                total_invested += current_sip
-                yearly_invested += current_sip
-            gain = corpus - total_invested
-            rows.append([y, round(current_sip, 0), round(yearly_invested, 0), round(total_invested, 0), round(gain, 0), round(corpus, 0)])
-            current_sip *= (1 + step_up)
-
-        sip_df = pd.DataFrame(rows, columns=["Year", "Monthly SIP (₹)", "Yearly Invested (₹)", "Total Invested (₹)", "Total Gain (₹)", "Year End Corpus (₹)"])
-
-        kpi_row([
-            ("Invested", fmt(total_invested)),
-            ("Final Value", fmt(corpus)),
-            ("Absolute Gain", f"{((corpus-total_invested)/total_invested*100 if total_invested>0 else 0):.2f}%")
-        ])
-
-        st.dataframe(sip_df, use_container_width=True)
-
-    with t2:
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            lumpsum_amt = st.number_input("Investment Amount (₹)", 0, 1000000000, 1000000)
-        with c2:
-            lumpsum_return = st.number_input("Expected Return for Lumpsum (%)", 0.0, 30.0, 12.0) / 100
-        with c3:
-            lumpsum_years = st.number_input("Investment Period in Years", 1, 60, 7)
-
-        final_lumpsum = future_value(lumpsum_amt, lumpsum_return, lumpsum_years)
-
-        kpi_row([
-            ("Invested", fmt(lumpsum_amt)),
-            ("Final Value", fmt(final_lumpsum)),
-            ("Absolute Gain", f"{((final_lumpsum-lumpsum_amt)/lumpsum_amt*100 if lumpsum_amt>0 else 0):.2f}%")
-        ])
-
-    advisor_note("SIP Recommendation", [
-        "Step-up SIP materially improves long-term corpus.",
-        "If cashflow allows, increasing SIP by 10% yearly is ideal.",
-        "Use this module for disciplined long-term goal building."
-    ])
-
-# =====================================================
-# SWP CALCULATOR PRO
-# =====================================================
-if st.session_state.page == "swp":
-    back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">SWP Calculator</div></div>', unsafe_allow_html=True)
-
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        initial_corpus = st.number_input("Current Corpus (₹)", 0, 1000000000, 10000000)
-        entry_age = st.number_input("Current Age", 18, 100, current_age)
-        pre_return = st.number_input("Expected Return before Withdrawal (%)", 0.0, 25.0, 12.0) / 100
-    with c2:
-        withdrawal_start_age = st.number_input("Withdrawal Starts at Age", entry_age, 110, 60)
-        withdrawal_end_age = st.number_input("Withdrawal Ends at Age", withdrawal_start_age, 110, 80)
-        yearly_withdrawal = st.number_input("Withdrawal Per Year (₹)", 0, 100000000, 1200000)
-    with c3:
-        yearly_increase = st.number_input("Yearly Increase in Withdrawal (%)", 0.0, 25.0, 5.0) / 100
-        withdrawal_return = st.number_input("Expected Return in Withdrawal Phase (%)", 0.0, 25.0, 10.0) / 100
-        inflation_adjusted = st.selectbox("Inflation Adjusted Withdrawal?", ["No", "Yes"])
-
-    balance = initial_corpus
-    rows = []
-
-    for age in range(entry_age, withdrawal_start_age):
-        opening = balance
-        balance = balance * (1 + pre_return)
-        rows.append([age, round(opening, 0), 0, round(balance, 0)])
-
-    curr_wd = yearly_withdrawal
-    for age in range(withdrawal_start_age, withdrawal_end_age + 1):
-        opening = balance
-        if inflation_adjusted == "Yes":
-            eff_wd = curr_wd * ((1 + inflation) ** (age - withdrawal_start_age))
-        else:
-            eff_wd = curr_wd
-        balance = balance * (1 + withdrawal_return) - eff_wd
-        rows.append([age, round(opening, 0), round(eff_wd, 0), round(balance, 0)])
-        curr_wd *= (1 + yearly_increase)
-        if balance <= 0:
-            break
-
-    swp_df = pd.DataFrame(rows, columns=["Age", "Opening Corpus (₹)", "Withdrawal Per Year (₹)", "Year End Corpus (₹)"])
-    swr = (yearly_withdrawal / initial_corpus * 100) if initial_corpus > 0 else 0
-
-    kpi_row([
-        ("Final Corpus", fmt(max(balance, 0))),
-        ("Safe Withdrawal Rate", f"{swr:.2f}%"),
-        ("Withdrawal Till Age", str(swp_df['Age'].iloc[-1] if len(swp_df) else entry_age))
-    ])
-
-    st.dataframe(swp_df, use_container_width=True)
-
-    advisor_note("SWP Recommendation", [
-        "If corpus depletes too early, reduce withdrawal or delay start age.",
-        "Inflation-adjusted withdrawal gives a more realistic retirement view.",
-        "Keep SWR near 3.5%–5.0% for stability depending on asset mix."
-    ])
-
-# =====================================================
-# SIP + SWP PLANNER
-# =====================================================
-if st.session_state.page == "sip_swp":
-    back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">SIP + SWP Planner</div></div>', unsafe_allow_html=True)
-
-    c1, c2 = st.columns(2)
-    with c1:
-        sip_age = st.number_input("Current Age", 18, 100, 30)
-        sip_till_age = st.number_input("SIP to Continue Till Age", sip_age + 1, 100, 40)
-        sip_amt = st.number_input("Monthly SIP Amount (₹)", 0, 100000000, 50000)
-        sip_ret = st.number_input("Expected Return During SIP (%)", 0.0, 25.0, 13.0) / 100
-        sip_step = st.number_input("Annual Step-up (%)", 0.0, 50.0, 10.0) / 100
-    with c2:
-        swp_start_age = st.number_input("SWP Start Age", sip_till_age, 110, 40)
-        swp_amt = st.number_input("Monthly Withdrawal Amount (₹)", 0, 100000000, 150000)
-        swp_step = st.number_input("Yearly Increase in Withdrawal (%)", 0.0, 25.0, 8.0) / 100
-        swp_ret = st.number_input("Expected Return in Withdrawal Phase (%)", 0.0, 25.0, 9.0) / 100
-
-    corpus = 0
-    monthly = sip_amt
-    rows = []
-
-    for age in range(sip_age, sip_till_age):
-        opening = corpus
-        yearly_invested = 0
-        for _ in range(12):
-            corpus = corpus * (1 + sip_ret / 12) + monthly
-            yearly_invested += monthly
-        rows.append([age, round(opening,0), round(monthly,0), round(yearly_invested,0), 0, 0, round(corpus,0)])
-        monthly *= (1 + sip_step)
-
-    swp_monthly = swp_amt
-    for age in range(swp_start_age, 111):
-        opening = corpus
-        yearly_wd = swp_monthly * 12
-        for _ in range(12):
-            corpus = corpus * (1 + swp_ret / 12) - swp_monthly
-        rows.append([age, round(opening,0), 0, 0, round(swp_monthly,0), round(yearly_wd,0), round(corpus,0)])
-        swp_monthly *= (1 + swp_step)
-        if corpus <= 0:
-            break
-
-    df = pd.DataFrame(rows, columns=["Age", "Year Beginning Corpus (₹)", "SIP Monthly (₹)", "SIP Yearly (₹)", "SWP Monthly (₹)", "SWP Yearly (₹)", "Year End Corpus (₹)"])
-
-    kpi_row([
-        ("Withdraw Till Age", str(df['Age'].iloc[-1] if len(df) else swp_start_age)),
-        ("Final Corpus", fmt(max(corpus,0)))
-    ])
-
-    st.dataframe(df, use_container_width=True)
-
-# =====================================================
-# CHILDREN PLANNER PRO
-# =====================================================
-if st.session_state.page == "children":
-    back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">Future Planning for Children</div></div>', unsafe_allow_html=True)
-
-    num_children = st.number_input("How many children you have", 1, 4, 1)
-    all_rows = []
-    total_sip = 0
-    total_lump = 0
-
-    goal_defaults = [
-        ("10th Board", 15, 300000),
-        ("12th Board", 17, 500000),
-        ("Graduation", 21, 2000000),
-        ("Masters", 24, 2500000),
-        ("Marriage", 28, 3000000),
+    [
+        "1 Month",
+        "3 Month",
+        "6 Month",
+        "1 Year",
+        "2 Year",
+        "3 Year",
+        "5 Year",
+        "All Time"
     ]
 
-    for i in range(1, num_children + 1):
-        st.markdown(f"### Child {i}")
-        child_name = st.text_input(f"Child {i} Name", f"Child {i}", key=f"child_name_{i}")
-        child_age = st.number_input(f"Child {i} Age", 0, 25, 2, key=f"child_age_{i}")
+)
 
-        for goal_name, default_age, default_cost in goal_defaults:
-            c1, c2 = st.columns(2)
-            with c1:
-                goal_age = st.number_input(f"{goal_name} Age - {child_name}", child_age, 40, default_age, key=f"{goal_name}_age_{i}")
-            with c2:
-                goal_cost = st.number_input(f"{goal_name} Cost Today (₹) - {child_name}", 0, 100000000, default_cost, key=f"{goal_name}_cost_{i}")
+# ---------------------------------------------------------
+# DATA
+# ---------------------------------------------------------
 
-            years_left = max(goal_age - child_age, 0)
-            future_cost = future_value(goal_cost, inflation, years_left)
-            sip_req = monthly_sip_required(future_cost, expected_return, years_left)
-            lump_req = lumpsum_required(future_cost, expected_return, years_left)
-            prob = 97 if years_left >= 10 else (90 if years_left >= 5 else 75)
+sector_performance = {
 
-            all_rows.append([child_name, goal_name, goal_age, round(future_cost,0), round(sip_req,0), round(lump_req,0), prob])
-            total_sip += sip_req
-            total_lump += lump_req
+    "1 Month": {
+        "Banking": 5.8,
+        "IT": -1.6,
+        "Pharma": 4.1,
+        "FMCG": 1.2,
+        "Auto": 3.3,
+        "Realty": -2.7
+    },
 
-    child_df = pd.DataFrame(all_rows, columns=["Child", "Goal", "Goal Age", "Future Cost (₹)", "Monthly SIP Required (₹)", "Lumpsum Required Today (₹)", "Success Probability %"])
+    "3 Month": {
+        "Banking": 9.4,
+        "IT": 2.1,
+        "Pharma": 6.3,
+        "FMCG": 3.8,
+        "Auto": 7.5,
+        "Realty": -1.1
+    },
 
-    kpi_row([
-        ("Total SIP Required", fmt(total_sip)),
-        ("Total Lumpsum Today", fmt(total_lump))
-    ])
+    "6 Month": {
+        "Banking": 14.2,
+        "IT": 5.9,
+        "Pharma": 9.8,
+        "FMCG": 4.6,
+        "Auto": 12.1,
+        "Realty": 3.2
+    },
 
-    st.dataframe(child_df, use_container_width=True)
+    "1 Year": {
+        "Banking": 22.5,
+        "IT": 11.4,
+        "Pharma": 18.6,
+        "FMCG": 9.7,
+        "Auto": 25.1,
+        "Realty": 8.4
+    },
 
-    advisor_note("Children Planning Recommendation", [
-        "Create separate folios or buckets for each child goal.",
-        "Education and marriage goals should not be mixed with retirement assets.",
-        "Review this plan every 12 months and increase SIP as income rises."
-    ])
+    "2 Year": {
+        "Banking": 41.2,
+        "IT": 21.5,
+        "Pharma": 34.1,
+        "FMCG": 17.3,
+        "Auto": 48.7,
+        "Realty": 16.4
+    },
 
-# =====================================================
-# RETIREMENT PLANNER
-# =====================================================
-if st.session_state.page == "retirement":
-    back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">Retirement Planner</div></div>', unsafe_allow_html=True)
+    "3 Year": {
+        "Banking": 58.6,
+        "IT": 34.7,
+        "Pharma": 52.5,
+        "FMCG": 25.2,
+        "Auto": 67.1,
+        "Realty": 22.8
+    },
 
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        my_age = st.number_input("My Age (Years)", 18, 80, current_age)
-    with c2:
-        retire_age = st.number_input("I want to retire at age", my_age + 1, 80, 50)
-    with c3:
-        plan_till = st.number_input("I want to plan till age", retire_age + 1, 100, 90)
+    "5 Year": {
+        "Banking": 102.3,
+        "IT": 74.1,
+        "Pharma": 89.5,
+        "FMCG": 48.6,
+        "Auto": 118.4,
+        "Realty": 40.7
+    },
 
-    st.markdown("### Expense Details")
-    e1, e2, e3 = st.columns(3)
-    with e1:
-        monthly_exp = st.number_input("Monthly Expenses (₹)", 0, 100000000, 60000)
-    with e2:
-        yearly_one_time = st.number_input("One-time Yearly Expenses (₹)", 0, 100000000, 125000)
-    with e3:
-        retire_infl = st.number_input("Inflation for Expenses (%)", 0.0, 20.0, 7.0) / 100
+    "All Time": {
+        "Banking": 248.5,
+        "IT": 182.3,
+        "Pharma": 214.7,
+        "FMCG": 121.8,
+        "Auto": 267.9,
+        "Realty": 98.4
+    }
 
-    st.markdown("### Retirement Assets")
-    a1, a2, a3, a4 = st.columns(4)
-    with a1:
-        eq = st.number_input("Equity + NPS (₹)", 0, 1000000000, 1000000)
-    with a2:
-        debt = st.number_input("Debt + PPF + EPF (₹)", 0, 1000000000, 1000000)
-    with a3:
-        real_estate = st.number_input("Real Estate (₹)", 0, 1000000000, 0)
-    with a4:
-        gold = st.number_input("Gold (₹)", 0, 1000000000, 0)
+}
 
-    total_corpus = eq + debt + real_estate + gold
-    curr_sip = st.number_input("Current Monthly SIP + NPS (₹)", 0, 100000000, 57500)
-    curr_step = st.number_input("Current Annual Step-up (%)", 0.0, 50.0, 8.0) / 100
-    post_ret_return = st.number_input("Post Retirement Expected Return (%)", 0.0, 20.0, 8.0) / 100
+# ---------------------------------------------------------
+# SELECT DATA
+# ---------------------------------------------------------
 
-    years_to_ret = retire_age - my_age
-    ret_years = plan_till - retire_age
-    annual_exp_today = monthly_exp * 12 + yearly_one_time
-    expense_at_ret = annual_exp_today * ((1 + retire_infl) ** years_to_ret)
+selected_data = sector_performance[timeframe]
 
-    future_existing = total_corpus * ((1 + expected_return) ** years_to_ret)
-    sip_future = 0
-    sip_now = curr_sip
-    for _ in range(1, years_to_ret + 1):
-        for _m in range(12):
-            sip_future = sip_future * (1 + expected_return / 12) + sip_now
-        sip_now *= (1 + curr_step)
+sector_df = pd.DataFrame({
 
-    total_future_assets = future_existing + sip_future
+    "Sector": list(selected_data.keys()),
+    "Performance": list(selected_data.values())
 
-    if post_ret_return > retire_infl:
-        required_corpus = expense_at_ret * ((1 - ((1 + retire_infl) / (1 + post_ret_return)) ** ret_years) / (post_ret_return - retire_infl))
+})
+
+# ---------------------------------------------------------
+# COLORS
+# ---------------------------------------------------------
+
+sector_colors = []
+
+for value in sector_df["Performance"]:
+
+    if value >= 0:
+
+        if value > 20:
+            sector_colors.append("#22c55e")
+
+        else:
+            sector_colors.append("#38bdf8")
+
     else:
-        required_corpus = expense_at_ret * ret_years
 
-    gap = max(required_corpus - total_future_assets, 0)
-    additional_sip = monthly_sip_required_stepup(gap, expected_return, years_to_ret, 0.05)
+        sector_colors.append("#ef4444")
 
-    kpi_row([
-        ("Required Corpus", fmt(required_corpus)),
-        ("Projected Assets", fmt(total_future_assets)),
-        ("Gap", fmt(gap)),
-        ("Addl SIP (5% Step-up)", fmt(additional_sip))
-    ])
+# ---------------------------------------------------------
+# PLOTLY CHART
+# ---------------------------------------------------------
 
-    bal = total_future_assets
-    rows = []
-    exp = expense_at_ret
-    for age in range(retire_age, plan_till + 1):
-        opening = bal
-        bal = bal * (1 + post_ret_return) - exp
-        rows.append([age, round(opening,0), round(exp,0), round(bal,0)])
-        exp *= (1 + retire_infl)
-        if bal <= 0:
-            break
+fig_sector = go.Figure()
 
-    ret_df = pd.DataFrame(rows, columns=["Age", "Year Beginning Balance (₹)", "Year Expense (₹)", "Year End Balance (₹)"])
-    st.dataframe(ret_df, use_container_width=True)
+fig_sector.add_trace(
 
-    advisor_note("Retirement Recommendation", [
-        "Protect retirement corpus from child goals and lifestyle upgrades.",
-        "Increase SIP annually with income growth to reduce future gap.",
-        "Review retirement inflation assumptions carefully for medical and lifestyle costs."
-    ])
+    go.Bar(
 
-# =====================================================
-# TERM INSURANCE
-# =====================================================
-if st.session_state.page == "term":
-    back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">Term Insurance Calculator</div></div>', unsafe_allow_html=True)
+        x=sector_df["Sector"],
 
-    curr_age = st.number_input("Current Age (Years)", 18, 80, current_age)
-    coverage_till = st.number_input("Coverage till Age (Years)", curr_age + 1, 100, 90)
-    curr_monthly_income = st.number_input("Current Monthly Income (₹)", 0, 100000000, 200000)
-    curr_monthly_expense = st.number_input("Current Monthly Expenses (₹)", 0, 100000000, 50000)
-    liabilities = st.number_input("Outstanding Liabilities (₹)", 0, 1000000000, 0)
-    existing_cover = st.number_input("Existing Cover (₹)", 0, 1000000000, 0)
+        y=sector_df["Performance"],
 
-    years_left = coverage_till - curr_age
-    annual_surplus = max((curr_monthly_income - curr_monthly_expense) * 12, 0)
-    hlv = annual_surplus * years_left
-    recommended_cover = max(hlv + liabilities - existing_cover, 0)
+        text=[
+            f"{x:.1f}%"
+            for x in sector_df["Performance"]
+        ],
 
-    kpi_row([
-        ("Recommended Cover", fmt(recommended_cover)),
-        ("Coverage Till", str(coverage_till)),
-        ("Existing Cover", fmt(existing_cover))
-    ])
+        textposition="outside",
 
-    advisor_note("Insurance Recommendation", [
-        "Term plan is a protection product, not an investment product.",
-        "Buying early reduces premium and locks insurability.",
-        "Reassess cover after major life events like marriage, children, or large loans."
-    ])
+        marker=dict(
 
-# =====================================================
-# CASHFLOW PLANNER
-# =====================================================
-if st.session_state.page == "cashflow":
-    back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">Cashflow Planner</div></div>', unsafe_allow_html=True)
+            color=sector_colors,
 
-    st.markdown("### CASH INFLOWS")
-    salary = st.number_input("Salary/Wages (After-Tax)", 0, 100000000, 1000000)
-    side = st.number_input("Side Hustle / Freelance", 0, 100000000, 0)
-    inv_income = st.number_input("Investment Income (Dividends, Interest)", 0, 100000000, 0)
-    other_inc = st.number_input("Other Income (Rental, Tax Refund)", 0, 100000000, 0)
-    total_inflow = salary + side + inv_income + other_inc
+            line=dict(
+                color="rgba(255,255,255,0.15)",
+                width=1.5
+            )
 
-    st.markdown("### CASH OUTFLOWS - Fixed Expenses")
-    rent = st.number_input("Rent / Mortgage", 0, 100000000, 300000)
-    utilities = st.number_input("Utilities", 0, 100000000, 60000)
-    debt = st.number_input("Debt Payments", 0, 100000000, 0)
-    insurance = st.number_input("Insurance", 0, 100000000, 50000)
-    childcare = st.number_input("Childcare / Alimony", 0, 100000000, 0)
+        ),
 
-    st.markdown("### CASH OUTFLOWS - Variable Expenses")
-    groceries = st.number_input("Groceries", 0, 100000000, 120000)
-    dining = st.number_input("Dining Out / Entertainment", 0, 100000000, 60000)
-    transport = st.number_input("Transportation / Fuel", 0, 100000000, 50000)
-    shopping = st.number_input("Shopping / Subscriptions", 0, 100000000, 50000)
+        hovertemplate=
+        "<b>%{x}</b><br>" +
+        f"{timeframe} Return: " +
+        "%{y}%<extra></extra>"
 
-    st.markdown("### CASH OUTFLOWS - Savings & Investments")
-    emergency = st.number_input("Emergency Fund Savings", 0, 100000000, 50000)
-    retirement_contrib = st.number_input("Retirement Contributions", 0, 100000000, 100000)
-    investments = st.number_input("Investments", 0, 100000000, 150000)
-
-    total_outflow = rent + utilities + debt + insurance + childcare + groceries + dining + transport + shopping + emergency + retirement_contrib + investments
-    net_cf = total_inflow - total_outflow
-
-    kpi_row([
-        ("Total Inflow", fmt(total_inflow)),
-        ("Total Outflow", fmt(total_outflow)),
-        ("Net Cash Flow", fmt(net_cf))
-    ])
-
-    cashflow_df = pd.DataFrame([
-        ["CASH INFLOWS", "Total Inflow (A)", total_inflow],
-        ["TOTAL OUTFLOW", "Total Outflow (B)", total_outflow],
-        ["NET CASH FLOW", "A - B", net_cf],
-    ], columns=["Category", "Item", "Amount (₹)"])
-
-    st.dataframe(cashflow_df, use_container_width=True)
-
-    advisor_note("Cashflow Recommendation", [
-        "Positive cashflow should be directed toward goals and emergency reserve.",
-        "Track lifestyle inflation yearly.",
-        "Keep fixed obligations controlled to protect investing capacity."
-    ])
-
-# =====================================================
-# CAR PURCHASE
-# =====================================================
-if st.session_state.page == "car":
-    back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">Car Purchase Planner</div></div>', unsafe_allow_html=True)
-
-    car_cost = st.number_input("Car Cost Today (₹)", 0, 100000000, 1500000)
-    down = st.number_input("Down Payment Available (₹)", 0, 100000000, 300000)
-    after = st.number_input("Purchase After (Years)", 1, 20, 3)
-
-    future_car = future_value(car_cost, inflation, after)
-    gap = max(future_car - down, 0)
-    sip_need = monthly_sip_required(gap, expected_return, after)
-    lump_need = lumpsum_required(gap, expected_return, after)
-
-    kpi_row([
-        ("Future Car Cost", fmt(future_car)),
-        ("Funding Gap", fmt(gap)),
-        ("Monthly SIP", fmt(sip_need)),
-        ("Lumpsum Today", fmt(lump_need))
-    ])
-
-# =====================================================
-# HOUSE PLANNING
-# =====================================================
-if st.session_state.page == "house":
-    back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">House Planning</div></div>', unsafe_allow_html=True)
-
-    house_cost = st.number_input("House Cost Today (₹)", 0, 1000000000, 10000000)
-    available = st.number_input("Available Down Payment (₹)", 0, 1000000000, 2000000)
-    after = st.number_input("Buy House After (Years)", 1, 30, 5)
-    home_loan_rate = st.number_input("Home Loan Rate (%)", 0.0, 20.0, 8.5) / 100
-    loan_years = st.number_input("Loan Tenure (Years)", 1, 30, 20)
-
-    future_house = future_value(house_cost, inflation, after)
-    target_down = future_house * 0.20
-    gap = max(target_down - available, 0)
-    sip_need = monthly_sip_required(gap, expected_return, after)
-    loan_amount = max(future_house - target_down, 0)
-    emi = emi_calculator(loan_amount, home_loan_rate, loan_years)
-
-    kpi_row([
-        ("Future House Cost", fmt(future_house)),
-        ("20% Down Payment", fmt(target_down)),
-        ("Monthly SIP", fmt(sip_need)),
-        ("Estimated EMI", fmt(emi))
-    ])
-
-# =====================================================
-# EMI VS SIP CALCULATOR
-# =====================================================
-if st.session_state.page == "emi_vs_sip":
-    back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">EMI vs SIP Calculator</div></div>', unsafe_allow_html=True)
-
-    c1, c2 = st.columns(2)
-    with c1:
-        asset_cost = st.number_input("Asset / Loan Amount (₹)", 0, 1000000000, 1000000)
-        down_payment = st.number_input("Down Payment (₹)", 0, 1000000000, 200000)
-        loan_rate = st.number_input("Loan Interest Rate (%)", 0.0, 25.0, 9.0) / 100
-        loan_years = st.number_input("Loan Tenure (Years)", 1, 30, 5)
-    with c2:
-        sip_return_alt = st.number_input("Expected SIP Return (%)", 0.0, 25.0, 12.0) / 100
-        compare_years = st.number_input("Comparison Period (Years)", 1, 30, int(loan_years))
-        annual_stepup_alt = st.number_input("SIP Annual Step-up (%)", 0.0, 30.0, 0.0) / 100
-
-    loan_principal = max(asset_cost - down_payment, 0)
-    emi = emi_calculator(loan_principal, loan_rate, loan_years)
-
-    sip_corpus = 0
-    monthly_sip_alt = emi
-    total_sip_invested = 0
-    months_alt = int(compare_years * 12)
-    for m in range(1, months_alt + 1):
-        sip_corpus = sip_corpus * (1 + sip_return_alt / 12) + monthly_sip_alt
-        total_sip_invested += monthly_sip_alt
-        if annual_stepup_alt > 0 and m % 12 == 0:
-            monthly_sip_alt *= (1 + annual_stepup_alt)
-
-    total_emi_outflow = emi * min(int(loan_years * 12), months_alt)
-    wealth_difference = sip_corpus - total_emi_outflow
-
-    kpi_row([
-        ("Monthly EMI", fmt(emi)),
-        ("Total EMI Outflow", fmt(total_emi_outflow)),
-        ("SIP Corpus (If Invested)", fmt(sip_corpus)),
-        ("Wealth Gap", fmt(wealth_difference))
-    ])
-
-    compare_df = pd.DataFrame({
-        "Metric": ["Loan Principal", "Monthly EMI", "Total EMI Outflow", "Equivalent SIP", "Projected SIP Corpus", "Net Wealth Difference"],
-        "Value (₹)": [round(loan_principal,0), round(emi,0), round(total_emi_outflow,0), round(emi,0), round(sip_corpus,0), round(wealth_difference,0)]
-    })
-    st.dataframe(compare_df, use_container_width=True, hide_index=True)
-
-    advisor_note("EMI vs SIP Recommendation", [
-        "If the asset is non-essential, compare EMI burden with wealth creation lost via SIP.",
-        "For depreciating assets, financing should be balanced against long-term investment discipline.",
-        "Use this module in client meetings to show opportunity cost of EMIs."
-    ])
-
-# =====================================================
-# iPHONE PURCHASE
-# =====================================================
-if st.session_state.page == "iphone":
-    back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">iPhone Purchase Planner</div></div>', unsafe_allow_html=True)
-
-    cost = st.number_input("iPhone Cost Today (₹)", 0, 1000000, 80000)
-    months = st.number_input("Buy After (Months)", 1, 60, 12)
-    existing = st.number_input("Existing Savings (₹)", 0, 1000000, 10000)
-
-    monthly_infl = (1 + inflation) ** (1/12) - 1
-    future_cost = cost * ((1 + monthly_infl) ** months)
-    gap = max(future_cost - existing, 0)
-    r = expected_return / 12
-    sip_need = gap / ((((1 + r) ** months - 1) / r) * (1 + r)) if r > 0 and months > 0 else (gap / months if months > 0 else gap)
-
-    kpi_row([
-        ("Future Cost", fmt(future_cost)),
-        ("Funding Gap", fmt(gap)),
-        ("Monthly SIP", fmt(sip_need))
-    ])
-
-# =====================================================
-# PORTFOLIO ALLOCATION
-# =====================================================
-if st.session_state.page == "portfolio":
-    back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">Portfolio Allocation</div></div>', unsafe_allow_html=True)
-
-    total = st.number_input("Total Investible Corpus (₹)", 0, 1000000000, 10000000)
-    risk = st.selectbox("Risk Profile", ["Conservative", "Moderate", "Aggressive"])
-
-    if risk == "Conservative":
-        eq, debt, gold, cash = 30, 50, 10, 10
-    elif risk == "Moderate":
-        eq, debt, gold, cash = 55, 25, 10, 10
-    else:
-        eq, debt, gold, cash = 75, 10, 5, 10
-
-    df = pd.DataFrame({
-        "Asset Class": ["Equity", "Debt", "Gold", "Cash / Liquid"],
-        "Allocation %": [eq, debt, gold, cash],
-        "Amount (₹)": [total*eq/100, total*debt/100, total*gold/100, total*cash/100]
-    })
-
-    st.dataframe(df, use_container_width=True)
-
-# =====================================================
-# FUND SUGGESTION & PERFORMANCE
-# =====================================================
-if st.session_state.page == "fund_suggestion":
-    back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">V6.6 REAL AMFI API INTEGRATION READY CODE</div></div>', unsafe_allow_html=True)
-
-    # API-ready helper (safe fallback structure)
-    def fetch_live_nav_amfi(scheme_code):
-        try:
-            import requests
-            url = f"https://api.mfapi.in/mf/{scheme_code}"
-            resp = requests.get(url, timeout=6)
-            if resp.status_code == 200:
-                data = resp.json()
-                nav_block = data.get("data", [])
-                meta = data.get("meta", {})
-                if nav_block and isinstance(nav_block, list):
-                    latest = nav_block[0]
-                    nav_val = float(latest.get("nav", 0)) if latest.get("nav") else None
-                    nav_date = latest.get("date", "N/A")
-                    scheme_name = meta.get("scheme_name", "")
-                    return {"nav": nav_val, "date": nav_date, "scheme_name": scheme_name, "status": "LIVE"}
-            return {"nav": None, "date": "N/A", "scheme_name": "", "status": "FAILED"}
-        except Exception:
-            return {"nav": None, "date": "N/A", "scheme_name": "", "status": "ERROR"}
-
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        risk_profile = st.selectbox("Client Risk Profile", ["Conservative", "Moderate", "Aggressive"])
-    with c2:
-        investment_horizon = st.selectbox("Investment Horizon", ["1-3 Years", "3-5 Years", "5+ Years"])
-    with c3:
-        sort_by = st.selectbox("Sort Funds By", ["3Y CAGR %", "5Y CAGR %", "1Y %", "AUM (₹ Cr)", "Sharpe", "Latest NAV"])
-    with c4:
-        nav_source = st.selectbox("NAV Source Mode", ["Static Demo Data", "AMFI/MFAPI Live Fetch"])
-
-    search_text = st.text_input("Search Fund / AMC / Category / Scheme Code", "")
-    category_filter = st.multiselect(
-        "Category Filter",
-        ["Multi Asset", "Dynamic Hybrid", "Flexi Cap", "Large & Mid Cap", "Short Duration Debt"],
-        default=["Multi Asset", "Dynamic Hybrid", "Flexi Cap", "Large & Mid Cap", "Short Duration Debt"]
     )
 
-    refresh_live = st.button("🔄 Refresh Live NAV from AMFI/MFAPI", use_container_width=True)
+)
 
-    fund_data = [
-        ["120503", "Tata Multi Asset Opportunities Fund", "Tata", "Multi Asset", 18.2, 16.1, 15.4, "Moderate", 0.72, 3800, 11.8, 0.92, 24.87, "2026-03-14", "Diversified core allocation"],
-        ["120828", "ICICI Prudential Multi-Asset Fund", "ICICI Prudential", "Multi Asset", 17.4, 15.3, 14.8, "Moderate", 0.88, 42000, 10.9, 0.89, 78.14, "2026-03-14", "Balanced all-weather allocation"],
-        ["100046", "HDFC Balanced Advantage Fund", "HDFC", "Dynamic Hybrid", 15.1, 14.2, 13.0, "Moderate", 1.03, 95000, 8.4, 0.76, 512.63, "2026-03-14", "Volatility management"],
-        ["122639", "Parag Parikh Flexi Cap Fund", "PPFAS", "Flexi Cap", 20.5, 18.9, 21.2, "Moderate-High", 0.78, 78000, 14.2, 1.04, 82.35, "2026-03-14", "Long-term core growth"],
-        ["120323", "Kotak Equity Opportunities Fund", "Kotak", "Large & Mid Cap", 22.0, 19.1, 20.0, "High", 0.74, 21000, 15.8, 1.08, 239.12, "2026-03-14", "Aggressive growth satellite"],
-        ["103566", "SBI Short Term Debt Fund", "SBI", "Short Duration Debt", 7.4, 6.9, 6.8, "Low", 0.42, 14000, 2.8, 0.22, 39.84, "2026-03-14", "Stability / short-term parking"],
-        ["118989", "Nippon India Multi Asset Fund", "Nippon India", "Multi Asset", 16.9, 14.8, 14.2, "Moderate", 0.91, 6200, 11.2, 0.87, 71.06, "2026-03-14", "Diversified satellite core"],
-        ["112323", "Aditya Birla Sun Life Flexi Cap Fund", "ABSL", "Flexi Cap", 19.2, 17.0, 18.1, "Moderate-High", 0.86, 18500, 13.6, 0.98, 94.28, "2026-03-14", "Broad market flexi growth"],
-        ["120367", "Mirae Asset Large & Midcap Fund", "Mirae Asset", "Large & Mid Cap", 21.3, 18.4, 19.5, "High", 0.67, 39000, 14.9, 1.02, 146.91, "2026-03-14", "High conviction growth"],
-        ["120503A", "Axis Balanced Advantage Fund", "Axis", "Dynamic Hybrid", 13.8, 12.9, 12.1, "Moderate", 0.79, 5600, 7.9, 0.71, 31.44, "2026-03-14", "Defensive hybrid allocation"]
-    ]
+# ---------------------------------------------------------
+# LAYOUT
+# ---------------------------------------------------------
 
-    funds_df = pd.DataFrame(fund_data, columns=[
-        "Scheme Code", "Fund Name", "AMC", "Category", "1Y %", "3Y CAGR %", "5Y CAGR %", "Risk", "Expense Ratio %", "AUM (₹ Cr)", "Std Dev %", "Sharpe", "Latest NAV", "NAV Date", "Advisor Role"
-    ])
+fig_sector.update_layout(
 
-    # Optional live fetch update for visible list (top limited rows for safety)
-    if refresh_live and nav_source == "AMFI/MFAPI Live Fetch":
-        live_updates = 0
-        for idx in funds_df.index[:5]:
-            scheme_code = str(funds_df.loc[idx, "Scheme Code"])
-            live_data = fetch_live_nav_amfi(scheme_code)
-            if live_data["nav"] is not None:
-                funds_df.loc[idx, "Latest NAV"] = live_data["nav"]
-                funds_df.loc[idx, "NAV Date"] = live_data["date"]
-                if live_data["scheme_name"]:
-                    funds_df.loc[idx, "Fund Name"] = live_data["scheme_name"]
-                live_updates += 1
-        if live_updates > 0:
-            st.success(f"Live NAV updated for {live_updates} schemes using AMFI/MFAPI structure.")
-        else:
-            st.warning("Live NAV fetch did not update current rows. Static fallback values are still displayed.")
-    elif refresh_live:
-        st.info("Currently using Static Demo Data. Switch NAV Source Mode to AMFI/MFAPI Live Fetch to try real NAV updates.")
+    height=420,
 
-    filtered = funds_df[funds_df["Category"].isin(category_filter)].copy()
+    margin=dict(
+        l=20,
+        r=20,
+        t=20,
+        b=20
+    ),
 
-    if search_text.strip():
-        q = search_text.strip().lower()
-        filtered = filtered[
-            filtered["Fund Name"].str.lower().str.contains(q) |
-            filtered["AMC"].str.lower().str.contains(q) |
-            filtered["Category"].str.lower().str.contains(q) |
-            filtered["Scheme Code"].astype(str).str.lower().str.contains(q)
-        ]
+    paper_bgcolor="rgba(0,0,0,0)",
 
-    if risk_profile == "Conservative":
-        recommended = filtered[filtered["Category"].isin(["Multi Asset", "Dynamic Hybrid", "Short Duration Debt"])]
-        model_text = "Suggested Mix: 40% Multi Asset | 35% Dynamic Hybrid | 25% Short Duration Debt"
-    elif risk_profile == "Moderate":
-        recommended = filtered[filtered["Category"].isin(["Multi Asset", "Dynamic Hybrid", "Flexi Cap"])]
-        model_text = "Suggested Mix: 35% Multi Asset | 25% Dynamic Hybrid | 40% Flexi Cap"
-    else:
-        recommended = filtered[filtered["Category"].isin(["Flexi Cap", "Large & Mid Cap", "Multi Asset"])]
-        model_text = "Suggested Mix: 45% Flexi Cap | 35% Large & Mid Cap | 20% Multi Asset"
+    plot_bgcolor="rgba(0,0,0,0)",
 
-    if investment_horizon == "1-3 Years":
-        horizon_note = "Prefer stability-oriented allocation. Use debt / hybrid heavier positioning."
-    elif investment_horizon == "3-5 Years":
-        horizon_note = "Balanced allocation can be used with limited equity volatility tolerance."
-    else:
-        horizon_note = "Long-term horizon supports higher equity allocation for compounding."
+    font=dict(
+        color="white",
+        size=13
+    ),
 
-    display_df = (recommended if len(recommended) > 0 else filtered).copy()
+    xaxis=dict(
 
-    if len(display_df) == 0:
-        st.warning("No funds matched the current filters. Please widen the search or category selection.")
-    else:
-        display_df = display_df.sort_values(by=sort_by, ascending=False)
-        top_fund = display_df.iloc[0]
+        title="",
 
-        kpi_row([
-            ("Top Fund", top_fund["Fund Name"][:16] + "..." if len(top_fund["Fund Name"]) > 16 else top_fund["Fund Name"]),
-            ("Latest NAV", f"₹ {top_fund['Latest NAV']:.2f}"),
-            ("NAV Date", str(top_fund["NAV Date"])),
-            ("Source", "LIVE READY")
-        ])
+        showgrid=False,
 
-        st.markdown(f"""
-        <div class="report-panel">
-            <div class="report-title">V6.6 Production Integration Summary</div>
-            <div class="report-text">
-                <b>NAV Source:</b> {nav_source}<br>
-                <b>Model Allocation:</b> {model_text}<br>
-                <b>Horizon View:</b> {horizon_note}<br>
-                <b>Top Research Pick:</b> {top_fund['Fund Name']} ({top_fund['Category']})<br>
-                <b>Latest NAV:</b> ₹ {top_fund['Latest NAV']:.2f} as of {top_fund['NAV Date']}<br><br>
-                <b>Production Ready Logic Added:</b> requests-based AMFI/MFAPI fetch function, live refresh flow, fallback handling, and scheme-code architecture.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        tickfont=dict(
+            size=13
+        )
 
-        summary_cols = st.columns(4)
-        with summary_cols[0]:
-            top_3y = display_df.sort_values(by="3Y CAGR %", ascending=False).head(3)[["Fund Name", "3Y CAGR %"]]
-            st.markdown("### 🥇 Top 3 by 3Y CAGR")
-            st.dataframe(top_3y, use_container_width=True, hide_index=True)
-        with summary_cols[1]:
-            top_nav = display_df.sort_values(by="Latest NAV", ascending=False).head(3)[["Fund Name", "Latest NAV"]]
-            st.markdown("### 💹 Top 3 by NAV")
-            st.dataframe(top_nav, use_container_width=True, hide_index=True)
-        with summary_cols[2]:
-            top_sharpe = display_df.sort_values(by="Sharpe", ascending=False).head(3)[["Fund Name", "Sharpe"]]
-            st.markdown("### ⚖️ Top 3 by Sharpe")
-            st.dataframe(top_sharpe, use_container_width=True, hide_index=True)
-        with summary_cols[3]:
-            top_aum = display_df.sort_values(by="AUM (₹ Cr)", ascending=False).head(3)[["Fund Name", "AUM (₹ Cr)"]]
-            st.markdown("### 🏦 Top 3 by AUM")
-            st.dataframe(top_aum, use_container_width=True, hide_index=True)
+    ),
 
-        st.markdown("### 📡 AMFI / MFAPI Live Research Table")
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
+    yaxis=dict(
 
-        st.code('''# Example production snippet
-import requests
+        title=f"{timeframe} Return %",
 
-def fetch_live_nav_amfi(scheme_code):
-    url = f"https://api.mfapi.in/mf/{scheme_code}"
-    resp = requests.get(url, timeout=6)
-    data = resp.json()
-    latest = data["data"][0]
-    return latest["nav"], latest["date"]
-''', language="python")
+        gridcolor="rgba(255,255,255,0.08)",
 
-        st.markdown(f"""
-        <div class="export-panel">
-            <b>Production Integration Ready Notes</b><br><br>
-            • requests-based fetch logic added<br>
-            • scheme code mapping enabled<br>
-            • latest NAV + date live refresh structure added<br>
-            • fallback protection if API fails<br>
-            • ready for deployment with internet-enabled Streamlit environment<br><br>
-            <b>Status:</b> V6.6 REAL AMFI API INTEGRATION READY
-        </div>
-        """, unsafe_allow_html=True)
+        zerolinecolor="rgba(255,255,255,0.12)"
 
-        advisor_note("Mutual Fund Production Notes", [
-            "This version now contains real AMFI/MFAPI integration-ready code structure.",
-            "Live NAV depends on internet access and valid scheme codes in deployed Streamlit environment.",
-            "You can later extend this with rolling returns, XIRR, and benchmark comparison.",
-            "Validate live scheme mapping before client-facing production deployment."
-        ])
+    )
 
-# =====================================================
-# NET WORTH DASHBOARD
-# =====================================================
-if st.session_state.page == "networth":
-    back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">Net Worth Dashboard</div></div>', unsafe_allow_html=True)
+)
 
-    mf = st.number_input("Mutual Funds (₹)", 0, 1000000000, 2000000)
-    equity = st.number_input("Direct Equity (₹)", 0, 1000000000, 1000000)
-    re_asset = st.number_input("Real Estate (₹)", 0, 10000000000, 5000000)
-    cash = st.number_input("Cash / Bank (₹)", 0, 1000000000, 500000)
-    gold = st.number_input("Gold / Other Assets (₹)", 0, 1000000000, 300000)
+# ---------------------------------------------------------
+# DISPLAY
+# ---------------------------------------------------------
 
-    home_loan = st.number_input("Home Loan (₹)", 0, 1000000000, 0)
-    car_loan = st.number_input("Car Loan (₹)", 0, 1000000000, 0)
-    other = st.number_input("Other Loans (₹)", 0, 1000000000, 0)
+st.plotly_chart(
+    fig_sector,
+    use_container_width=True
+)# -------------------------------------------------
+# FINANCIAL STATEMENTS
+# -------------------------------------------------
+st.markdown("<div class='panel'><div class='panel-title'>Balance Sheet / P&L / Cash Flow (₹ Cr)</div><div class='subtle-divider'></div></div>", unsafe_allow_html=True)
+ft1, ft2, ft3 = st.tabs(["Balance Sheet", "P&L", "Cash Flow"])
+with ft1:
+    st.dataframe((bs / 1e7).round(2) if not bs.empty else pd.DataFrame({"Info": ["No data available"]}), use_container_width=True)
+with ft2:
+    st.dataframe((fin / 1e7).round(2) if not fin.empty else pd.DataFrame({"Info": ["No data available"]}), use_container_width=True)
+with ft3:
+    st.dataframe((cf / 1e7).round(2) if not cf.empty else pd.DataFrame({"Info": ["No data available"]}), use_container_width=True)
 
-    assets = mf + equity + re_asset + cash + gold
-    liabilities = home_loan + car_loan + other
-    nw = assets - liabilities
+# -------------------------------------------------
+# MULTI-STOCK COMPARE
+# -------------------------------------------------
+if compare_symbols:
+    st.markdown("<div class='panel'><div class='panel-title'>Multi-Stock Compare</div><div class='subtle-divider'></div></div>", unsafe_allow_html=True)
+    cmp_rows = []
+    for s in compare_symbols:
+        d = get_history(s, period="6mo")
+        if d.empty: continue
+        dd = compute_indicators(d)
+        if dd.empty: continue
+        met = compute_scan_metrics_fast(d); sc, ver = score_from_metrics(met) if met else (0, "Weak")
+        cmp_rows.append({"Symbol": s, "Price": round(float(dd["Close"].iloc[-1]), 2), "RSI": round(float(dd["RSI14"].iloc[-1]), 2), "Score": sc, "Verdict": ver})
+    if cmp_rows:
+        cmp_df = pd.DataFrame(cmp_rows)
+        st.dataframe(cmp_df.style.set_properties(**{'background-color': 'rgba(15,23,42,0.55)', 'color': 'white', 'border-color': 'rgba(255,255,255,0.05)'}), use_container_width=True)
 
-    kpi_row([
-        ("Total Assets", fmt(assets)),
-        ("Total Liabilities", fmt(liabilities)),
-        ("Net Worth", fmt(nw))
-    ])
+# -------------------------------------------------
+# PDF REPORT EXPORT
+# -------------------------------------------------
+st.markdown("<div class='panel'><div class='panel-title'>PDF Report Export</div><div class='subtle-divider'></div><div style='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;'><span class='ribbon-chip'>Premium Institutional PDF</span><span class='ribbon-chip'>Trade Plan Ready</span><span class='ribbon-chip'>Client Presentation Safe</span></div></div>", unsafe_allow_html=True)
+pdf_bytes = build_stock_pdf(symbol, last_close, change_pct, ai_action, conviction_score, score, rsi, entry, stop_loss, target, qty, position_value, fund_verdict, tech_verdict, overall_ratio_score, fund_summary, tech_summary, overall_summary)
+if pdf_bytes:
+    st.download_button("Download PDF Report", data=pdf_bytes, file_name=f"NILE_{symbol.replace('.NS','')}_Report.pdf", mime="application/pdf")
+else:
+    st.info("PDF export unavailable. Install reportlab in deployment.")
 
-# =====================================================
-# GOAL FEASIBILITY
-# =====================================================
-if st.session_state.page == "goal":
-    back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">Goal Feasibility Dashboard</div></div>', unsafe_allow_html=True)
-
-    target = st.number_input("Goal Target Amount (₹)", 0, 1000000000, 5000000)
-    years = st.number_input("Years to Goal", 1, 40, 10)
-    existing = st.number_input("Existing Corpus for Goal (₹)", 0, 1000000000, 500000)
-    sip = st.number_input("Current Monthly SIP for Goal (₹)", 0, 100000000, 20000)
-
-    proj = future_value(existing, expected_return, years)
-    temp = proj
-    for _ in range(years * 12):
-        temp = temp * (1 + expected_return / 12) + sip
-
-    shortfall = target - temp
-    feas = temp / target * 100 if target > 0 else 0
-
-    kpi_row([
-        ("Goal Target", fmt(target)),
-        ("Projected Value", fmt(temp)),
-        ("Shortfall / Surplus", fmt(shortfall)),
-        ("Feasibility", f"{feas:.1f}%")
-    ])
-
-# =====================================================
-# PORTFOLIO REBALANCING
-# =====================================================
-if st.session_state.page == "rebalance":
-    back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">Portfolio Rebalancing Engine</div></div>', unsafe_allow_html=True)
-
-    cur_eq = st.number_input("Current Equity (₹)", 0, 1000000000, 600000)
-    cur_debt = st.number_input("Current Debt (₹)", 0, 1000000000, 300000)
-    cur_gold = st.number_input("Current Gold (₹)", 0, 1000000000, 100000)
-
-    total = cur_eq + cur_debt + cur_gold
-
-    tgt_eq = st.number_input("Target Equity %", 0, 100, 60)
-    tgt_debt = st.number_input("Target Debt %", 0, 100, 30)
-    tgt_gold = st.number_input("Target Gold %", 0, 100, 10)
-
-    df = pd.DataFrame({
-        "Asset Class": ["Equity", "Debt", "Gold"],
-        "Current Amount (₹)": [cur_eq, cur_debt, cur_gold],
-        "Target Amount (₹)": [total*tgt_eq/100, total*tgt_debt/100, total*tgt_gold/100]
-    })
-    df["Buy / Sell (₹)"] = df["Target Amount (₹)"] - df["Current Amount (₹)"]
-
-    st.dataframe(df, use_container_width=True)
-
-# =====================================================
-# RETIREMENT MONTE CARLO
-# =====================================================
-if st.session_state.page == "mc_retirement":
-    back_button()
-    st.markdown('<div class="imperial-box"><div class="imperial-header">Retirement Monte Carlo Survival Simulator</div></div>', unsafe_allow_html=True)
-
-    corpus = st.number_input("Retirement Corpus (₹)", 0, 10000000000, 30000000)
-    withdrawal = st.number_input("Annual Withdrawal (₹)", 0, 1000000000, 1200000)
-    years = st.number_input("Retirement Years", 1, 50, 30)
-    runs = st.number_input("Simulation Runs", 100, 5000, 1000, step=100)
-
-    np.random.seed(123)
-    success = 0
-    ending_vals = []
-
-    for _ in range(runs):
-        bal = corpus
-        wd = withdrawal
-        ok = True
-        for _y in range(years):
-            bal = bal * (1 + np.random.normal(expected_return, 0.12)) - wd
-            wd *= (1 + inflation)
-            if bal <= 0:
-                ok = False
-                break
-        ending_vals.append(max(bal, 0))
-        if ok:
-            success += 1
-
-    success_rate = (success / runs * 100 if runs > 0 else 0)
-    median_end = np.median(ending_vals) if len(ending_vals) else 0
-
-    kpi_row([
-        ("Survival Probability", f"{success_rate:.1f}%"),
-        ("Median Ending Corpus", fmt(median_end)),
-        ("Simulations", str(runs))
-    ])
-
-# =====================================================
-# DEFAULT PAGE CHECK
-# =====================================================
-valid_pages = [
-    "home", "sip", "swp", "sip_swp", "children", "retirement", "term",
-    "cashflow", "car", "house", "iphone", "portfolio", "networth",
-    "goal", "rebalance", "mc_retirement", "emi_vs_sip", "fund_suggestion"
-]
-if st.session_state.page not in valid_pages:
-    st.session_state.page = "home"
-
-# =====================================================
-# FOOTER
-# =====================================================
-st.markdown("---")
-st.caption("Freedom V6.1 PRODUCTION READY | Boardroom Elite Roman Imperial Edition | For Illustration / Advisory Discussion Purpose Only")
+st.success("FINAL NILE V15 MASTER TERMINAL loaded successfully.")
