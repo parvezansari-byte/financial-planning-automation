@@ -15,7 +15,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit.components.v1 as components
 
-import feedparser
 
 import streamlit as st
 
